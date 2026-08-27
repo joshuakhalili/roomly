@@ -268,7 +268,8 @@
     "progress": "{done} of {total} sections rated",
     "forTenancy": "For {name}",
     "allChecklists": "All checklists",
-    "noTenancies": "Add a tenant to a room before starting an inventory."
+    "noTenancies": "Add a tenant to a room before starting an inventory.",
+    "noDeterioration": "Nothing has got worse since check-in."
   },
   "analytics": {
     "title": "Analytics",

@@ -367,7 +367,10 @@ export async function completeChecklist(
   return { ok: true, data: undefined };
 }
 
-/** Saves meters, keys and detectors — the report-level records. */
+// ── Report-level records: meters, keys, detectors ──────────────────────────
+// These belong to the report as a whole rather than to any one area, exactly
+// as they appear in a professional Schedule of Condition.
+
 export async function saveMeterReading(
   checklistId: string,
   formData: FormData,
@@ -379,7 +382,9 @@ export async function saveMeterReading(
     checklist_id: checklistId,
     meter_type: optionalText(formData.get("meter_type")),
     reading: optionalText(formData.get("reading")),
-    reading_date: optionalText(formData.get("reading_date")),
+    reading_date:
+      optionalText(formData.get("reading_date")) ??
+      new Date().toISOString().slice(0, 10),
     location: optionalText(formData.get("location")),
     serial_number: optionalText(formData.get("serial_number")),
   });
@@ -388,4 +393,103 @@ export async function saveMeterReading(
 
   revalidatePath("/", "layout");
   return { ok: true, data: undefined };
+}
+
+export async function saveKey(
+  checklistId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth;
+
+  const description = optionalText(formData.get("description"));
+  if (!description) return { ok: false, error: "A description is required." };
+
+  const { error } = await auth.supabase.from("checklist_keys").insert({
+    checklist_id: checklistId,
+    description,
+    quantity: Number(formData.get("quantity") ?? 1) || 1,
+    comments: optionalText(formData.get("comments")),
+  });
+
+  if (error) return { ok: false, error: friendlyError(error) };
+
+  revalidatePath("/", "layout");
+  return { ok: true, data: undefined };
+}
+
+export async function saveDetector(
+  checklistId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth;
+
+  const { error } = await auth.supabase.from("checklist_detectors").insert({
+    checklist_id: checklistId,
+    detector_type: optionalText(formData.get("detector_type")),
+    location: optionalText(formData.get("location")),
+    tested: formData.get("tested") === "on",
+    comments: optionalText(formData.get("comments")),
+  });
+
+  if (error) return { ok: false, error: friendlyError(error) };
+
+  revalidatePath("/", "layout");
+  return { ok: true, data: undefined };
+}
+
+/** One delete for all three, since they behave identically. */
+export async function deleteReportRecord(
+  table: "checklist_meters" | "checklist_keys" | "checklist_detectors",
+  id: string,
+): Promise<ActionResult> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth;
+
+  const { error } = await auth.supabase.from(table).delete().eq("id", id);
+  if (error) return { ok: false, error: friendlyError(error) };
+
+  revalidatePath("/", "layout");
+  return { ok: true, data: undefined };
+}
+
+/**
+ * Records that a PDF was generated, and where it was stored.
+ *
+ * This row is the precondition for ever purging the original photos: the
+ * compact PDF has to exist as the permanent record before the source images
+ * can safely go.
+ */
+export async function recordPdfExport(
+  checklistId: string,
+  formData: FormData,
+): Promise<ActionResult<{ path: string }>> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth;
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0)
+    return { ok: false, error: "No PDF provided." };
+
+  const path = `${checklistId}/${Date.now()}-report.pdf`;
+  const { error: uploadError } = await auth.supabase.storage
+    .from("checklist-pdfs")
+    .upload(path, file, { contentType: "application/pdf", upsert: true });
+
+  if (uploadError) return { ok: false, error: uploadError.message };
+
+  const { error } = await auth.supabase.from("checklist_pdf_exports").insert({
+    checklist_id: checklistId,
+    storage_path: `checklist-pdfs/${path}`,
+    file_size: file.size,
+  });
+
+  if (error) {
+    await auth.supabase.storage.from("checklist-pdfs").remove([path]);
+    return { ok: false, error: friendlyError(error) };
+  }
+
+  revalidatePath("/", "layout");
+  return { ok: true, data: { path } };
 }

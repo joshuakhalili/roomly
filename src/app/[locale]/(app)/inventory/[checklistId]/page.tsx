@@ -3,14 +3,22 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { ChecklistEditor } from "@/components/inventory/checklist-editor";
+import { ReportDetails } from "@/components/inventory/report-details";
+import { ExportPdfButton } from "@/components/inventory/export-pdf-button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, GitCompareArrows } from "lucide-react";
 import type {
   AreaType,
   ChecklistArea,
+  ChecklistDeclaration,
+  ChecklistDetector,
+  ChecklistKey,
+  ChecklistMeter,
   ChecklistPhoto,
   ChecklistSection,
   InventoryChecklist,
+  Occupant,
 } from "@/lib/types";
 
 export default async function ChecklistPage({
@@ -25,11 +33,24 @@ export default async function ChecklistPage({
   const supabase = await createClient();
   const { data: checklist } = await supabase
     .from("inventory_checklists")
-    .select("*, tenancies(id, room_id, rooms(id, name, property_id))")
+    .select(
+      "*, tenancies(id, room_id, rooms(id, name, property_id, properties(name, address)))",
+    )
     .eq("id", checklistId)
     .single();
 
   if (!checklist) notFound();
+
+  const tenancy = checklist.tenancies as unknown as {
+    id: string;
+    rooms: {
+      id: string;
+      name: string;
+      property_id: string;
+      properties: { name: string; address: string | null } | null;
+    } | null;
+  } | null;
+  const room = tenancy?.rooms;
 
   const { data: areas } = await supabase
     .from("checklist_areas")
@@ -39,7 +60,16 @@ export default async function ChecklistPage({
 
   const areaIds = (areas ?? []).map((a) => a.id);
 
-  const [{ data: sections }, { data: areaTypes }] = await Promise.all([
+  const [
+    { data: sections },
+    { data: areaTypes },
+    { data: meters },
+    { data: keys },
+    { data: detectors },
+    { data: declarations },
+    { data: occupants },
+    { data: siblings },
+  ] = await Promise.all([
     areaIds.length
       ? supabase
           .from("checklist_sections")
@@ -48,6 +78,25 @@ export default async function ChecklistPage({
           .order("sort_order")
       : Promise.resolve({ data: [] as ChecklistSection[] }),
     supabase.from("area_types").select("*").order("sort_order"),
+    supabase.from("checklist_meters").select("*").eq("checklist_id", checklistId),
+    supabase.from("checklist_keys").select("*").eq("checklist_id", checklistId),
+    supabase
+      .from("checklist_detectors")
+      .select("*")
+      .eq("checklist_id", checklistId),
+    supabase
+      .from("checklist_declarations")
+      .select("*")
+      .eq("checklist_id", checklistId),
+    tenancy
+      ? supabase.from("occupants").select("*").eq("tenancy_id", tenancy.id)
+      : Promise.resolve({ data: [] as Occupant[] }),
+    tenancy
+      ? supabase
+          .from("inventory_checklists")
+          .select("id, type")
+          .eq("tenancy_id", tenancy.id)
+      : Promise.resolve({ data: [] as { id: string; type: string }[] }),
   ]);
 
   const sectionIds = (sections ?? []).map((s) => s.id);
@@ -59,13 +108,12 @@ export default async function ChecklistPage({
         .order("sort_order")
     : { data: [] as ChecklistPhoto[] };
 
-  const room = (
-    checklist.tenancies as unknown as {
-      rooms: { id: string; name: string; property_id: string };
-    } | null
-  )?.rooms;
-
   const cl = checklist as unknown as InventoryChecklist;
+  const typeLabel =
+    cl.type === "check_in" ? t("inventory.checkIn") : t("inventory.checkOut");
+
+  // A comparison only means anything once both halves exist.
+  const hasBoth = (siblings ?? []).length === 2;
 
   return (
     <div className="flex flex-col gap-6">
@@ -79,17 +127,46 @@ export default async function ChecklistPage({
             {room.name}
           </Link>
         )}
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-semibold">
-            {cl.type === "check_in"
-              ? t("inventory.checkIn")
-              : t("inventory.checkOut")}
-          </h1>
-          <Badge variant={cl.status === "completed" ? "default" : "secondary"}>
-            {cl.status === "completed"
-              ? t("inventory.statusCompleted")
-              : t("inventory.statusDraft")}
-          </Badge>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-semibold">{typeLabel}</h1>
+            <Badge variant={cl.status === "completed" ? "default" : "secondary"}>
+              {cl.status === "completed"
+                ? t("inventory.statusCompleted")
+                : t("inventory.statusDraft")}
+            </Badge>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {hasBoth && tenancy && (
+              <Button asChild variant="outline">
+                <Link href={`/inventory/compare/${tenancy.id}`}>
+                  <GitCompareArrows className="size-4" aria-hidden />
+                  {t("inventory.compare")}
+                </Link>
+              </Button>
+            )}
+            <ExportPdfButton
+              checklistId={cl.id}
+              meta={{
+                propertyName: room?.properties?.name ?? "",
+                roomName: room?.name ?? "",
+                address: room?.properties?.address ?? null,
+                type: typeLabel,
+                occupants: ((occupants ?? []) as Occupant[]).map(
+                  (o) => `${o.first_name} ${o.surname}`,
+                ),
+              }}
+              areas={(areas ?? []) as ChecklistArea[]}
+              sections={(sections ?? []) as ChecklistSection[]}
+              photos={(photos ?? []) as ChecklistPhoto[]}
+              meters={(meters ?? []) as ChecklistMeter[]}
+              keys={(keys ?? []) as ChecklistKey[]}
+              detectors={(detectors ?? []) as ChecklistDetector[]}
+              declarations={(declarations ?? []) as ChecklistDeclaration[]}
+            />
+          </div>
         </div>
       </div>
 
@@ -99,6 +176,15 @@ export default async function ChecklistPage({
         sections={(sections ?? []) as ChecklistSection[]}
         photos={(photos ?? []) as ChecklistPhoto[]}
         areaTypes={(areaTypes ?? []) as AreaType[]}
+      />
+
+      <ReportDetails
+        checklistId={cl.id}
+        meters={(meters ?? []) as ChecklistMeter[]}
+        keys={(keys ?? []) as ChecklistKey[]}
+        detectors={(detectors ?? []) as ChecklistDetector[]}
+        declarations={(declarations ?? []) as ChecklistDeclaration[]}
+        readOnly={cl.status === "completed"}
       />
     </div>
   );

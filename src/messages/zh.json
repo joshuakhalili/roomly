@@ -268,7 +268,8 @@
     "progress": "已评定 {total} 个项目中的 {done} 个",
     "forTenancy": "租客：{name}",
     "allChecklists": "所有清单",
-    "noTenancies": "请先为房间添加租客，然后开始清点。"
+    "noTenancies": "请先为房间添加租客，然后开始清点。",
+    "noDeterioration": "自入住以来没有任何项目变差。"
   },
   "analytics": {
     "title": "数据分析",

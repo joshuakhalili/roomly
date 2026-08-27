@@ -195,6 +195,51 @@ export interface ChecklistPhoto {
   created_at: string;
 }
 
+export interface ChecklistMeter {
+  id: string;
+  checklist_id: string;
+  meter_type: "electricity" | "gas" | "water";
+  reading: string | null;
+  reading_date: string | null;
+  location: string | null;
+  serial_number: string | null;
+}
+
+export interface ChecklistKey {
+  id: string;
+  checklist_id: string;
+  description: string;
+  quantity: number;
+  comments: string | null;
+}
+
+export interface ChecklistDetector {
+  id: string;
+  checklist_id: string;
+  detector_type: "smoke" | "co";
+  location: string | null;
+  tested: boolean;
+  comments: string | null;
+}
+
+export interface ChecklistDeclaration {
+  id: string;
+  checklist_id: string;
+  role: "assessor" | "tenant";
+  typed_name: string;
+  email: string | null;
+  signed_at: string;
+}
+
+export interface ChecklistPdfExport {
+  id: string;
+  checklist_id: string;
+  storage_path: string;
+  file_size: number | null;
+  generated_at: string;
+  photos_purged_at: string | null;
+}
+
 /** A room joined with whatever tenancy currently applies to it. */
 export interface RoomWithTenancy extends Room {
   property_name?: string;
