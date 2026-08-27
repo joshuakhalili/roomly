@@ -1,38 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Share, X } from "lucide-react";
 
 const DISMISSED_KEY = "install-prompt-dismissed";
 
+/** Nothing to subscribe to — the answer can't change mid-session. */
+const subscribe = () => () => {};
+
+/** Server render: never show it, so the markup matches the first client paint. */
+const getServerSnapshot = () => false;
+
+function getClientSnapshot() {
+  try {
+    if (localStorage.getItem(DISMISSED_KEY)) return false;
+  } catch {
+    // Private browsing can throw on access — treat as "don't show".
+    return false;
+  }
+
+  const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    // iOS reports standalone mode here rather than via the media query.
+    (window.navigator as { standalone?: boolean }).standalone === true;
+
+  return isIOS && !isStandalone;
+}
+
 /**
  * iOS gives no programmatic "install this app?" prompt — adding to the home
  * screen is a manual Share-menu step that users won't guess. This banner
  * explains it once, only on iOS Safari, and only when not already installed.
+ *
+ * Reading the platform via useSyncExternalStore rather than an effect keeps
+ * the server and client render in agreement without a setState-on-mount.
  */
 export function InstallPrompt() {
   const t = useTranslations("pwa");
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    // Wrapped: some privacy modes throw on localStorage access outright.
-    try {
-      if (localStorage.getItem(DISMISSED_KEY)) return;
-    } catch {
-      return;
-    }
-
-    const ua = window.navigator.userAgent;
-    const isIOS = /iPad|iPhone|iPod/.test(ua);
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      // iOS exposes standalone mode off navigator, not the media query.
-      (window.navigator as { standalone?: boolean }).standalone === true;
-
-    if (isIOS && !isStandalone) setShow(true);
-  }, []);
+  const eligible = useSyncExternalStore(
+    subscribe,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
+  const [dismissed, setDismissed] = useState(false);
 
   function dismiss() {
     try {
@@ -40,10 +53,10 @@ export function InstallPrompt() {
     } catch {
       // Non-fatal — worst case the banner reappears next visit.
     }
-    setShow(false);
+    setDismissed(true);
   }
 
-  if (!show) return null;
+  if (!eligible || dismissed) return null;
 
   return (
     <div
