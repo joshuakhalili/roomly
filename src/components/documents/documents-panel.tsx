@@ -1,0 +1,269 @@
+"use client";
+
+import { useState, useTransition, useRef } from "react";
+import { useTranslations, useFormatter } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
+import { toast } from "sonner";
+import {
+  uploadDocument,
+  getDocumentUrl,
+  deleteDocument,
+} from "@/lib/actions/documents";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Field, FormError } from "@/components/ui/field";
+import { ConfirmDelete } from "@/components/ui/confirm-delete";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { FileText, Upload, Trash2, ExternalLink, TriangleAlert } from "lucide-react";
+import {
+  REQUIRED_DOCUMENT_TYPES,
+  type DocumentRecord,
+  type DocumentType,
+  type Occupant,
+} from "@/lib/types";
+
+const DOC_TYPE_KEYS: Record<DocumentType, string> = {
+  passport: "documents.passport",
+  right_to_rent: "documents.rightToRent",
+  tenancy_agreement: "documents.tenancyAgreement",
+  deposit_certificate: "documents.depositCertificate",
+  handbook: "documents.handbook",
+  other: "documents.other",
+};
+
+export function DocumentsPanel({
+  tenancyId,
+  occupants,
+  documents,
+}: {
+  tenancyId: string;
+  occupants: Occupant[];
+  documents: DocumentRecord[];
+}) {
+  const t = useTranslations();
+  const format = useFormatter();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [opening, setOpening] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const present = new Set(documents.map((d) => d.doc_type));
+  const missing = REQUIRED_DOCUMENT_TYPES.filter((d) => !present.has(d));
+
+  function onUpload(formData: FormData) {
+    setError(null);
+    startTransition(async () => {
+      const result = await uploadDocument(formData);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setOpen(false);
+      formRef.current?.reset();
+      toast.success(t("common.saved"));
+      router.refresh();
+    });
+  }
+
+  /**
+   * Documents live in private buckets, so there is no URL to link to
+   * directly — one is minted on demand and expires in minutes.
+   */
+  function openDocument(id: string) {
+    setOpening(id);
+    startTransition(async () => {
+      const result = await getDocumentUrl(id);
+      setOpening(null);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      window.open(result.data.url, "_blank", "noopener,noreferrer");
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-semibold">{t("documents.title")}</h2>
+
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Upload className="size-4" aria-hidden />
+              {t("documents.upload")}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("documents.upload")}</DialogTitle>
+            </DialogHeader>
+
+            <form ref={formRef} action={onUpload} className="flex flex-col gap-4">
+              <input type="hidden" name="tenancy_id" value={tenancyId} />
+
+              <Field label={t("documents.type")} required>
+                <Select name="doc_type" defaultValue="right_to_rent" required>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(DOC_TYPE_KEYS) as DocumentType[]).map((dt) => (
+                      <SelectItem key={dt} value={dt}>
+                        {t(DOC_TYPE_KEYS[dt])}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              {occupants.length > 0 && (
+                <Field label={t("tenancy.occupants")}>
+                  <Select name="occupant_id" defaultValue={occupants[0].id}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {occupants.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>
+                          {o.first_name} {o.surname}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+
+              <Field label="File" required hint="Images or PDF, up to 15MB">
+                <Input
+                  type="file"
+                  name="file"
+                  accept="image/*,application/pdf"
+                  required
+                  disabled={isPending}
+                />
+              </Field>
+
+              <FormError message={error} />
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                  disabled={isPending}
+                >
+                  {t("common.cancel")}
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? t("documents.uploading") : t("documents.upload")}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Compliance gap — the same rule the dashboard counts. */}
+      {missing.length > 0 && (
+        <p className="flex items-start gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+          {t("documents.missing", {
+            types: missing.map((m) => t(DOC_TYPE_KEYS[m])).join(", "),
+          })}
+        </p>
+      )}
+
+      {documents.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
+            <FileText className="size-7 text-muted-foreground" aria-hidden />
+            <p className="text-sm text-muted-foreground">{t("documents.none")}</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {documents.map((doc) => {
+            const owner = occupants.find((o) => o.id === doc.occupant_id);
+            return (
+              <li key={doc.id}>
+                <Card>
+                  <CardContent className="flex items-center gap-3 p-3">
+                    <FileText
+                      className="size-5 shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="truncate text-sm font-medium">
+                          {doc.file_name}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          {t(DOC_TYPE_KEYS[doc.doc_type])}
+                        </Badge>
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {owner && `${owner.first_name} ${owner.surname} · `}
+                        {t("documents.uploadedOn", {
+                          date: format.dateTime(new Date(doc.uploaded_at), {
+                            dateStyle: "medium",
+                          }),
+                        })}
+                      </p>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openDocument(doc.id)}
+                      disabled={isPending}
+                      aria-label={t("documents.view")}
+                    >
+                      <ExternalLink className="size-4" aria-hidden />
+                      <span className="sr-only sm:not-sr-only">
+                        {opening === doc.id ? t("common.loading") : t("documents.view")}
+                      </span>
+                    </Button>
+
+                    <ConfirmDelete
+                      title={t("documents.deleteConfirm")}
+                      description={t("documents.deleteWarning")}
+                      onConfirm={() => deleteDocument(doc.id)}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={t("documents.delete")}
+                        >
+                          <Trash2 className="size-4 text-destructive" aria-hidden />
+                        </Button>
+                      }
+                    />
+                  </CardContent>
+                </Card>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
