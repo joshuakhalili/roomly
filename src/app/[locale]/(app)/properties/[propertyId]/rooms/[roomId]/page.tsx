@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations, getFormatter, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,14 +8,15 @@ import { Button } from "@/components/ui/button";
 import { RoomDialog } from "@/components/rooms/room-dialog";
 import { DeleteRoomButton } from "@/components/rooms/delete-room-button";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
-import { lastPaidDate, nextDueDate } from "@/lib/rent";
+import { TenancySummary } from "@/components/tenancies/tenancy-summary";
+import { ChecklistLauncher } from "@/components/inventory/checklist-launcher";
 import { ArrowLeft, Pencil, Plus, User, Mail, Phone } from "lucide-react";
 import type {
   DocumentRecord,
+  InventoryChecklist,
   Occupant,
   RentPayment,
   Room,
-  RoomType,
   Tenancy,
 } from "@/lib/types";
 
@@ -27,15 +28,12 @@ export default async function RoomPage({
   const { locale, propertyId, roomId } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
-  const format = await getFormatter();
 
   const supabase = await createClient();
-  const [{ data: room }, { data: property }, { data: roomTypes }] =
-    await Promise.all([
-      supabase.from("rooms").select("*").eq("id", roomId).single(),
-      supabase.from("properties").select("name").eq("id", propertyId).single(),
-      supabase.from("room_types").select("*").order("sort_order"),
-    ]);
+  const [{ data: room }, { data: property }] = await Promise.all([
+    supabase.from("rooms").select("*").eq("id", roomId).single(),
+    supabase.from("properties").select("name").eq("id", propertyId).single(),
+  ]);
 
   if (!room) notFound();
 
@@ -55,21 +53,22 @@ export default async function RoomPage({
   let occupants: Occupant[] = [];
   let documents: DocumentRecord[] = [];
   let payments: RentPayment[] = [];
+  let checklists: InventoryChecklist[] = [];
 
   if (current) {
-    const [{ data: o }, { data: d }, { data: p }] = await Promise.all([
+    const [{ data: o }, { data: d }, { data: p }, { data: c }] = await Promise.all([
       supabase.from("occupants").select("*").eq("tenancy_id", current.id),
       supabase.from("documents").select("*").eq("tenancy_id", current.id),
       supabase.from("rent_payments").select("*").eq("tenancy_id", current.id),
+      supabase.from("inventory_checklists").select("*").eq("tenancy_id", current.id),
     ]);
     occupants = (o ?? []) as Occupant[];
     documents = (d ?? []) as DocumentRecord[];
     payments = (p ?? []) as RentPayment[];
+    checklists = (c ?? []) as InventoryChecklist[];
   }
 
   const r = room as Room;
-  const lastPaid = lastPaidDate(payments);
-  const nextDue = nextDueDate(payments);
 
   return (
     <div className="flex flex-col gap-6">
@@ -103,7 +102,6 @@ export default async function RoomPage({
             <RoomDialog
               propertyId={propertyId}
               room={r}
-              roomTypes={(roomTypes ?? []) as RoomType[]}
               trigger={
                 <Button variant="outline" size="sm">
                   <Pencil className="size-4" aria-hidden />
@@ -181,41 +179,7 @@ export default async function RoomPage({
               ))}
             </div>
 
-            <Card>
-              <CardContent className="grid gap-4 p-4 sm:grid-cols-3">
-                <div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("tenancy.rentAmount")}
-                  </p>
-                  <p className="font-medium">
-                    {format.number(Number(current.rent_amount), {
-                      style: "currency",
-                      currency: "GBP",
-                    })}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("tenancy.lastPaid")}
-                  </p>
-                  <p className="font-medium">
-                    {lastPaid
-                      ? format.dateTime(new Date(lastPaid), { dateStyle: "medium" })
-                      : t("tenancy.never")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("tenancy.nextDue")}
-                  </p>
-                  <p className="font-medium">
-                    {nextDue
-                      ? format.dateTime(new Date(nextDue), { dateStyle: "medium" })
-                      : "—"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <TenancySummary tenancy={current} payments={payments} />
           </section>
 
           <DocumentsPanel
@@ -223,6 +187,8 @@ export default async function RoomPage({
             occupants={occupants}
             documents={documents}
           />
+
+          <ChecklistLauncher tenancyId={current.id} checklists={checklists} />
         </>
       )}
     </div>

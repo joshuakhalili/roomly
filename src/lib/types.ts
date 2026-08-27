@@ -4,6 +4,12 @@
  */
 
 export type TenancyStatus = "upcoming" | "active" | "ended" | "archived";
+
+/**
+ * What a tenant actually rents. Distinct from an area type — a kitchen is
+ * never let on its own, it's only a space inside one of these.
+ */
+export type UnitType = "studio" | "flat";
 export type RentFrequency = "weekly" | "fortnightly" | "four_weekly" | "monthly";
 export type RentPaymentStatus = "due" | "paid" | "late" | "waived";
 export type ConditionRating =
@@ -68,7 +74,8 @@ export interface Property {
   created_at: string;
 }
 
-export interface RoomType {
+/** A kind of space inspected on a checklist: Kitchen, Bathroom, Bedroom… */
+export interface AreaType {
   id: string;
   name: string;
   sort_order: number;
@@ -77,11 +84,21 @@ export interface RoomType {
 export interface Room {
   id: string;
   property_id: string;
-  room_type_id: string | null;
+  unit_type: UnitType;
   name: string;
   is_common_area: boolean;
   is_lettable: boolean;
   notes: string | null;
+  created_at: string;
+}
+
+/** One area on a checklist, e.g. "Bedroom 1". */
+export interface ChecklistArea {
+  id: string;
+  checklist_id: string;
+  area_type_id: string | null;
+  name: string;
+  sort_order: number;
   created_at: string;
 }
 
@@ -153,10 +170,9 @@ export interface InventoryChecklist {
   created_at: string;
 }
 
-export interface ChecklistRoomSection {
+export interface ChecklistSection {
   id: string;
-  checklist_id: string;
-  room_id: string;
+  checklist_area_id: string;
   section_template_id: string | null;
   section_name: string;
   sort_order: number;
@@ -170,7 +186,7 @@ export interface ChecklistRoomSection {
 
 export interface ChecklistPhoto {
   id: string;
-  checklist_room_section_id: string;
+  checklist_section_id: string;
   storage_path: string;
   caption: string | null;
   taken_at: string;

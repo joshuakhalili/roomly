@@ -87,7 +87,10 @@
     "noRooms": "此房产尚无房间。",
     "currentTenant": "当前租客",
     "noTenant": "此房间暂无租客",
-    "addTenancy": "添加租约"
+    "addTenancy": "添加租约",
+    "typeHint": "租客租用的单位类型。厨房和浴室属于单位内的区域，在物品清点表中设置。",
+    "unitStudio": "单间公寓",
+    "unitFlat": "整套公寓"
   },
   "tenancy": {
     "title": "租约",
@@ -136,7 +139,14 @@
     "reasonEndOfTerm": "租期届满",
     "reasonTenantNotice": "租客提出退租",
     "reasonAdminNotice": "我方提出终止",
-    "reasonOther": "其他"
+    "reasonOther": "其他",
+    "dates": "日期",
+    "rentDueOn": "缴租日",
+    "dayOfMonth": "每月 {day} 日",
+    "deposit": "押金",
+    "noEndDate": "未设置结束日期",
+    "depositProtected": "已通过 {scheme} 保护",
+    "depositNotProtected": "未记录保护方案"
   },
   "documents": {
     "title": "文件",
@@ -246,7 +256,19 @@
     "comparison": "入住与退租对比",
     "worsened": "状况变差",
     "unchanged": "无变化",
-    "improved": "状况改善"
+    "improved": "状况改善",
+    "addArea": "添加区域",
+    "areaNameHint": "如有多个，请使用不同名称，例如「卧室 2」。",
+    "deleteAreaConfirm": "确定删除此区域？",
+    "deleteAreaWarning": "这将删除该区域及其所有项目和照片。此操作无法撤销。",
+    "markComplete": "标记清单为已完成",
+    "noChecklists": "尚无清单。",
+    "startCheckIn": "开始入住清点",
+    "startCheckOut": "开始退租清点",
+    "progress": "已评定 {total} 个项目中的 {done} 个",
+    "forTenancy": "租客：{name}",
+    "allChecklists": "所有清单",
+    "noTenancies": "请先为房间添加租客，然后开始清点。"
   },
   "analytics": {
     "title": "数据分析",

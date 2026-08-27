@@ -87,7 +87,10 @@
     "noRooms": "No rooms in this property yet.",
     "currentTenant": "Current tenant",
     "noTenant": "No tenant in this room",
-    "addTenancy": "Add tenancy"
+    "addTenancy": "Add tenancy",
+    "typeHint": "What the tenant rents. Kitchens and bathrooms are areas inside a unit, set up on the inventory checklist.",
+    "unitStudio": "Studio",
+    "unitFlat": "Flat"
   },
   "tenancy": {
     "title": "Tenancy",
@@ -136,7 +139,14 @@
     "reasonEndOfTerm": "End of agreed term",
     "reasonTenantNotice": "Tenant gave notice",
     "reasonAdminNotice": "We gave notice",
-    "reasonOther": "Other"
+    "reasonOther": "Other",
+    "dates": "Dates",
+    "rentDueOn": "Rent due",
+    "dayOfMonth": "{day, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} of the month",
+    "deposit": "Deposit",
+    "noEndDate": "No end date set",
+    "depositProtected": "Protected with {scheme}",
+    "depositNotProtected": "No scheme recorded"
   },
   "documents": {
     "title": "Documents",
@@ -246,7 +256,19 @@
     "comparison": "Check-in vs check-out",
     "worsened": "Condition worsened",
     "unchanged": "Unchanged",
-    "improved": "Improved"
+    "improved": "Improved",
+    "addArea": "Add area",
+    "areaNameHint": "Give it a distinct name if there is more than one, e.g. \"Bedroom 2\".",
+    "deleteAreaConfirm": "Delete this area?",
+    "deleteAreaWarning": "This removes the area and every section and photo inside it. This cannot be undone.",
+    "markComplete": "Mark checklist complete",
+    "noChecklists": "No checklists yet.",
+    "startCheckIn": "Start check-in inventory",
+    "startCheckOut": "Start check-out inventory",
+    "progress": "{done} of {total} sections rated",
+    "forTenancy": "For {name}",
+    "allChecklists": "All checklists",
+    "noTenancies": "Add a tenant to a room before starting an inventory."
   },
   "analytics": {
     "title": "Analytics",

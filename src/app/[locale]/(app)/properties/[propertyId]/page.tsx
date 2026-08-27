@@ -9,7 +9,7 @@ import { PropertyDialog } from "@/components/properties/property-dialog";
 import { RoomDialog } from "@/components/rooms/room-dialog";
 import { DeletePropertyButton } from "@/components/properties/delete-property-button";
 import { ArrowLeft, ChevronRight, DoorOpen, Pencil, User } from "lucide-react";
-import type { Property, Room, RoomType, Tenancy, Occupant } from "@/lib/types";
+import type { Property, Room, Tenancy, Occupant } from "@/lib/types";
 
 export default async function PropertyPage({
   params,
@@ -29,10 +29,9 @@ export default async function PropertyPage({
 
   if (!property) notFound();
 
-  const [{ data: rooms }, { data: roomTypes }, { data: tenancies }, { data: occupants }] =
+  const [{ data: rooms }, { data: tenancies }, { data: occupants }] =
     await Promise.all([
       supabase.from("rooms").select("*").eq("property_id", propertyId).order("name"),
-      supabase.from("room_types").select("*").order("sort_order"),
       supabase.from("tenancies").select("*").in("status", ["upcoming", "active"]),
       supabase.from("occupants").select("*"),
     ]);
@@ -84,7 +83,7 @@ export default async function PropertyPage({
               }
             />
             <DeletePropertyButton id={prop.id} />
-            <RoomDialog propertyId={prop.id} roomTypes={(roomTypes ?? []) as RoomType[]} />
+            <RoomDialog propertyId={prop.id} />
           </div>
         </div>
       </div>
@@ -105,10 +104,7 @@ export default async function PropertyPage({
             <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
               <DoorOpen className="size-8 text-muted-foreground" aria-hidden />
               <p className="text-sm text-muted-foreground">{t("rooms.noRooms")}</p>
-              <RoomDialog
-                propertyId={prop.id}
-                roomTypes={(roomTypes ?? []) as RoomType[]}
-              />
+              <RoomDialog propertyId={prop.id} />
             </CardContent>
           </Card>
         ) : (
@@ -130,11 +126,15 @@ export default async function PropertyPage({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <p className="truncate font-medium">{room.name}</p>
-                          {room.is_common_area && (
-                            <Badge variant="outline" className="shrink-0 text-xs">
-                              {t("rooms.isCommonArea")}
-                            </Badge>
-                          )}
+                          <Badge variant="outline" className="shrink-0 text-xs">
+                            {room.is_common_area
+                              ? t("rooms.isCommonArea")
+                              : t(
+                                  room.unit_type === "flat"
+                                    ? "rooms.unitFlat"
+                                    : "rooms.unitStudio",
+                                )}
+                          </Badge>
                         </div>
                         <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
                           {lead ? (

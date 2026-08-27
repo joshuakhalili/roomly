@@ -12,7 +12,9 @@ function roomFields(formData: FormData) {
   const isCommonArea = formData.get("is_common_area") === "on";
   return {
     name: optionalText(formData.get("name")),
-    room_type_id: optionalText(formData.get("room_type_id")),
+    // What a tenant rents. Kitchens and bathrooms are areas within a unit,
+    // not units themselves, so they aren't options here.
+    unit_type: formData.get("unit_type") === "flat" ? "flat" : "studio",
     is_common_area: isCommonArea,
     // A shared kitchen can't be let on its own, so the two flags are linked
     // rather than independently settable — one less way to create a room

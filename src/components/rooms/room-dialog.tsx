@@ -26,17 +26,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
-import type { Room, RoomType } from "@/lib/types";
+import type { Room } from "@/lib/types";
 
 export function RoomDialog({
   propertyId,
   room,
-  roomTypes,
   trigger,
 }: {
   propertyId: string;
   room?: Room;
-  roomTypes: RoomType[];
   trigger?: React.ReactNode;
 }) {
   const t = useTranslations();
@@ -92,21 +90,22 @@ export function RoomDialog({
             />
           </Field>
 
-          <Field label={t("rooms.type")} htmlFor="room_type_id">
+          <Field
+            label={t("rooms.type")}
+            htmlFor="unit_type"
+            hint={t("rooms.typeHint")}
+          >
             <Select
-              name="room_type_id"
-              defaultValue={room?.room_type_id ?? undefined}
+              name="unit_type"
+              defaultValue={room?.unit_type ?? "studio"}
               disabled={isPending}
             >
-              <SelectTrigger id="room_type_id">
-                <SelectValue placeholder={t("common.notSet")} />
+              <SelectTrigger id="unit_type">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {roomTypes.map((rt) => (
-                  <SelectItem key={rt.id} value={rt.id}>
-                    {rt.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="studio">{t("rooms.unitStudio")}</SelectItem>
+                <SelectItem value="flat">{t("rooms.unitFlat")}</SelectItem>
               </SelectContent>
             </Select>
           </Field>
