@@ -8,7 +8,6 @@ import {
   friendlyError,
   optionalText,
   optionalNumber,
-  normalisePhone,
   type ActionResult,
 } from "./helpers";
 import { generateDueDates } from "@/lib/rent";
@@ -17,49 +16,20 @@ import type { RentFrequency, TenancyStatus, LeavingReason } from "@/lib/types";
 /** How far ahead rent rows are created up front. The daily job extends this. */
 const INITIAL_RENT_HORIZON_MONTHS = 3;
 
-interface OccupantInput {
-  first_name: string;
-  surname: string;
-  email: string | null;
-  phone: string | null;
-  wechat_id: string | null;
-  country_of_origin: string | null;
-  preferred_language: "en" | "zh";
-  is_lead_tenant: boolean;
-}
-
 /**
- * Occupants arrive as indexed form fields (occupant_0_first_name, …) because
- * the form lets an admin add rows for a couple sharing one room.
+ * Tenants are chosen from existing profiles rather than typed in again.
+ * The form submits their ids plus which one leads the tenancy.
  */
-function parseOccupants(formData: FormData): OccupantInput[] {
-  const occupants: OccupantInput[] = [];
-
-  for (let i = 0; formData.has(`occupant_${i}_first_name`); i++) {
-    const firstName = optionalText(formData.get(`occupant_${i}_first_name`));
-    const surname = optionalText(formData.get(`occupant_${i}_surname`));
-    if (!firstName && !surname) continue; // skip a row left blank
-
-    occupants.push({
-      first_name: firstName ?? "",
-      surname: surname ?? "",
-      email: optionalText(formData.get(`occupant_${i}_email`)),
-      phone: normalisePhone(optionalText(formData.get(`occupant_${i}_phone`))),
-      wechat_id: optionalText(formData.get(`occupant_${i}_wechat_id`)),
-      country_of_origin: optionalText(
-        formData.get(`occupant_${i}_country_of_origin`),
-      ),
-      preferred_language:
-        formData.get(`occupant_${i}_preferred_language`) === "zh" ? "zh" : "en",
-      is_lead_tenant: formData.get("lead_tenant_index") === String(i),
-    });
-  }
-
-  // Guarantee exactly one lead tenant so "who do I contact" is never ambiguous.
-  if (occupants.length > 0 && !occupants.some((o) => o.is_lead_tenant)) {
-    occupants[0].is_lead_tenant = true;
-  }
-  return occupants;
+function parseTenantIds(formData: FormData): {
+  ids: string[];
+  leadId: string | null;
+} {
+  const ids = formData
+    .getAll("tenant_ids")
+    .map((v) => String(v))
+    .filter(Boolean);
+  const leadId = optionalText(formData.get("lead_tenant_id"));
+  return { ids, leadId };
 }
 
 function tenancyFields(formData: FormData) {
@@ -141,9 +111,9 @@ export async function createTenancy(
   if (fields.rent_amount === null)
     return { ok: false, error: "A rent amount is required." };
 
-  const occupants = parseOccupants(formData);
-  if (occupants.length === 0)
-    return { ok: false, error: "At least one occupant is required." };
+  const { ids, leadId } = parseTenantIds(formData);
+  if (ids.length === 0)
+    return { ok: false, error: "Choose at least one tenant." };
 
   const { data: tenancy, error } = await auth.supabase
     .from("tenancies")
@@ -153,15 +123,19 @@ export async function createTenancy(
 
   if (error) return { ok: false, error: friendlyError(error) };
 
-  const { error: occupantError } = await auth.supabase
-    .from("occupants")
-    .insert(occupants.map((o) => ({ ...o, tenancy_id: tenancy.id })));
+  const lead = leadId && ids.includes(leadId) ? leadId : ids[0];
+  const { error: linkError } = await auth.supabase.from("tenancy_tenants").insert(
+    ids.map((tenant_id) => ({
+      tenancy_id: tenancy.id,
+      tenant_id,
+      is_lead_tenant: tenant_id === lead,
+    })),
+  );
 
-  if (occupantError) {
-    // Don't leave a tenancy with nobody in it — roll back rather than
-    // creating a half-record the admin has to notice and clean up.
+  if (linkError) {
+    // Don't leave a tenancy with nobody in it.
     await auth.supabase.from("tenancies").delete().eq("id", tenancy.id);
-    return { ok: false, error: friendlyError(occupantError) };
+    return { ok: false, error: friendlyError(linkError) };
   }
 
   await generateRentRows(auth.supabase, tenancy);
@@ -194,36 +168,6 @@ export async function updateTenancy(
 
   // Dates or amounts may have changed — top up any newly-needed rent rows.
   await generateRentRows(auth.supabase, tenancy);
-
-  revalidatePath("/", "layout");
-  return { ok: true, data: undefined };
-}
-
-/** Replaces the occupant list for a tenancy. */
-export async function saveOccupants(
-  tenancyId: string,
-  formData: FormData,
-): Promise<ActionResult> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return auth;
-
-  const occupants = parseOccupants(formData);
-  if (occupants.length === 0)
-    return { ok: false, error: "At least one occupant is required." };
-
-  // Delete-then-insert rather than diffing: occupant rows carry no history
-  // of their own, and documents reference the tenancy as well as the person,
-  // so nothing is orphaned by this.
-  const { error: deleteError } = await auth.supabase
-    .from("occupants")
-    .delete()
-    .eq("tenancy_id", tenancyId);
-  if (deleteError) return { ok: false, error: friendlyError(deleteError) };
-
-  const { error } = await auth.supabase
-    .from("occupants")
-    .insert(occupants.map((o) => ({ ...o, tenancy_id: tenancyId })));
-  if (error) return { ok: false, error: friendlyError(error) };
 
   revalidatePath("/", "layout");
   return { ok: true, data: undefined };

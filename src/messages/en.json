@@ -11,7 +11,8 @@
     "analytics": "Analytics",
     "admins": "Admins",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "tenants": "Tenants"
   },
   "auth": {
     "signIn": "Sign in",
@@ -118,8 +119,6 @@
     "depositRef": "Scheme reference",
     "bankAccount": "Paid into",
     "notes": "Notes",
-    "occupants": "Occupants",
-    "addOccupant": "Add another occupant",
     "firstName": "First name",
     "surname": "Surname",
     "email": "Email",
@@ -269,7 +268,13 @@
     "forTenancy": "For {name}",
     "allChecklists": "All checklists",
     "noTenancies": "Add a tenant to a room before starting an inventory.",
-    "noDeterioration": "Nothing has got worse since check-in."
+    "noDeterioration": "Nothing has got worse since check-in.",
+    "roomInventory": "Room inventory",
+    "roomInventoryHint": "Set this up once with photos. Each new tenancy starts from it.",
+    "openRoomInventory": "Open room inventory",
+    "baseline": "Room inventory",
+    "seededFromBaseline": "Started from the room inventory. Take fresh photos for this check-in.",
+    "byProperty": "By property"
   },
   "analytics": {
     "title": "Analytics",
@@ -329,5 +334,21 @@
     "installTitle": "Add to your home screen",
     "installBody": "Tap the Share button, then “Add to Home Screen” to use this like an app.",
     "dismiss": "Got it"
+  },
+  "tenants": {
+    "title": "Tenants",
+    "subtitle": "People, kept separately from the rooms they rent",
+    "add": "Add tenant",
+    "new": "New",
+    "edit": "Edit tenant",
+    "noTenants": "No tenant profiles yet.",
+    "unassigned": "Not in a room",
+    "search": "Search tenants",
+    "history": "Where they have lived",
+    "noHistory": "No tenancies yet.",
+    "pickHint": "Choose from existing tenant profiles, or create a new one. Their details and identity documents carry over.",
+    "selectedCount": "{count, plural, =0 {No tenants chosen} one {# tenant} other {# tenants}}",
+    "deleteConfirm": "Delete this tenant?",
+    "deleteWarning": "This permanently deletes the person, their documents, and their tenancy history. This cannot be undone."
   }
 }

@@ -7,7 +7,7 @@ import {
   optionalText,
   type ActionResult,
 } from "./helpers";
-import type { DocumentType } from "@/lib/types";
+import { TENANT_DOCUMENT_TYPES, type DocumentType } from "@/lib/types";
 
 /** Which private bucket each document type lives in. */
 const BUCKETS: Record<DocumentType, string> = {
@@ -49,11 +49,12 @@ export async function uploadDocument(
   if (!auth.ok) return auth;
 
   const tenancyId = optionalText(formData.get("tenancy_id"));
-  const occupantId = optionalText(formData.get("occupant_id"));
+  const tenantId = optionalText(formData.get("tenant_id"));
   const docTypeRaw = optionalText(formData.get("doc_type"));
   const file = formData.get("file");
 
-  if (!tenancyId) return { ok: false, error: "Missing tenancy." };
+  if (!tenancyId && !tenantId)
+    return { ok: false, error: "Missing tenant or tenancy." };
   if (!isDocumentType(docTypeRaw))
     return { ok: false, error: "Choose a document type." };
   if (!(file instanceof File) || file.size === 0)
@@ -64,9 +65,19 @@ export async function uploadDocument(
     return { ok: false, error: "Only images and PDFs can be uploaded." };
 
   const bucket = BUCKETS[docTypeRaw];
-  // Namespaced by tenancy so a tenancy's files can be found — and deleted —
-  // as a unit when retention runs.
-  const path = `${tenancyId}/${occupantId ?? "tenancy"}/${Date.now()}-${safeFileName(file.name)}`;
+
+  // Identity documents describe the person and are reused if they rent
+  // again; agreements describe one letting. Storing them against the right
+  // owner is what stops a passport being re-uploaded every tenancy.
+  const belongsToTenant = TENANT_DOCUMENT_TYPES.includes(docTypeRaw) && tenantId;
+  const owner = belongsToTenant
+    ? { tenant_id: tenantId, tenancy_id: null }
+    : { tenant_id: tenantId, tenancy_id: tenancyId };
+
+  // Namespaced by owner so a tenancy's or tenant's files can be found — and
+  // deleted — as a unit when retention runs.
+  const prefix = belongsToTenant ? `tenant/${tenantId}` : `tenancy/${tenancyId}`;
+  const path = `${prefix}/${Date.now()}-${safeFileName(file.name)}`;
 
   const { error: uploadError } = await auth.supabase.storage
     .from(bucket)
@@ -77,8 +88,7 @@ export async function uploadDocument(
   const { data, error } = await auth.supabase
     .from("documents")
     .insert({
-      tenancy_id: tenancyId,
-      occupant_id: occupantId,
+      ...owner,
       doc_type: docTypeRaw,
       file_name: file.name,
       storage_path: `${bucket}/${path}`,

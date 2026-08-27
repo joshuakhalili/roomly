@@ -8,7 +8,6 @@ import { createTenancy, updateTenancy } from "@/lib/actions/tenancies";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import { Field, FormError } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -18,13 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, ArrowLeft, ArrowRight } from "lucide-react";
-import type { Occupant, Tenancy } from "@/lib/types";
-
-interface OccupantRow {
-  key: number;
-  data?: Occupant;
-}
+import { TenantPicker } from "@/components/tenants/tenant-picker";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import type { Tenancy, Tenant, TenantOnTenancy } from "@/lib/types";
 
 const STEPS = ["details", "rent", "review"] as const;
 
@@ -39,12 +34,14 @@ const STEPS = ["details", "rent", "review"] as const;
 export function TenancyForm({
   roomId,
   tenancy,
-  occupants = [],
+  allTenants,
+  assigned = [],
   bankAccounts = [],
 }: {
   roomId: string;
   tenancy?: Tenancy;
-  occupants?: Occupant[];
+  allTenants: Tenant[];
+  assigned?: TenantOnTenancy[];
   bankAccounts?: { id: string; bank_name: string; account_label: string }[];
 }) {
   const t = useTranslations();
@@ -53,13 +50,11 @@ export function TenancyForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [frequency, setFrequency] = useState(tenancy?.rent_frequency ?? "monthly");
-  const [rows, setRows] = useState<OccupantRow[]>(
-    occupants.length > 0
-      ? occupants.map((o, i) => ({ key: i, data: o }))
-      : [{ key: 0 }],
+  const [selectedIds, setSelectedIds] = useState<string[]>(
+    assigned.map((a) => a.id),
   );
-  const [leadIndex, setLeadIndex] = useState(
-    Math.max(0, occupants.findIndex((o) => o.is_lead_tenant)),
+  const [leadId, setLeadId] = useState<string | null>(
+    assigned.find((a) => a.is_lead_tenant)?.id ?? assigned[0]?.id ?? null,
   );
 
   function onSubmit(formData: FormData) {
@@ -97,129 +92,24 @@ export function TenancyForm({
         {t("common.step", { current: step + 1, total: STEPS.length })}
       </p>
 
-      {/* Step 1 — people */}
+      {/* Step 1 — who lives here */}
       <div className={step === 0 ? "flex flex-col gap-4" : "hidden"}>
         <h2 className="font-semibold">{t("tenancy.details")}</h2>
-
-        {rows.map((row, i) => (
-          <Card key={row.key}>
-            <CardContent className="flex flex-col gap-4 p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">
-                  {t("tenancy.occupants")} {i + 1}
-                </p>
-                {rows.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setRows(rows.filter((r) => r.key !== row.key));
-                      if (leadIndex === i) setLeadIndex(0);
-                    }}
-                    disabled={isPending}
-                  >
-                    <Trash2 className="size-4" aria-hidden />
-                  </Button>
-                )}
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={t("tenancy.firstName")} required>
-                  <Input
-                    name={`occupant_${i}_first_name`}
-                    defaultValue={row.data?.first_name}
-                    required
-                    disabled={isPending}
-                  />
-                </Field>
-                <Field label={t("tenancy.surname")} required>
-                  <Input
-                    name={`occupant_${i}_surname`}
-                    defaultValue={row.data?.surname}
-                    required
-                    disabled={isPending}
-                  />
-                </Field>
-                <Field label={t("tenancy.email")}>
-                  <Input
-                    type="email"
-                    name={`occupant_${i}_email`}
-                    defaultValue={row.data?.email ?? ""}
-                    disabled={isPending}
-                  />
-                </Field>
-                <Field
-                  label={t("tenancy.phone")}
-                  hint={t("tenancy.phoneHint")}
-                >
-                  <Input
-                    type="tel"
-                    name={`occupant_${i}_phone`}
-                    defaultValue={row.data?.phone ?? ""}
-                    placeholder="+44 7700 900000"
-                    disabled={isPending}
-                  />
-                </Field>
-                <Field label={t("tenancy.wechatId")}>
-                  <Input
-                    name={`occupant_${i}_wechat_id`}
-                    defaultValue={row.data?.wechat_id ?? ""}
-                    disabled={isPending}
-                  />
-                </Field>
-                <Field label={t("tenancy.countryOfOrigin")}>
-                  <Input
-                    name={`occupant_${i}_country_of_origin`}
-                    defaultValue={row.data?.country_of_origin ?? ""}
-                    disabled={isPending}
-                  />
-                </Field>
-                <Field label={t("tenancy.language")}>
-                  <Select
-                    name={`occupant_${i}_preferred_language`}
-                    defaultValue={row.data?.preferred_language ?? "en"}
-                    disabled={isPending}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="zh">简体中文</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <div className="flex items-end">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="lead_tenant_index"
-                      value={i}
-                      checked={leadIndex === i}
-                      onChange={() => setLeadIndex(i)}
-                      disabled={isPending}
-                      className="size-4"
-                    />
-                    {t("tenancy.leadTenant")}
-                  </label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() =>
-            setRows([...rows, { key: Math.max(...rows.map((r) => r.key)) + 1 }])
-          }
+        <p className="text-sm text-muted-foreground">
+          {t("tenants.pickHint")}
+        </p>
+        <TenantPicker
+          tenants={allTenants}
+          selectedIds={selectedIds}
+          leadId={leadId}
+          onChange={(ids) => {
+            setSelectedIds(ids);
+            if (leadId && !ids.includes(leadId)) setLeadId(ids[0] ?? null);
+            if (!leadId && ids.length > 0) setLeadId(ids[0]);
+          }}
+          onLeadChange={setLeadId}
           disabled={isPending}
-        >
-          <Plus className="size-4" aria-hidden />
-          {t("tenancy.addOccupant")}
-        </Button>
+        />
       </div>
 
       {/* Step 2 — money and dates */}
@@ -380,8 +270,7 @@ export function TenancyForm({
       <div className={step === 2 ? "flex flex-col gap-4" : "hidden"}>
         <h2 className="font-semibold">{t("common.confirm")}</h2>
         <p className="text-sm text-muted-foreground">
-          {t("tenancy.add")} — {rows.length}{" "}
-          {t("tenancy.occupants").toLowerCase()}
+          {t("tenants.selectedCount", { count: selectedIds.length })}
         </p>
       </div>
 

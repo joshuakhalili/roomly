@@ -11,7 +11,8 @@
     "analytics": "数据分析",
     "admins": "管理员",
     "signOut": "退出登录",
-    "language": "语言"
+    "language": "语言",
+    "tenants": "租客"
   },
   "auth": {
     "signIn": "登录",
@@ -118,8 +119,6 @@
     "depositRef": "方案编号",
     "bankAccount": "收款账户",
     "notes": "备注",
-    "occupants": "居住人",
-    "addOccupant": "添加另一位居住人",
     "firstName": "名",
     "surname": "姓",
     "email": "邮箱",
@@ -269,7 +268,13 @@
     "forTenancy": "租客：{name}",
     "allChecklists": "所有清单",
     "noTenancies": "请先为房间添加租客，然后开始清点。",
-    "noDeterioration": "自入住以来没有任何项目变差。"
+    "noDeterioration": "自入住以来没有任何项目变差。",
+    "roomInventory": "房间物品清单",
+    "roomInventoryHint": "设置一次并拍照。每份新租约都将以此为起点。",
+    "openRoomInventory": "打开房间清单",
+    "baseline": "房间物品清单",
+    "seededFromBaseline": "已从房间清单生成。请为本次入住重新拍照。",
+    "byProperty": "按房产"
   },
   "analytics": {
     "title": "数据分析",
@@ -329,5 +334,21 @@
     "installTitle": "添加到主屏幕",
     "installBody": "点击「分享」按钮，然后选择「添加到主屏幕」，即可像应用一样使用。",
     "dismiss": "知道了"
+  },
+  "tenants": {
+    "title": "租客",
+    "subtitle": "租客档案，与房间分开管理",
+    "add": "添加租客",
+    "new": "新建",
+    "edit": "编辑租客",
+    "noTenants": "尚无租客档案。",
+    "unassigned": "未入住",
+    "search": "搜索租客",
+    "history": "入住记录",
+    "noHistory": "尚无租约记录。",
+    "pickHint": "从现有租客档案中选择，或新建一位。其个人信息和身份文件将自动沿用。",
+    "selectedCount": "{count, plural, =0 {未选择租客} other {已选 # 位租客}}",
+    "deleteConfirm": "确定删除此租客？",
+    "deleteWarning": "这将永久删除该租客、其文件及所有租约记录。此操作无法撤销。"
   }
 }

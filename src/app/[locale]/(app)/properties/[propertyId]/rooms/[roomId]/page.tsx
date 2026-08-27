@@ -10,11 +10,19 @@ import { DeleteRoomButton } from "@/components/rooms/delete-room-button";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { TenancySummary } from "@/components/tenancies/tenancy-summary";
 import { ChecklistLauncher } from "@/components/inventory/checklist-launcher";
-import { ArrowLeft, Pencil, Plus, User, Mail, Phone } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Plus,
+  User,
+  Mail,
+  Phone,
+  ClipboardList,
+} from "lucide-react";
 import type {
   DocumentRecord,
   InventoryChecklist,
-  Occupant,
+  TenantOnTenancy,
   RentPayment,
   Room,
   Tenancy,
@@ -30,10 +38,18 @@ export default async function RoomPage({
   const t = await getTranslations();
 
   const supabase = await createClient();
-  const [{ data: room }, { data: property }] = await Promise.all([
-    supabase.from("rooms").select("*").eq("id", roomId).single(),
-    supabase.from("properties").select("name").eq("id", propertyId).single(),
-  ]);
+  const [{ data: room }, { data: property }, { data: baseline }] =
+    await Promise.all([
+      supabase.from("rooms").select("*").eq("id", roomId).single(),
+      supabase.from("properties").select("name").eq("id", propertyId).single(),
+      // Created automatically with the room, so it is always there to open.
+      supabase
+        .from("inventory_checklists")
+        .select("id")
+        .eq("room_id", roomId)
+        .eq("type", "baseline")
+        .maybeSingle(),
+    ]);
 
   if (!room) notFound();
 
@@ -50,19 +66,27 @@ export default async function RoomPage({
     ((tenancies ?? []) as Tenancy[])[0] ??
     null;
 
-  let occupants: Occupant[] = [];
+  let tenants: TenantOnTenancy[] = [];
   let documents: DocumentRecord[] = [];
   let payments: RentPayment[] = [];
   let checklists: InventoryChecklist[] = [];
 
   if (current) {
     const [{ data: o }, { data: d }, { data: p }, { data: c }] = await Promise.all([
-      supabase.from("occupants").select("*").eq("tenancy_id", current.id),
+      supabase
+        .from("tenancy_tenants")
+        .select("is_lead_tenant, tenants(*)")
+        .eq("tenancy_id", current.id),
       supabase.from("documents").select("*").eq("tenancy_id", current.id),
       supabase.from("rent_payments").select("*").eq("tenancy_id", current.id),
       supabase.from("inventory_checklists").select("*").eq("tenancy_id", current.id),
     ]);
-    occupants = (o ?? []) as Occupant[];
+    tenants = ((o ?? []) as unknown as {
+      is_lead_tenant: boolean;
+      tenants: TenantOnTenancy | null;
+    }[])
+      .filter((r) => r.tenants)
+      .map((r) => ({ ...r.tenants!, is_lead_tenant: r.is_lead_tenant }));
     documents = (d ?? []) as DocumentRecord[];
     payments = (p ?? []) as RentPayment[];
     checklists = (c ?? []) as InventoryChecklist[];
@@ -122,6 +146,29 @@ export default async function RoomPage({
         </div>
       </div>
 
+      {/* The room's own inventory stands apart from any tenancy. */}
+      {baseline && (
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-3 p-4">
+            <ClipboardList
+              className="size-5 shrink-0 text-muted-foreground"
+              aria-hidden
+            />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{t("inventory.roomInventory")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("inventory.roomInventoryHint")}
+              </p>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/inventory/${baseline.id}`}>
+                {t("inventory.openRoomInventory")}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {!current ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
@@ -149,7 +196,7 @@ export default async function RoomPage({
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              {occupants.map((o) => (
+              {tenants.map((o) => (
                 <Card key={o.id}>
                   <CardContent className="flex flex-col gap-2 p-4">
                     <div className="flex items-center gap-2">
@@ -184,7 +231,7 @@ export default async function RoomPage({
 
           <DocumentsPanel
             tenancyId={current.id}
-            occupants={occupants}
+            tenants={tenants}
             documents={documents}
           />
 

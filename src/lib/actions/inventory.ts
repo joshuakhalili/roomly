@@ -14,12 +14,16 @@ const MAX_PHOTO_BYTES = 12 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 600; // long enough to work through a whole area
 
 /**
- * Creates a checklist and scaffolds it from the templates.
+ * Creates a tenancy's check-in or check-out.
  *
- * The scaffold is a copy, not a live reference: editing the templates later
- * must not alter a report that has already been signed. Areas come from the
- * unit type (a studio gets its main room and a bathroom; a flat gets the
- * full set), and each area is filled with its own section list.
+ * Seeded from the room's own baseline inventory where one exists, so the
+ * admin starts from the room's known condition rather than an empty form.
+ * Ratings and notes carry across; photographs deliberately do not — a
+ * check-in needs pictures of the condition on that day, and duplicating
+ * hundreds of images per tenancy would exhaust storage. The baseline's
+ * photos remain viewable alongside as the reference.
+ *
+ * Falls back to a blank scaffold if the room has no baseline yet.
  */
 export async function createChecklist(
   tenancyId: string,
@@ -30,13 +34,11 @@ export async function createChecklist(
 
   const { data: tenancy } = await auth.supabase
     .from("tenancies")
-    .select("id, rooms(id, unit_type)")
+    .select("id, room_id, rooms(id, unit_type)")
     .eq("id", tenancyId)
     .single();
 
-  const unitType =
-    (tenancy?.rooms as unknown as { unit_type: string } | null)?.unit_type ??
-    "studio";
+  if (!tenancy) return { ok: false, error: "Tenancy not found." };
 
   const { data: checklist, error } = await auth.supabase
     .from("inventory_checklists")
@@ -46,45 +48,19 @@ export async function createChecklist(
 
   if (error) return { ok: false, error: friendlyError(error) };
 
-  const { data: defaults } = await auth.supabase
-    .from("unit_area_defaults")
-    .select("area_type_id, sort_order, area_types(id, name)")
-    .eq("unit_type", unitType)
-    .order("sort_order");
+  const { data: seeded } = await auth.supabase.rpc(
+    "seed_checklist_from_baseline",
+    { p_checklist_id: checklist.id, p_room_id: tenancy.room_id },
+  );
 
-  for (const [index, def] of (defaults ?? []).entries()) {
-    const areaType = def.area_types as unknown as { id: string; name: string };
-    if (!areaType) continue;
-
-    const { data: area } = await auth.supabase
-      .from("checklist_areas")
-      .insert({
-        checklist_id: checklist.id,
-        area_type_id: areaType.id,
-        name: areaType.name,
-        sort_order: index + 1,
-      })
-      .select("id")
-      .single();
-
-    if (!area) continue;
-
-    const { data: templates } = await auth.supabase
-      .from("checklist_section_templates")
-      .select("id, section_name, sort_order")
-      .eq("area_type_id", areaType.id)
-      .order("sort_order");
-
-    if (templates?.length) {
-      await auth.supabase.from("checklist_sections").insert(
-        templates.map((tpl) => ({
-          checklist_area_id: area.id,
-          section_template_id: tpl.id,
-          section_name: tpl.section_name,
-          sort_order: tpl.sort_order,
-        })),
-      );
-    }
+  if (!seeded) {
+    const unitType =
+      (tenancy.rooms as unknown as { unit_type: string } | null)?.unit_type ??
+      "studio";
+    await auth.supabase.rpc("scaffold_checklist", {
+      p_checklist_id: checklist.id,
+      p_unit_type: unitType,
+    });
   }
 
   revalidatePath("/", "layout");

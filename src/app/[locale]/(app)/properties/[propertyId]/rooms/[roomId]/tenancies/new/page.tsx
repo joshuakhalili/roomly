@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { TenancyForm } from "@/components/tenancies/tenancy-form";
 import { ArrowLeft } from "lucide-react";
+import type { Tenant } from "@/lib/types";
 
 export default async function NewTenancyPage({
   params,
@@ -15,10 +16,12 @@ export default async function NewTenancyPage({
   const t = await getTranslations();
 
   const supabase = await createClient();
-  const [{ data: room }, { data: bankAccounts }] = await Promise.all([
-    supabase.from("rooms").select("id,name").eq("id", roomId).single(),
-    supabase.from("bank_accounts").select("id,bank_name,account_label"),
-  ]);
+  const [{ data: room }, { data: bankAccounts }, { data: tenants }] =
+    await Promise.all([
+      supabase.from("rooms").select("id,name").eq("id", roomId).single(),
+      supabase.from("bank_accounts").select("id,bank_name,account_label"),
+      supabase.from("tenants").select("*").order("surname"),
+    ]);
 
   if (!room) notFound();
 
@@ -35,7 +38,11 @@ export default async function NewTenancyPage({
         <h1 className="text-2xl font-semibold">{t("tenancy.add")}</h1>
       </div>
 
-      <TenancyForm roomId={roomId} bankAccounts={bankAccounts ?? []} />
+      <TenancyForm
+        roomId={roomId}
+        allTenants={(tenants ?? []) as Tenant[]}
+        bankAccounts={bankAccounts ?? []}
+      />
     </div>
   );
 }

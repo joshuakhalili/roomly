@@ -9,7 +9,7 @@ import { PropertyDialog } from "@/components/properties/property-dialog";
 import { RoomDialog } from "@/components/rooms/room-dialog";
 import { DeletePropertyButton } from "@/components/properties/delete-property-button";
 import { ArrowLeft, ChevronRight, DoorOpen, Pencil, User } from "lucide-react";
-import type { Property, Room, Tenancy, Occupant } from "@/lib/types";
+import type { Property, Room, Tenancy, TenantOnTenancy } from "@/lib/types";
 
 export default async function PropertyPage({
   params,
@@ -29,18 +29,25 @@ export default async function PropertyPage({
 
   if (!property) notFound();
 
-  const [{ data: rooms }, { data: tenancies }, { data: occupants }] =
+  const [{ data: rooms }, { data: tenancies }, { data: tenancyTenants }] =
     await Promise.all([
       supabase.from("rooms").select("*").eq("property_id", propertyId).order("name"),
       supabase.from("tenancies").select("*").in("status", ["upcoming", "active"]),
-      supabase.from("occupants").select("*"),
+      supabase
+        .from("tenancy_tenants")
+        .select("tenancy_id, is_lead_tenant, tenants(*)"),
     ]);
 
-  const occupantsByTenancy = new Map<string, Occupant[]>();
-  for (const o of (occupants ?? []) as Occupant[]) {
-    const list = occupantsByTenancy.get(o.tenancy_id) ?? [];
-    list.push(o);
-    occupantsByTenancy.set(o.tenancy_id, list);
+  const tenantsByTenancy = new Map<string, TenantOnTenancy[]>();
+  for (const row of (tenancyTenants ?? []) as unknown as {
+    tenancy_id: string;
+    is_lead_tenant: boolean;
+    tenants: TenantOnTenancy | null;
+  }[]) {
+    if (!row.tenants) continue;
+    const list = tenantsByTenancy.get(row.tenancy_id) ?? [];
+    list.push({ ...row.tenants, is_lead_tenant: row.is_lead_tenant });
+    tenantsByTenancy.set(row.tenancy_id, list);
   }
 
   const tenancyByRoom = new Map<string, Tenancy>();
@@ -112,8 +119,8 @@ export default async function PropertyPage({
             {roomList.map((room) => {
               const tenancy = tenancyByRoom.get(room.id);
               const lead = tenancy
-                ? (occupantsByTenancy.get(tenancy.id)?.find((o) => o.is_lead_tenant) ??
-                  occupantsByTenancy.get(tenancy.id)?.[0])
+                ? (tenantsByTenancy.get(tenancy.id)?.find((x) => x.is_lead_tenant) ??
+                  tenantsByTenancy.get(tenancy.id)?.[0])
                 : undefined;
 
               return (

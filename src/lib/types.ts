@@ -18,7 +18,11 @@ export type ConditionRating =
   | "fair"
   | "poor"
   | "unacceptable";
-export type ChecklistType = "check_in" | "check_out";
+/**
+ * "baseline" is the room's own standing inventory, set up once with photos.
+ * A tenancy's check_in is seeded from it.
+ */
+export type ChecklistType = "baseline" | "check_in" | "check_out";
 export type ChecklistStatus = "draft" | "completed";
 export type DocumentType =
   | "passport"
@@ -54,6 +58,12 @@ export const REQUIRED_DOCUMENT_TYPES: DocumentType[] = [
   "right_to_rent",
   "tenancy_agreement",
   "deposit_certificate",
+];
+
+/** These belong to the person and are reused across lettings. */
+export const TENANT_DOCUMENT_TYPES: DocumentType[] = [
+  "passport",
+  "right_to_rent",
 ];
 
 export interface Profile {
@@ -122,9 +132,15 @@ export interface Tenancy {
   created_at: string;
 }
 
-export interface Occupant {
+/**
+ * A person, independent of any letting.
+ *
+ * Created once and assigned to rooms over time — when a tenancy ends the
+ * profile remains and can be placed elsewhere, so their details and identity
+ * documents are never re-entered.
+ */
+export interface Tenant {
   id: string;
-  tenancy_id: string;
   first_name: string;
   surname: string;
   email: string | null;
@@ -132,15 +148,29 @@ export interface Occupant {
   wechat_id: string | null;
   country_of_origin: string | null;
   preferred_language: AppLanguage;
-  is_lead_tenant: boolean;
   notes: string | null;
+  is_archived: boolean;
   created_at: string;
+}
+
+/** Links a person to one letting, and says who leads it. */
+export interface TenancyTenant {
+  tenancy_id: string;
+  tenant_id: string;
+  is_lead_tenant: boolean;
+  created_at: string;
+}
+
+/** A tenant as they appear within a particular tenancy. */
+export interface TenantOnTenancy extends Tenant {
+  is_lead_tenant: boolean;
 }
 
 export interface DocumentRecord {
   id: string;
-  occupant_id: string | null;
-  tenancy_id: string;
+  /** Identity documents hang off the person; agreements off the letting. */
+  tenant_id: string | null;
+  tenancy_id: string | null;
   doc_type: DocumentType;
   file_name: string;
   storage_path: string;
@@ -162,7 +192,10 @@ export interface RentPayment {
 
 export interface InventoryChecklist {
   id: string;
-  tenancy_id: string;
+  /** Set for check_in/check_out; null on a room baseline. */
+  tenancy_id: string | null;
+  /** Set on a room baseline; null otherwise. */
+  room_id: string | null;
   type: ChecklistType;
   status: ChecklistStatus;
   assessor_name: string | null;
@@ -243,5 +276,5 @@ export interface ChecklistPdfExport {
 /** A room joined with whatever tenancy currently applies to it. */
 export interface RoomWithTenancy extends Room {
   property_name?: string;
-  tenancy: (Tenancy & { occupants: Occupant[] }) | null;
+  tenancy: (Tenancy & { tenants: TenantOnTenancy[] }) | null;
 }

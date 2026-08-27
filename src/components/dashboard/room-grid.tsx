@@ -37,8 +37,8 @@ export function RoomGrid({ rooms }: { rooms: DashboardRoom[] }) {
 
       if (!q) return true;
       const names =
-        r.tenancy?.occupants
-          .map((o) => `${o.first_name} ${o.surname}`)
+        r.tenancy?.tenants
+          .map((x) => `${x.first_name} ${x.surname}`)
           .join(" ") ?? "";
       return (
         r.name.toLowerCase().includes(q) ||
@@ -96,8 +96,8 @@ export function RoomGrid({ rooms }: { rooms: DashboardRoom[] }) {
             const isActive = tenancy?.status === "active";
             const isUpcoming = tenancy?.status === "upcoming";
             const lead =
-              tenancy?.occupants.find((o) => o.is_lead_tenant) ??
-              tenancy?.occupants[0];
+              tenancy?.tenants.find((x) => x.is_lead_tenant) ??
+              tenancy?.tenants[0];
 
             return (
               <Link
@@ -139,8 +139,8 @@ export function RoomGrid({ rooms }: { rooms: DashboardRoom[] }) {
                           />
                           <span className="truncate">
                             {lead.first_name} {lead.surname}
-                            {tenancy.occupants.length > 1 &&
-                              ` +${tenancy.occupants.length - 1}`}
+                            {tenancy.tenants.length > 1 &&
+                              ` +${tenancy.tenants.length - 1}`}
                           </span>
                         </>
                       ) : (

@@ -33,9 +33,10 @@ import {
 import { FileText, Upload, Trash2, ExternalLink, TriangleAlert } from "lucide-react";
 import {
   REQUIRED_DOCUMENT_TYPES,
+  TENANT_DOCUMENT_TYPES,
   type DocumentRecord,
   type DocumentType,
-  type Occupant,
+  type TenantOnTenancy,
 } from "@/lib/types";
 
 const DOC_TYPE_KEYS: Record<DocumentType, string> = {
@@ -49,12 +50,20 @@ const DOC_TYPE_KEYS: Record<DocumentType, string> = {
 
 export function DocumentsPanel({
   tenancyId,
-  occupants,
+  tenantId,
+  tenants,
   documents,
+  scope = "tenancy",
 }: {
-  tenancyId: string;
-  occupants: Occupant[];
+  tenancyId?: string;
+  tenantId?: string;
+  tenants: TenantOnTenancy[];
   documents: DocumentRecord[];
+  /**
+   * A tenant profile shows only identity documents; a tenancy shows the
+   * agreement and deposit certificate. Same component, different slice.
+   */
+  scope?: "tenancy" | "tenant";
 }) {
   const t = useTranslations();
   const format = useFormatter();
@@ -65,8 +74,17 @@ export function DocumentsPanel({
   const [opening, setOpening] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const offered = (Object.keys(DOC_TYPE_KEYS) as DocumentType[]).filter((dt) =>
+    scope === "tenant"
+      ? TENANT_DOCUMENT_TYPES.includes(dt)
+      : !TENANT_DOCUMENT_TYPES.includes(dt),
+  );
+
   const present = new Set(documents.map((d) => d.doc_type));
-  const missing = REQUIRED_DOCUMENT_TYPES.filter((d) => !present.has(d));
+  // Only chase the documents this panel is actually responsible for.
+  const missing = REQUIRED_DOCUMENT_TYPES.filter(
+    (d) => offered.includes(d) && !present.has(d),
+  );
 
   function onUpload(formData: FormData) {
     setError(null);
@@ -118,15 +136,20 @@ export function DocumentsPanel({
             </DialogHeader>
 
             <form ref={formRef} action={onUpload} className="flex flex-col gap-4">
-              <input type="hidden" name="tenancy_id" value={tenancyId} />
+              {tenancyId && (
+                <input type="hidden" name="tenancy_id" value={tenancyId} />
+              )}
+              {tenantId && (
+                <input type="hidden" name="tenant_id" value={tenantId} />
+              )}
 
               <Field label={t("documents.type")} required>
-                <Select name="doc_type" defaultValue="right_to_rent" required>
+                <Select name="doc_type" defaultValue={offered[0]} required>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {(Object.keys(DOC_TYPE_KEYS) as DocumentType[]).map((dt) => (
+                    {offered.map((dt) => (
                       <SelectItem key={dt} value={dt}>
                         {t(DOC_TYPE_KEYS[dt])}
                       </SelectItem>
@@ -135,16 +158,16 @@ export function DocumentsPanel({
                 </Select>
               </Field>
 
-              {occupants.length > 0 && (
-                <Field label={t("tenancy.occupants")}>
-                  <Select name="occupant_id" defaultValue={occupants[0].id}>
+              {scope === "tenancy" && tenants.length > 1 && (
+                <Field label={t("tenants.title")}>
+                  <Select name="tenant_id" defaultValue={tenants[0].id}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {occupants.map((o) => (
-                        <SelectItem key={o.id} value={o.id}>
-                          {o.first_name} {o.surname}
+                      {tenants.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.first_name} {p.surname}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -202,7 +225,7 @@ export function DocumentsPanel({
       ) : (
         <ul className="flex flex-col gap-2">
           {documents.map((doc) => {
-            const owner = occupants.find((o) => o.id === doc.occupant_id);
+            const owner = tenants.find((p) => p.id === doc.tenant_id);
             return (
               <li key={doc.id}>
                 <Card>

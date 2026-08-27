@@ -18,7 +18,7 @@ import type {
   ChecklistPhoto,
   ChecklistSection,
   InventoryChecklist,
-  Occupant,
+  TenantOnTenancy,
 } from "@/lib/types";
 
 export default async function ChecklistPage({
@@ -50,7 +50,18 @@ export default async function ChecklistPage({
       properties: { name: string; address: string | null } | null;
     } | null;
   } | null;
-  const room = tenancy?.rooms;
+
+  // A baseline hangs off the room directly; check-in/out reach it via the
+  // tenancy.
+  let room = tenancy?.rooms ?? null;
+  if (!room && checklist.room_id) {
+    const { data: r } = await supabase
+      .from("rooms")
+      .select("id, name, property_id, properties(name, address)")
+      .eq("id", checklist.room_id)
+      .single();
+    room = r as unknown as typeof room;
+  }
 
   const { data: areas } = await supabase
     .from("checklist_areas")
@@ -67,7 +78,7 @@ export default async function ChecklistPage({
     { data: keys },
     { data: detectors },
     { data: declarations },
-    { data: occupants },
+    { data: links },
     { data: siblings },
   ] = await Promise.all([
     areaIds.length
@@ -89,8 +100,11 @@ export default async function ChecklistPage({
       .select("*")
       .eq("checklist_id", checklistId),
     tenancy
-      ? supabase.from("occupants").select("*").eq("tenancy_id", tenancy.id)
-      : Promise.resolve({ data: [] as Occupant[] }),
+      ? supabase
+          .from("tenancy_tenants")
+          .select("is_lead_tenant, tenants(*)")
+          .eq("tenancy_id", tenancy.id)
+      : Promise.resolve({ data: [] as { is_lead_tenant: boolean; tenants: TenantOnTenancy | null }[] }),
     tenancy
       ? supabase
           .from("inventory_checklists")
@@ -108,9 +122,20 @@ export default async function ChecklistPage({
         .order("sort_order")
     : { data: [] as ChecklistPhoto[] };
 
+  const assigned: TenantOnTenancy[] = ((links ?? []) as unknown as {
+    is_lead_tenant: boolean;
+    tenants: TenantOnTenancy | null;
+  }[])
+    .filter((r) => r.tenants)
+    .map((r) => ({ ...r.tenants!, is_lead_tenant: r.is_lead_tenant }));
+
   const cl = checklist as unknown as InventoryChecklist;
   const typeLabel =
-    cl.type === "check_in" ? t("inventory.checkIn") : t("inventory.checkOut");
+    cl.type === "baseline"
+      ? t("inventory.baseline")
+      : cl.type === "check_in"
+        ? t("inventory.checkIn")
+        : t("inventory.checkOut");
 
   // A comparison only means anything once both halves exist.
   const hasBoth = (siblings ?? []).length === 2;
@@ -154,9 +179,7 @@ export default async function ChecklistPage({
                 roomName: room?.name ?? "",
                 address: room?.properties?.address ?? null,
                 type: typeLabel,
-                occupants: ((occupants ?? []) as Occupant[]).map(
-                  (o) => `${o.first_name} ${o.surname}`,
-                ),
+                occupants: assigned.map((x) => `${x.first_name} ${x.surname}`),
               }}
               areas={(areas ?? []) as ChecklistArea[]}
               sections={(sections ?? []) as ChecklistSection[]}

@@ -8,7 +8,7 @@ import { ArchiveTenancyButton } from "@/components/tenancies/archive-tenancy-but
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
-import type { DocumentRecord, Occupant, Tenancy } from "@/lib/types";
+import type { DocumentRecord, Tenancy, Tenant, TenantOnTenancy } from "@/lib/types";
 
 const STATUS_KEY = {
   upcoming: "tenancy.statusUpcoming",
@@ -35,9 +35,17 @@ export default async function TenancyPage({
 
   if (!tenancy) notFound();
 
-  const [{ data: occupants }, { data: documents }, { data: room }, { data: banks }] =
-    await Promise.all([
-      supabase.from("occupants").select("*").eq("tenancy_id", tenancyId),
+  const [
+    { data: links },
+    { data: documents },
+    { data: room },
+    { data: banks },
+    { data: allTenants },
+  ] = await Promise.all([
+      supabase
+        .from("tenancy_tenants")
+        .select("is_lead_tenant, tenants(*)")
+        .eq("tenancy_id", tenancyId),
       supabase.from("documents").select("*").eq("tenancy_id", tenancyId),
       supabase
         .from("rooms")
@@ -45,7 +53,15 @@ export default async function TenancyPage({
         .eq("id", tenancy.room_id)
         .single(),
       supabase.from("bank_accounts").select("id,bank_name,account_label"),
+      supabase.from("tenants").select("*").order("surname"),
     ]);
+
+  const assigned: TenantOnTenancy[] = ((links ?? []) as unknown as {
+    is_lead_tenant: boolean;
+    tenants: TenantOnTenancy | null;
+  }[])
+    .filter((r) => r.tenants)
+    .map((r) => ({ ...r.tenants!, is_lead_tenant: r.is_lead_tenant }));
 
   const ten = tenancy as Tenancy;
 
@@ -78,7 +94,8 @@ export default async function TenancyPage({
       <TenancyForm
         roomId={ten.room_id}
         tenancy={ten}
-        occupants={(occupants ?? []) as Occupant[]}
+        allTenants={(allTenants ?? []) as Tenant[]}
+        assigned={assigned}
         bankAccounts={banks ?? []}
       />
 
@@ -86,7 +103,7 @@ export default async function TenancyPage({
 
       <DocumentsPanel
         tenancyId={ten.id}
-        occupants={(occupants ?? []) as Occupant[]}
+        tenants={assigned}
         documents={(documents ?? []) as DocumentRecord[]}
       />
     </div>

@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
-import { REQUIRED_DOCUMENT_TYPES } from "@/lib/types";
+import { REQUIRED_DOCUMENT_TYPES, TENANT_DOCUMENT_TYPES } from "@/lib/types";
 import type {
-  Occupant,
   Property,
   RentPayment,
   Room,
   Tenancy,
+  TenantOnTenancy,
   DocumentRecord,
 } from "@/lib/types";
 import { toDateString } from "@/lib/rent";
@@ -13,7 +13,7 @@ import { differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
 
 export interface DashboardRoom extends Room {
   property_name: string;
-  tenancy: (Tenancy & { occupants: Occupant[] }) | null;
+  tenancy: (Tenancy & { tenants: TenantOnTenancy[] }) | null;
   /** How long this room has sat empty — null when occupied. */
   vacant_days: number | null;
 }
@@ -45,8 +45,8 @@ export interface DashboardData {
   };
 }
 
-const fullName = (o?: Occupant) =>
-  o ? `${o.first_name} ${o.surname}`.trim() : "—";
+const fullName = (t?: TenantOnTenancy) =>
+  t ? `${t.first_name} ${t.surname}`.trim() : "—";
 
 /**
  * Everything the dashboard shows, in one pass.
@@ -64,7 +64,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     { data: properties },
     { data: rooms },
     { data: tenancies },
-    { data: occupants },
+    { data: tenancyTenants },
     { data: payments },
     { data: documents },
   ] = await Promise.all([
@@ -74,17 +74,25 @@ export async function getDashboardData(): Promise<DashboardData> {
       .from("tenancies")
       .select("*")
       .in("status", ["upcoming", "active", "ended"]),
-    supabase.from("occupants").select("*"),
+    supabase
+      .from("tenancy_tenants")
+      .select("tenancy_id, is_lead_tenant, tenants(*)"),
     supabase.from("rent_payments").select("*").in("status", ["due", "late"]),
     supabase.from("documents").select("*"),
   ]);
 
   const propertyById = new Map((properties ?? []).map((p) => [p.id, p]));
-  const occupantsByTenancy = new Map<string, Occupant[]>();
-  for (const o of (occupants ?? []) as Occupant[]) {
-    const list = occupantsByTenancy.get(o.tenancy_id) ?? [];
-    list.push(o);
-    occupantsByTenancy.set(o.tenancy_id, list);
+  // Flatten the join so each tenancy carries its people with their lead flag.
+  const tenantsByTenancy = new Map<string, TenantOnTenancy[]>();
+  for (const row of (tenancyTenants ?? []) as unknown as {
+    tenancy_id: string;
+    is_lead_tenant: boolean;
+    tenants: TenantOnTenancy | null;
+  }[]) {
+    if (!row.tenants) continue;
+    const list = tenantsByTenancy.get(row.tenancy_id) ?? [];
+    list.push({ ...row.tenants, is_lead_tenant: row.is_lead_tenant });
+    tenantsByTenancy.set(row.tenancy_id, list);
   }
 
   // The tenancy that "owns" a room right now: an active one if present,
@@ -121,7 +129,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       ...r,
       property_name: propertyById.get(r.property_id)?.name ?? "",
       tenancy: tenancy
-        ? { ...tenancy, occupants: occupantsByTenancy.get(tenancy.id) ?? [] }
+        ? { ...tenancy, tenants: tenantsByTenancy.get(tenancy.id) ?? [] }
         : null,
       vacant_days: vacantDays,
     };
@@ -137,8 +145,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     const room = roomById.get(t.room_id);
     if (!room) continue;
     const lead =
-      occupantsByTenancy.get(t.id)?.find((o) => o.is_lead_tenant) ??
-      occupantsByTenancy.get(t.id)?.[0];
+      tenantsByTenancy.get(t.id)?.find((x) => x.is_lead_tenant) ??
+      tenantsByTenancy.get(t.id)?.[0];
 
     if (t.status === "upcoming") {
       const days = differenceInCalendarDays(parseISO(t.start_date), today);
@@ -188,8 +196,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     const room = t ? roomById.get(t.room_id) : undefined;
     if (!t || !room) continue;
     const lead =
-      occupantsByTenancy.get(t.id)?.find((o) => o.is_lead_tenant) ??
-      occupantsByTenancy.get(t.id)?.[0];
+      tenantsByTenancy.get(t.id)?.find((x) => x.is_lead_tenant) ??
+      tenantsByTenancy.get(t.id)?.[0];
     alerts.push({
       kind: "rent_overdue",
       tenancyId: t.id,
@@ -205,15 +213,42 @@ export async function getDashboardData(): Promise<DashboardData> {
   const occupiedRooms = lettable.filter((r) => activeByRoom.has(r.id)).length;
   const lettableRooms = lettable.length;
 
+  // Documents now live in two places: identity documents on the person,
+  // agreements on the letting. A tenancy counts as compliant when the union
+  // of both covers what's required — otherwise every tenancy would report a
+  // missing right-to-rent that is in fact filed against the tenant.
   const docsByTenancy = new Map<string, Set<string>>();
+  const docsByTenant = new Map<string, Set<string>>();
   for (const d of (documents ?? []) as DocumentRecord[]) {
-    const set = docsByTenancy.get(d.tenancy_id) ?? new Set<string>();
-    set.add(d.doc_type);
-    docsByTenancy.set(d.tenancy_id, set);
+    if (d.tenancy_id) {
+      const set = docsByTenancy.get(d.tenancy_id) ?? new Set<string>();
+      set.add(d.doc_type);
+      docsByTenancy.set(d.tenancy_id, set);
+    }
+    if (d.tenant_id) {
+      const set = docsByTenant.get(d.tenant_id) ?? new Set<string>();
+      set.add(d.doc_type);
+      docsByTenant.set(d.tenant_id, set);
+    }
   }
+
   const complianceGaps = ((tenancies ?? []) as Tenancy[]).filter((t) => {
     if (t.status !== "active") return false;
-    const have = docsByTenancy.get(t.id) ?? new Set<string>();
+
+    const have = new Set(docsByTenancy.get(t.id) ?? []);
+    // Every person on the tenancy must have their own identity documents,
+    // so an incomplete one leaves the tenancy incomplete.
+    const people = tenantsByTenancy.get(t.id) ?? [];
+    for (const req of REQUIRED_DOCUMENT_TYPES) {
+      if (!TENANT_DOCUMENT_TYPES.includes(req)) continue;
+      if (
+        people.length > 0 &&
+        people.every((p) => docsByTenant.get(p.id)?.has(req))
+      ) {
+        have.add(req);
+      }
+    }
+
     return REQUIRED_DOCUMENT_TYPES.some((req) => !have.has(req));
   }).length;
 

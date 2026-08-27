@@ -10,11 +10,13 @@ import {
   ClipboardList,
   ChartLine,
   Users,
+  UserRound,
 } from "lucide-react";
 
 const ITEMS = [
   { href: "/", labelKey: "dashboard", Icon: LayoutDashboard },
   { href: "/properties", labelKey: "properties", Icon: Building2 },
+  { href: "/tenants", labelKey: "tenants", Icon: UserRound },
   { href: "/rent", labelKey: "rent", Icon: Banknote },
   { href: "/inventory", labelKey: "inventory", Icon: ClipboardList },
   { href: "/analytics", labelKey: "analytics", Icon: ChartLine },
@@ -66,7 +68,7 @@ export function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="grid grid-cols-6">
+      <ul className="grid grid-cols-7">
         {ITEMS.map(({ href, labelKey, Icon }) => (
           <li key={href}>
             <Link
