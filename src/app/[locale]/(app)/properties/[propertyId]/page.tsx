@@ -8,8 +8,15 @@ import { Button } from "@/components/ui/button";
 import { PropertyDialog } from "@/components/properties/property-dialog";
 import { RoomDialog } from "@/components/rooms/room-dialog";
 import { DeletePropertyButton } from "@/components/properties/delete-property-button";
+import { CertificatesPanel } from "@/components/documents/certificates-panel";
 import { ArrowLeft, ChevronRight, DoorOpen, Pencil, User } from "lucide-react";
-import type { Property, Room, Tenancy, TenantOnTenancy } from "@/lib/types";
+import type {
+  DocumentRecord,
+  Property,
+  Room,
+  Tenancy,
+  TenantOnTenancy,
+} from "@/lib/types";
 
 export default async function PropertyPage({
   params,
@@ -29,14 +36,23 @@ export default async function PropertyPage({
 
   if (!property) notFound();
 
-  const [{ data: rooms }, { data: tenancies }, { data: tenancyTenants }] =
-    await Promise.all([
-      supabase.from("rooms").select("*").eq("property_id", propertyId).order("name"),
-      supabase.from("tenancies").select("*").in("status", ["upcoming", "active"]),
-      supabase
-        .from("tenancy_tenants")
-        .select("tenancy_id, is_lead_tenant, tenants(*)"),
-    ]);
+  const [
+    { data: rooms },
+    { data: tenancies },
+    { data: tenancyTenants },
+    { data: certificates },
+  ] = await Promise.all([
+    supabase.from("rooms").select("*").eq("property_id", propertyId).order("name"),
+    supabase.from("tenancies").select("*").in("status", ["upcoming", "active"]),
+    supabase
+      .from("tenancy_tenants")
+      .select("tenancy_id, is_lead_tenant, tenants(*)"),
+    supabase
+      .from("documents")
+      .select("*")
+      .eq("property_id", propertyId)
+      .order("expires_at", { nullsFirst: false }),
+  ]);
 
   const tenantsByTenancy = new Map<string, TenantOnTenancy[]>();
   for (const row of (tenancyTenants ?? []) as unknown as {
@@ -102,6 +118,11 @@ export default async function PropertyPage({
           </CardContent>
         </Card>
       )}
+
+      <CertificatesPanel
+        propertyId={propertyId}
+        documents={(certificates ?? []) as DocumentRecord[]}
+      />
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">{t("rooms.title")}</h2>

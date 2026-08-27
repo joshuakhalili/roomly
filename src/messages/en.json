@@ -164,7 +164,26 @@
     "delete": "Delete",
     "deleteConfirm": "Delete this document?",
     "deleteWarning": "This permanently deletes the file. This cannot be undone.",
-    "uploading": "Uploading…"
+    "uploading": "Uploading…",
+    "referenceCheck": "Reference / credit check",
+    "depositPrescribedInfo": "Deposit prescribed information",
+    "rentersRightsInfo": "Renters' Rights Act information sheet",
+    "inventoryReport": "Inventory / schedule of condition",
+    "gasSafety": "Gas safety record (CP12)",
+    "epc": "Energy Performance Certificate",
+    "eicr": "Electrical safety report (EICR)",
+    "hmoLicence": "HMO licence",
+    "legionellaAssessment": "Legionella risk assessment",
+    "fireSafety": "Fire safety / alarm record",
+    "propertyDocuments": "Certificates",
+    "propertyDocumentsHint": "Safety certificates for the building. They apply to every room and outlast any one tenant.",
+    "expiresOn": "Expires {date}",
+    "expired": "Expired",
+    "expiringSoon": "Expires soon",
+    "issuedOn": "Issued",
+    "expiryDate": "Expiry date",
+    "issueDate": "Issue date",
+    "noExpiry": "No expiry"
   },
   "rent": {
     "title": "Rent",
@@ -224,7 +243,7 @@
     "noPhotos": "No photos yet",
     "photoCount": "{count, plural, =0 {No photos} one {# photo} other {# photos}}",
     "sections": "Sections",
-    "addSection": "Add a section",
+    "addSection": "Add section",
     "meters": "Meters",
     "meterElectricity": "Electricity",
     "meterGas": "Gas",
@@ -274,7 +293,13 @@
     "openRoomInventory": "Open room inventory",
     "baseline": "Room inventory",
     "seededFromBaseline": "Started from the room inventory. Take fresh photos for this check-in.",
-    "byProperty": "By property"
+    "byProperty": "By property",
+    "tailor": "Tailor sections",
+    "tailorHint": "Tick anything this room does not have — a bathroom with no window, say — then remove it. Templates are only a starting point.",
+    "removeSelected": "Remove {count}",
+    "removeWarning": "{count, plural, one {# section has ratings or photos} other {# sections have ratings or photos}} that will be lost.",
+    "sectionNamePlaceholder": "e.g. Wall fixtures",
+    "custom": "Custom"
   },
   "analytics": {
     "title": "Analytics",
@@ -328,7 +353,8 @@
     "none": "None",
     "notSet": "Not set",
     "today": "Today",
-    "step": "Step {current} of {total}"
+    "step": "Step {current} of {total}",
+    "done": "Done"
   },
   "pwa": {
     "installTitle": "Add to your home screen",

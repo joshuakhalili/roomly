@@ -13,9 +13,21 @@ import { TENANT_DOCUMENT_TYPES, type DocumentType } from "@/lib/types";
 const BUCKETS: Record<DocumentType, string> = {
   passport: "passports",
   right_to_rent: "right-to-rent",
+  reference_check: "right-to-rent",
   tenancy_agreement: "tenancy-agreements",
   deposit_certificate: "deposit-certs",
+  deposit_prescribed_info: "deposit-certs",
+  renters_rights_info: "handbooks",
+  inventory_report: "handbooks",
   handbook: "handbooks",
+  // Property certificates share a bucket; they are distinguished by the
+  // doc_type on the row, not by where the file sits.
+  gas_safety: "handbooks",
+  epc: "handbooks",
+  eicr: "handbooks",
+  hmo_licence: "handbooks",
+  legionella_assessment: "handbooks",
+  fire_safety: "handbooks",
   other: "handbooks",
 };
 
@@ -50,11 +62,13 @@ export async function uploadDocument(
 
   const tenancyId = optionalText(formData.get("tenancy_id"));
   const tenantId = optionalText(formData.get("tenant_id"));
+  const propertyId = optionalText(formData.get("property_id"));
+  const roomId = optionalText(formData.get("room_id"));
   const docTypeRaw = optionalText(formData.get("doc_type"));
   const file = formData.get("file");
 
-  if (!tenancyId && !tenantId)
-    return { ok: false, error: "Missing tenant or tenancy." };
+  if (!tenancyId && !tenantId && !propertyId && !roomId)
+    return { ok: false, error: "Missing owner for this document." };
   if (!isDocumentType(docTypeRaw))
     return { ok: false, error: "Choose a document type." };
   if (!(file instanceof File) || file.size === 0)
@@ -70,13 +84,22 @@ export async function uploadDocument(
   // again; agreements describe one letting. Storing them against the right
   // owner is what stops a passport being re-uploaded every tenancy.
   const belongsToTenant = TENANT_DOCUMENT_TYPES.includes(docTypeRaw) && tenantId;
-  const owner = belongsToTenant
-    ? { tenant_id: tenantId, tenancy_id: null }
-    : { tenant_id: tenantId, tenancy_id: tenancyId };
 
-  // Namespaced by owner so a tenancy's or tenant's files can be found — and
-  // deleted — as a unit when retention runs.
-  const prefix = belongsToTenant ? `tenant/${tenantId}` : `tenancy/${tenancyId}`;
+  // Certificates describe the building and survive tenant turnover, so they
+  // hang off the property rather than any letting.
+  const owner = propertyId
+    ? { property_id: propertyId, room_id: roomId }
+    : belongsToTenant
+      ? { tenant_id: tenantId, tenancy_id: null }
+      : { tenant_id: tenantId, tenancy_id: tenancyId };
+
+  // Namespaced by owner so a tenancy's, tenant's or property's files can be
+  // found — and deleted — as a unit when retention runs.
+  const prefix = propertyId
+    ? `property/${propertyId}`
+    : belongsToTenant
+      ? `tenant/${tenantId}`
+      : `tenancy/${tenancyId}`;
   const path = `${prefix}/${Date.now()}-${safeFileName(file.name)}`;
 
   const { error: uploadError } = await auth.supabase.storage
@@ -93,6 +116,8 @@ export async function uploadDocument(
       file_name: file.name,
       storage_path: `${bucket}/${path}`,
       file_size: file.size,
+      issued_at: optionalText(formData.get("issued_at")),
+      expires_at: optionalText(formData.get("expires_at")),
       notes: optionalText(formData.get("notes")),
     })
     .select("id")

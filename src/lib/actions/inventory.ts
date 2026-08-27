@@ -170,6 +170,9 @@ export async function addSection(
     checklist_area_id: areaId,
     section_name: sectionName,
     sort_order: (count ?? 0) + 1,
+    // Flagged so it's visible that this one was added for this room
+    // specifically rather than inherited from the template.
+    is_custom: true,
   });
 
   if (error) return { ok: false, error: friendlyError(error) };

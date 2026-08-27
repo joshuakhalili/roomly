@@ -24,12 +24,30 @@ export type ConditionRating =
  */
 export type ChecklistType = "baseline" | "check_in" | "check_out";
 export type ChecklistStatus = "draft" | "completed";
+/**
+ * Document types as UK letting actually requires them, verified against
+ * gov.uk in August 2026. Grouped by who they belong to — see the three
+ * constants below.
+ */
 export type DocumentType =
+  // Follow the person
   | "passport"
   | "right_to_rent"
+  | "reference_check"
+  // Belong to the letting
   | "tenancy_agreement"
   | "deposit_certificate"
+  | "deposit_prescribed_info"
+  | "renters_rights_info"
+  | "inventory_report"
   | "handbook"
+  // Belong to the property or room
+  | "gas_safety"
+  | "epc"
+  | "eicr"
+  | "hmo_licence"
+  | "legionella_assessment"
+  | "fire_safety"
   | "other";
 export type AppLanguage = "en" | "zh";
 export type LeavingReason =
@@ -47,23 +65,66 @@ export const CONDITION_ORDER: ConditionRating[] = [
   "excellent",
 ];
 
+/** Identity and vetting — reused whenever the same person rents again. */
+export const TENANT_DOCUMENT_TYPES: DocumentType[] = [
+  "passport",
+  "right_to_rent",
+  "reference_check",
+];
+
+/** Paperwork for one specific letting. */
+export const TENANCY_DOCUMENT_TYPES: DocumentType[] = [
+  "tenancy_agreement",
+  "deposit_certificate",
+  "deposit_prescribed_info",
+  "renters_rights_info",
+  "inventory_report",
+  "handbook",
+  "other",
+];
+
 /**
- * Documents a live tenancy is expected to have on file. Drives the
- * "missing documents" count on the dashboard.
+ * Safety and compliance certificates for the building itself. They survive
+ * tenant turnover and apply to whoever lives there next.
+ */
+export const PROPERTY_DOCUMENT_TYPES: DocumentType[] = [
+  "gas_safety",
+  "epc",
+  "eicr",
+  "hmo_licence",
+  "legionella_assessment",
+  "fire_safety",
+  "other",
+];
+
+/**
+ * What a live tenancy must have on file, driving the dashboard's
+ * "missing documents" count.
  *
- * Right-to-rent is a legal requirement for UK lettings; deposit protection
- * must be evidenced within 30 days of taking a deposit.
+ * Right-to-rent is required under the Immigration Act 2014. Deposit
+ * protection must be evidenced, with the prescribed information served,
+ * within 30 days of taking a deposit. Since 1 May 2026 the Renters' Rights
+ * Act Information Sheet replaced the withdrawn "How to Rent" guide.
  */
 export const REQUIRED_DOCUMENT_TYPES: DocumentType[] = [
   "right_to_rent",
   "tenancy_agreement",
   "deposit_certificate",
+  "deposit_prescribed_info",
+  "renters_rights_info",
 ];
 
-/** These belong to the person and are reused across lettings. */
-export const TENANT_DOCUMENT_TYPES: DocumentType[] = [
-  "passport",
-  "right_to_rent",
+/**
+ * Certificates the property must hold, with how long each lasts.
+ * A lapsed gas safety record is a criminal offence, not an oversight.
+ */
+export const PROPERTY_CERTIFICATES: {
+  type: DocumentType;
+  validMonths: number;
+}[] = [
+  { type: "gas_safety", validMonths: 12 },
+  { type: "eicr", validMonths: 60 },
+  { type: "epc", validMonths: 120 },
 ];
 
 export interface Profile {
@@ -168,14 +229,22 @@ export interface TenantOnTenancy extends Tenant {
 
 export interface DocumentRecord {
   id: string;
-  /** Identity documents hang off the person; agreements off the letting. */
+  /**
+   * Exactly one of these is set: identity documents hang off the person,
+   * agreements off the letting, certificates off the property.
+   */
   tenant_id: string | null;
   tenancy_id: string | null;
+  property_id: string | null;
+  room_id: string | null;
   doc_type: DocumentType;
   file_name: string;
   storage_path: string;
   file_size: number | null;
   notes: string | null;
+  issued_at: string | null;
+  /** Certificates lapse; null for documents that never expire. */
+  expires_at: string | null;
   uploaded_at: string;
 }
 
@@ -207,6 +276,8 @@ export interface ChecklistSection {
   id: string;
   checklist_area_id: string;
   section_template_id: string | null;
+  /** Added by hand for this room rather than coming from the template. */
+  is_custom: boolean;
   section_name: string;
   sort_order: number;
   condition_rating: ConditionRating | null;

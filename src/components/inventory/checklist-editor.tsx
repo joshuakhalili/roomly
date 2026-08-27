@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { addArea, deleteArea, completeChecklist } from "@/lib/actions/inventory";
-import { SectionEditor } from "./section-editor";
+import { AreaSections } from "./area-sections";
 import { RatingBadge } from "./rating-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -272,14 +272,13 @@ export function ChecklistEditor({
               </div>
 
               {isOpen && (
-                <div className="flex flex-col gap-3 border-t p-3">
-                  {areaSections.map((section) => (
-                    <SectionEditor
-                      key={section.id}
-                      section={section}
-                      photos={photosBySection.get(section.id) ?? []}
-                    />
-                  ))}
+                <div className="border-t p-3">
+                  <AreaSections
+                    areaId={area.id}
+                    sections={areaSections}
+                    photosBySection={photosBySection}
+                    readOnly={checklist.status === "completed"}
+                  />
                 </div>
               )}
             </div>

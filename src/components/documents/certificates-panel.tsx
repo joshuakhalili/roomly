@@ -30,32 +30,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileText, Upload, Trash2, ExternalLink, TriangleAlert } from "lucide-react";
 import {
-  REQUIRED_DOCUMENT_TYPES,
-  TENANT_DOCUMENT_TYPES,
-  TENANCY_DOCUMENT_TYPES,
+  ShieldCheck,
+  Upload,
+  Trash2,
+  ExternalLink,
+  TriangleAlert,
+} from "lucide-react";
+import {
+  PROPERTY_DOCUMENT_TYPES,
+  PROPERTY_CERTIFICATES,
   type DocumentRecord,
-  type TenantOnTenancy,
+  type DocumentType,
 } from "@/lib/types";
 import { DOC_TYPE_KEYS } from "./doc-type-labels";
 
-export function DocumentsPanel({
-  tenancyId,
-  tenantId,
-  tenants,
+/** Flag a certificate this far ahead so there's time to book the engineer. */
+const EXPIRY_WARNING_DAYS = 60;
+
+/**
+ * Safety certificates for a property.
+ *
+ * Kept apart from tenant and tenancy paperwork because these describe the
+ * building: they outlast any tenant, apply to every room, and — unlike a
+ * passport — they expire. Letting on a lapsed gas safety record is a
+ * criminal offence, so expiry is shown rather than left to be remembered.
+ */
+export function CertificatesPanel({
+  propertyId,
   documents,
-  scope = "tenancy",
 }: {
-  tenancyId?: string;
-  tenantId?: string;
-  tenants: TenantOnTenancy[];
+  propertyId: string;
   documents: DocumentRecord[];
-  /**
-   * A tenant profile shows only identity documents; a tenancy shows the
-   * agreement and deposit certificate. Same component, different slice.
-   */
-  scope?: "tenancy" | "tenant";
 }) {
   const t = useTranslations();
   const format = useFormatter();
@@ -63,17 +69,29 @@ export function DocumentsPanel({
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [opening, setOpening] = useState<string | null>(null);
+  const [docType, setDocType] = useState<DocumentType>("gas_safety");
   const formRef = useRef<HTMLFormElement>(null);
 
-  const offered =
-    scope === "tenant" ? TENANT_DOCUMENT_TYPES : TENANCY_DOCUMENT_TYPES;
+  const today = new Date();
+  const status = (doc: DocumentRecord) => {
+    if (!doc.expires_at) return null;
+    const expiry = new Date(doc.expires_at);
+    const days = Math.floor(
+      (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    if (days < 0) return "expired" as const;
+    if (days <= EXPIRY_WARNING_DAYS) return "soon" as const;
+    return "valid" as const;
+  };
 
-  const present = new Set(documents.map((d) => d.doc_type));
-  // Only chase the documents this panel is actually responsible for.
-  const missing = REQUIRED_DOCUMENT_TYPES.filter(
-    (d) => offered.includes(d) && !present.has(d),
-  );
+  const problems = documents.filter((d) => {
+    const s = status(d);
+    return s === "expired" || s === "soon";
+  });
+
+  // Certificates the property is expected to hold but has none of at all.
+  const held = new Set(documents.map((d) => d.doc_type));
+  const absent = PROPERTY_CERTIFICATES.filter((c) => !held.has(c.type));
 
   function onUpload(formData: FormData) {
     setError(null);
@@ -90,15 +108,9 @@ export function DocumentsPanel({
     });
   }
 
-  /**
-   * Documents live in private buckets, so there is no URL to link to
-   * directly — one is minted on demand and expires in minutes.
-   */
   function openDocument(id: string) {
-    setOpening(id);
     startTransition(async () => {
       const result = await getDocumentUrl(id);
-      setOpening(null);
       if (!result.ok) {
         toast.error(result.error);
         return;
@@ -107,10 +119,24 @@ export function DocumentsPanel({
     });
   }
 
+  /** Pre-fills expiry from the certificate's own validity period. */
+  const suggestedExpiry = (() => {
+    const rule = PROPERTY_CERTIFICATES.find((c) => c.type === docType);
+    if (!rule) return "";
+    const d = new Date();
+    d.setMonth(d.getMonth() + rule.validMonths);
+    return d.toISOString().slice(0, 10);
+  })();
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold">{t("documents.title")}</h2>
+        <div>
+          <h2 className="font-semibold">{t("documents.propertyDocuments")}</h2>
+          <p className="text-xs text-muted-foreground">
+            {t("documents.propertyDocumentsHint")}
+          </p>
+        </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -121,24 +147,23 @@ export function DocumentsPanel({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("documents.upload")}</DialogTitle>
+              <DialogTitle>{t("documents.propertyDocuments")}</DialogTitle>
             </DialogHeader>
 
             <form ref={formRef} action={onUpload} className="flex flex-col gap-4">
-              {tenancyId && (
-                <input type="hidden" name="tenancy_id" value={tenancyId} />
-              )}
-              {tenantId && (
-                <input type="hidden" name="tenant_id" value={tenantId} />
-              )}
+              <input type="hidden" name="property_id" value={propertyId} />
 
               <Field label={t("documents.type")} required>
-                <Select name="doc_type" defaultValue={offered[0]} required>
+                <Select
+                  name="doc_type"
+                  value={docType}
+                  onValueChange={(v) => setDocType(v as DocumentType)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {offered.map((dt) => (
+                    {PROPERTY_DOCUMENT_TYPES.map((dt) => (
                       <SelectItem key={dt} value={dt}>
                         {t(DOC_TYPE_KEYS[dt])}
                       </SelectItem>
@@ -147,22 +172,23 @@ export function DocumentsPanel({
                 </Select>
               </Field>
 
-              {scope === "tenancy" && tenants.length > 1 && (
-                <Field label={t("tenants.title")}>
-                  <Select name="tenant_id" defaultValue={tenants[0].id}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tenants.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.first_name} {p.surname}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label={t("documents.issueDate")}>
+                  <Input type="date" name="issued_at" disabled={isPending} />
                 </Field>
-              )}
+                <Field
+                  label={t("documents.expiryDate")}
+                  hint={t("documents.noExpiry")}
+                >
+                  <Input
+                    type="date"
+                    name="expires_at"
+                    defaultValue={suggestedExpiry}
+                    key={docType}
+                    disabled={isPending}
+                  />
+                </Field>
+              </div>
 
               <Field label="File" required hint="Images or PDF, up to 15MB">
                 <Input
@@ -194,51 +220,74 @@ export function DocumentsPanel({
         </Dialog>
       </div>
 
-      {/* Compliance gap — the same rule the dashboard counts. */}
-      {missing.length > 0 && (
-        <p className="flex items-start gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-          <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
-          {t("documents.missing", {
-            types: missing.map((m) => t(DOC_TYPE_KEYS[m])).join(", "),
-          })}
-        </p>
+      {(problems.length > 0 || absent.length > 0) && (
+        <div className="flex flex-col gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          {problems.map((d) => (
+            <p key={d.id} className="flex items-start gap-2">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+              {t(DOC_TYPE_KEYS[d.doc_type])} —{" "}
+              {status(d) === "expired"
+                ? t("documents.expired")
+                : t("documents.expiringSoon")}
+              {d.expires_at &&
+                ` (${format.dateTime(new Date(d.expires_at), { dateStyle: "medium" })})`}
+            </p>
+          ))}
+          {absent.length > 0 && (
+            <p className="flex items-start gap-2">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+              {t("documents.missing", {
+                types: absent.map((c) => t(DOC_TYPE_KEYS[c.type])).join(", "),
+              })}
+            </p>
+          )}
+        </div>
       )}
 
       {documents.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
-            <FileText className="size-7 text-muted-foreground" aria-hidden />
+            <ShieldCheck className="size-7 text-muted-foreground" aria-hidden />
             <p className="text-sm text-muted-foreground">{t("documents.none")}</p>
           </CardContent>
         </Card>
       ) : (
         <ul className="flex flex-col gap-2">
           {documents.map((doc) => {
-            const owner = tenants.find((p) => p.id === doc.tenant_id);
+            const s = status(doc);
             return (
               <li key={doc.id}>
                 <Card>
                   <CardContent className="flex items-center gap-3 p-3">
-                    <FileText
+                    <ShieldCheck
                       className="size-5 shrink-0 text-muted-foreground"
                       aria-hidden
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="truncate text-sm font-medium">
-                          {doc.file_name}
-                        </span>
-                        <Badge variant="secondary" className="text-xs">
                           {t(DOC_TYPE_KEYS[doc.doc_type])}
-                        </Badge>
+                        </span>
+                        {s && (
+                          <Badge
+                            variant={s === "valid" ? "secondary" : "destructive"}
+                            className="text-xs"
+                          >
+                            {s === "expired"
+                              ? t("documents.expired")
+                              : s === "soon"
+                                ? t("documents.expiringSoon")
+                                : t("documents.expiresOn", {
+                                    date: format.dateTime(
+                                      new Date(doc.expires_at!),
+                                      { dateStyle: "medium" },
+                                    ),
+                                  })}
+                          </Badge>
+                        )}
                       </div>
                       <p className="truncate text-xs text-muted-foreground">
-                        {owner && `${owner.first_name} ${owner.surname} · `}
-                        {t("documents.uploadedOn", {
-                          date: format.dateTime(new Date(doc.uploaded_at), {
-                            dateStyle: "medium",
-                          }),
-                        })}
+                        {doc.file_name}
                       </p>
                     </div>
 
@@ -250,9 +299,6 @@ export function DocumentsPanel({
                       aria-label={t("documents.view")}
                     >
                       <ExternalLink className="size-4" aria-hidden />
-                      <span className="sr-only sm:not-sr-only">
-                        {opening === doc.id ? t("common.loading") : t("documents.view")}
-                      </span>
                     </Button>
 
                     <ConfirmDelete

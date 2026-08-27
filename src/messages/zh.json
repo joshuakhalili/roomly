@@ -164,7 +164,26 @@
     "delete": "删除",
     "deleteConfirm": "确定删除此文件？",
     "deleteWarning": "这将永久删除该文件。此操作无法撤销。",
-    "uploading": "上传中…"
+    "uploading": "上传中…",
+    "referenceCheck": "资信/信用审查",
+    "depositPrescribedInfo": "押金法定告知书",
+    "rentersRightsInfo": "《租户权利法》信息表",
+    "inventoryReport": "物品清单／房屋状况报告",
+    "gasSafety": "燃气安全证书（CP12）",
+    "epc": "能源效率证书（EPC）",
+    "eicr": "电气安全报告（EICR）",
+    "hmoLicence": "多户合租房屋（HMO）执照",
+    "legionellaAssessment": "军团菌风险评估",
+    "fireSafety": "消防安全／报警器记录",
+    "propertyDocuments": "证书",
+    "propertyDocumentsHint": "房产的安全证书，适用于所有房间，且不随租客更替而失效。",
+    "expiresOn": "{date} 到期",
+    "expired": "已过期",
+    "expiringSoon": "即将到期",
+    "issuedOn": "签发日期",
+    "expiryDate": "到期日期",
+    "issueDate": "签发日期",
+    "noExpiry": "无到期日"
   },
   "rent": {
     "title": "租金",
@@ -274,7 +293,13 @@
     "openRoomInventory": "打开房间清单",
     "baseline": "房间物品清单",
     "seededFromBaseline": "已从房间清单生成。请为本次入住重新拍照。",
-    "byProperty": "按房产"
+    "byProperty": "按房产",
+    "tailor": "调整项目",
+    "tailorHint": "勾选此房间没有的项目（例如无窗的浴室），然后删除。模板仅供参考。",
+    "removeSelected": "删除 {count} 项",
+    "removeWarning": "其中 {count} 个项目已有评级或照片，将一并删除。",
+    "sectionNamePlaceholder": "例如：墙面固定装置",
+    "custom": "自定义"
   },
   "analytics": {
     "title": "数据分析",
@@ -328,7 +353,8 @@
     "none": "无",
     "notSet": "未设置",
     "today": "今天",
-    "step": "第 {current} 步，共 {total} 步"
+    "step": "第 {current} 步，共 {total} 步",
+    "done": "完成"
   },
   "pwa": {
     "installTitle": "添加到主屏幕",
