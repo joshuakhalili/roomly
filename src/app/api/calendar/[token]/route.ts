@@ -45,7 +45,7 @@ export async function GET(
 
   if (!profile) return new NextResponse("Not found", { status: 404 });
 
-  const [{ data: tenancies }, { data: links }, { data: payments }] =
+  const [{ data: tenancies }, { data: links }, { data: payments }, { data: jobs }] =
     await Promise.all([
       supabase
         .from("tenancies")
@@ -58,6 +58,15 @@ export async function GET(
         .from("rent_payments")
         .select("*")
         .in("status", ["due", "late"]),
+      // Booked work only. A job already done is a record, not something to
+      // be reminded about, and a cancelled one should disappear from the
+      // calendar rather than linger as a ghost.
+      supabase
+        .from("maintenance_jobs")
+        .select(
+          "*, properties(name), rooms(name), service_types(name), contacts(name)",
+        )
+        .eq("status", "booked"),
     ]);
 
   const leadByTenancy = new Map<string, string>();
@@ -77,7 +86,7 @@ export async function GET(
 
   const calendar = ical({
     name: "Roomly",
-    description: "Move-ins, move-outs and rent dates",
+    description: "Move-ins, move-outs, rent dates and scheduled work",
     // Tells subscribers how often to re-poll. Nothing here is urgent to
     // the minute, so hourly is plenty.
     ttl: 60 * 60,
@@ -166,6 +175,50 @@ export async function GET(
     const alarm = event.createAlarm({
       type: ICalAlarmType.display,
       triggerAfter: 24 * 60 * 60,
+    });
+    alarm.relatesTo(ICalAlarmRelatesTo.start);
+  }
+
+  // ── Scheduled work ───────────────────────────────────────────────────────
+  // Unlike the others these can carry a real time: a gas engineer gives you
+  // a slot, a gardener gives you a day. A timed event gets a sensible hour
+  // in the calendar; a dateless one stays all-day.
+  for (const job of (jobs ?? []) as unknown as {
+    id: string;
+    title: string;
+    scheduled_for: string;
+    scheduled_time: string | null;
+    description: string | null;
+    properties: { name: string } | null;
+    rooms: { name: string } | null;
+    service_types: { name: string } | null;
+    contacts: { name: string } | null;
+  }[]) {
+    const where = [job.properties?.name, job.rooms?.name]
+      .filter(Boolean)
+      .join(" · ");
+    const timed = Boolean(job.scheduled_time);
+
+    const event = calendar.createEvent({
+      start: timed
+        ? new Date(`${job.scheduled_for}T${job.scheduled_time}`)
+        : asDate(job.scheduled_for),
+      allDay: !timed,
+      summary: job.contacts?.name
+        ? `${job.title} — ${job.contacts.name}`
+        : job.title,
+      description: [where, job.service_types?.name, job.description]
+        .filter(Boolean)
+        .join("\n"),
+      location: where || undefined,
+      id: `job-${job.id}`,
+    });
+
+    // One day's warning. Enough to move it or unlock a door; not so much
+    // that a weekly clean nags all week.
+    const alarm = event.createAlarm({
+      type: ICalAlarmType.display,
+      triggerBefore: 24 * 60 * 60,
     });
     alarm.relatesTo(ICalAlarmRelatesTo.start);
   }

@@ -80,7 +80,8 @@
     "noProperties": "尚无房产。",
     "addFirst": "添加第一处房产",
     "deleteConfirm": "确定删除此房产？",
-    "deleteWarning": "这将永久删除该房产、其所有房间以及所有租约记录。此操作无法撤销。"
+    "deleteWarning": "这将永久删除该房产、其所有房间以及所有租约记录。此操作无法撤销。",
+    "one": "房产"
   },
   "rooms": {
     "title": "房间",
@@ -99,7 +100,8 @@
     "addTenancy": "添加租约",
     "typeHint": "租客租用的单位类型。厨房和浴室属于单位内的区域，在物品清点表中设置。",
     "unitStudio": "单间公寓",
-    "unitFlat": "整套公寓"
+    "unitFlat": "整套公寓",
+    "one": "房间"
   },
   "tenancy": {
     "title": "租约",
@@ -218,7 +220,9 @@
     "history": "另有 {count} 个历史版本",
     "current": "当前",
     "superseded": "已被取代",
-    "receipt": "收据"
+    "receipt": "收据",
+    "file": "文件",
+    "uploaded": "已上传"
   },
   "rent": {
     "title": "租金",
@@ -340,7 +344,9 @@
     "sectionNamePlaceholder": "例如：墙面固定装置",
     "custom": "自定义",
     "exportConfirmTitle": "确定生成报告？",
-    "exportConfirmBody": "此 PDF 将作为该清单的永久记录保存。{count} 张原始照片会在报告保存满保留期后自动删除 — 此后仅剩报告，且分辨率为生成时的版本。"
+    "exportConfirmBody": "此 PDF 将作为该清单的永久记录保存。{count} 张原始照片会在报告保存满保留期后自动删除 — 此后仅剩报告，且分辨率为生成时的版本。",
+    "bookRepair": "安排维修",
+    "repairBooked": "维修已安排"
   },
   "analytics": {
     "title": "数据分析",
@@ -351,7 +357,16 @@
     "reasonsForLeaving": "租客离开原因",
     "complianceDetail": "缺少文件的租约",
     "notEnoughData": "数据尚不足。使用几天后将显示趋势。",
-    "days": "{count, plural, other {# 天}}"
+    "days": "{count, plural, other {# 天}}",
+    "runningCosts": "运营成本",
+    "lastTwelveMonths": "过去 12 个月",
+    "rentCollected": "已收租金",
+    "spent": "支出",
+    "net": "净额",
+    "work": "工作费用",
+    "purchases": "采购",
+    "spendByType": "支出去向",
+    "unpaidBills": "{amount} 未付"
   },
   "admins": {
     "title": "管理员",
@@ -462,7 +477,8 @@
       "identity_documents": "英国内政部《房东租房资格查验指南》（2025年6月26日）：文件副本须在租约存续期间及结束后至少保留一年，此后「必须安全销毁」。",
       "tenancy_records": "《1980年时效法》第5条 — 简单合同的索赔时效为六年。英国税务海关总署要求业务记录在1月31日申报截止日后保留五年，该期限落在同一区间内。",
       "inventory_photos": "无法定期限。报告已保留视觉记录，因此原始照片在报告生成后即不再必要 — 英国《通用数据保护条例》第5(1)(e)条。"
-    }
+    },
+    "erasedOn": "删除日期"
   },
   "settings": {
     "subtitle": "您的账户、应用外观，以及自动任务的设置。",
@@ -532,7 +548,6 @@
     "showWholeMonth": "显示整月",
     "jobCount": "{count} 项工作",
     "unpaidCount": "{count} 项未付款",
-    "standingCount": "{count} 项长期安排",
     "noJobs": "暂无安排。添加工作后会显示在日历上。",
     "statusDone": "已完成",
     "unpaid": "未付款",
@@ -568,6 +583,24 @@
     "warrantyExpired": "保修已过期",
     "warrantyDays": "剩余 {count} 天",
     "noAssets": "暂无记录。今后购买时逐项添加即可，无需补录已有物品。",
-    "assetsHelp": "您购买的物品、费用，以及仍在保修期内的项目。"
+    "assetsHelp": "您购买的物品、费用，以及仍在保修期内的项目。",
+    "standing": "长期安排",
+    "standingHelp": "自动重复的工作。系统会提前三个月自动在日历上生成任务。",
+    "addStanding": "添加长期安排",
+    "recurrenceSaved": "已保存 — 任务将于今晚生成到日历",
+    "recurrenceTitlePlaceholder": "例如：每周公共区域保洁",
+    "repeats": "重复频率",
+    "dayOfWeek": "星期",
+    "dayOfMonth": "每月日期",
+    "dayOfMonthHint": "较短的月份将使用当月最后一天。",
+    "startsOn": "开始",
+    "endsOn": "结束",
+    "endsOnHint": "留空表示持续进行。适用于季节性工作。",
+    "weeklyOn": "每{day}",
+    "fortnightlyOn": "每隔一{day}",
+    "monthlyOn": "每月 {day} 日",
+    "until": "至 {date}",
+    "stop": "停止",
+    "attach": "附加发票或收据"
   }
 }

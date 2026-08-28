@@ -130,7 +130,7 @@ export function JobDialog({
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t("properties.title")} required>
+            <Field label={t("properties.one")} required>
               <OptionSelect
                 name="property_id"
                 value={propertyId}
@@ -143,7 +143,7 @@ export function JobDialog({
               />
             </Field>
 
-            <Field label={t("rooms.title")}>
+            <Field label={t("rooms.one")}>
               <OptionSelect
                 name="room_id"
                 defaultValue={job?.room_id ?? NO_ROOM}

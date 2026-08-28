@@ -16,6 +16,8 @@ import {
 } from "date-fns";
 import { setJobStatus, setJobPaid, deleteJob } from "@/lib/actions/maintenance";
 import { JobDialog } from "./job-dialog";
+import { RecurrencesDialog } from "./recurrences-dialog";
+import { AttachedDocuments } from "./attached-documents";
 import { serviceLabel } from "./service-label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,6 +39,8 @@ import {
 import { whatsappLink } from "@/lib/messaging";
 import type {
   Contact,
+  DocumentRecord,
+  JobRecurrence,
   JobWithContext,
   Property,
   Room,
@@ -54,14 +58,16 @@ export function ScheduleBoard({
   rooms,
   serviceTypes,
   contacts,
-  recurrenceCount,
+  recurrences,
+  documents,
 }: {
   jobs: JobWithContext[];
   properties: Property[];
   rooms: Room[];
   serviceTypes: ServiceType[];
   contacts: Contact[];
-  recurrenceCount: number;
+  recurrences: JobRecurrence[];
+  documents: DocumentRecord[];
 }) {
   const t = useTranslations();
   const format = useFormatter();
@@ -156,12 +162,13 @@ export function ScheduleBoard({
           </Button>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          {recurrenceCount > 0 && (
-            <Badge variant="secondary" className="gap-1">
-              <Repeat className="size-3" aria-hidden />
-              {t("maintenance.standingCount", { count: recurrenceCount })}
-            </Badge>
-          )}
+          <RecurrencesDialog
+            recurrences={recurrences}
+            properties={properties}
+            rooms={rooms}
+            serviceTypes={serviceTypes}
+            contacts={contacts}
+          />
           <JobDialog
             properties={properties}
             rooms={rooms}
@@ -488,6 +495,17 @@ export function ScheduleBoard({
                 </Button>
               )}
             </div>
+
+            <AttachedDocuments
+              propertyId={selected.property_id}
+              jobId={selected.id}
+              documents={documents.filter(
+                (d) => d.maintenance_job_id === selected.id,
+              )}
+              offered={["maintenance_invoice", "warranty", "receipt", "other"]}
+              defaultAmount={selected.cost}
+              defaultSupplier={selected.contact_name}
+            />
 
             {selected.checklist_section_id && (
               <p className="rounded-md bg-muted p-3 text-xs text-muted-foreground">

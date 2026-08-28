@@ -21,8 +21,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AttachedDocuments } from "./attached-documents";
 import { Plus, Pencil, PackageX, ShieldCheck } from "lucide-react";
-import type { Asset, Property, Room } from "@/lib/types";
+import type { Asset, DocumentRecord, Property, Room } from "@/lib/types";
 
 const NO_ROOM = "__whole_property__";
 
@@ -96,7 +97,7 @@ function AssetDialog({
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t("properties.title")} required>
+            <Field label={t("properties.one")} required>
               <OptionSelect
                 name="property_id"
                 value={propertyId}
@@ -105,7 +106,7 @@ function AssetDialog({
                 options={properties.map((p) => ({ value: p.id, label: p.name }))}
               />
             </Field>
-            <Field label={t("rooms.title")}>
+            <Field label={t("rooms.one")}>
               <OptionSelect
                 name="room_id"
                 defaultValue={asset?.room_id ?? NO_ROOM}
@@ -209,10 +210,12 @@ export function AssetsPanel({
   assets,
   properties,
   rooms,
+  documents,
 }: {
   assets: Asset[];
   properties: Property[];
   rooms: Room[];
+  documents: DocumentRecord[];
 }) {
   const t = useTranslations();
   const format = useFormatter();
@@ -347,6 +350,15 @@ export function AssetsPanel({
                         </span>
                       )}
                     </div>
+
+                    <AttachedDocuments
+                      propertyId={a.property_id}
+                      assetId={a.id}
+                      documents={documents.filter((d) => d.asset_id === a.id)}
+                      offered={["receipt", "warranty", "other"]}
+                      defaultAmount={a.cost}
+                      defaultSupplier={a.supplier_name}
+                    />
 
                     {days !== null && (
                       <Badge

@@ -9,6 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, GitCompareArrows } from "lucide-react";
 import type {
+  Contact,
+  Property,
+  Room,
+  ServiceType,
   AreaType,
   ChecklistArea,
   ChecklistDeclaration,
@@ -62,6 +66,33 @@ export default async function ChecklistPage({
       .single();
     room = r as unknown as typeof room;
   }
+
+  // Everything needed to book a repair straight off a flagged defect,
+  // without leaving the checklist to go and retype it in Maintenance.
+  const sectionIdsForJobs = new Set<string>();
+  const [
+    { data: mProperties },
+    { data: mRooms },
+    { data: mServiceTypes },
+    { data: mContacts },
+    { data: bookedJobs },
+  ] = await Promise.all([
+    supabase.from("properties").select("*").order("name"),
+    supabase.from("rooms").select("*").order("name"),
+    supabase
+      .from("service_types")
+      .select("*")
+      .eq("is_archived", false)
+      .order("sort_order"),
+    supabase.from("contacts").select("*").eq("is_archived", false).order("name"),
+    supabase
+      .from("maintenance_jobs")
+      .select("checklist_section_id")
+      .not("checklist_section_id", "is", null)
+      .neq("status", "cancelled"),
+  ]);
+  for (const j of bookedJobs ?? [])
+    sectionIdsForJobs.add(j.checklist_section_id as string);
 
   const { data: areas } = await supabase
     .from("checklist_areas")
@@ -199,6 +230,19 @@ export default async function ChecklistPage({
         sections={(sections ?? []) as ChecklistSection[]}
         photos={(photos ?? []) as ChecklistPhoto[]}
         areaTypes={(areaTypes ?? []) as AreaType[]}
+        maintenance={
+          room
+            ? {
+                propertyId: room.property_id,
+                roomId: room.id,
+                properties: (mProperties ?? []) as Property[],
+                rooms: (mRooms ?? []) as Room[],
+                serviceTypes: (mServiceTypes ?? []) as ServiceType[],
+                contacts: (mContacts ?? []) as Contact[],
+                bookedSectionIds: [...sectionIdsForJobs],
+              }
+            : undefined
+        }
       />
 
       <ReportDetails

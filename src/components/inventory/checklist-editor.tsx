@@ -30,8 +30,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2, ChevronDown, ChevronRight, CircleCheck } from "lucide-react";
+import { JobDialog } from "@/components/maintenance/job-dialog";
+import {
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronRight,
+  CircleCheck,
+  Wrench,
+} from "lucide-react";
 import type {
+  Contact,
+  Property,
+  Room,
+  ServiceType,
   AreaType,
   ChecklistArea,
   ChecklistPhoto,
@@ -45,12 +57,26 @@ export function ChecklistEditor({
   sections,
   photos,
   areaTypes,
+  maintenance,
 }: {
   checklist: InventoryChecklist;
   areas: ChecklistArea[];
   sections: ChecklistSection[];
   photos: ChecklistPhoto[];
   areaTypes: AreaType[];
+  /**
+   * What is needed to turn a defect into a booked job without leaving the
+   * page. Optional so a checklist still renders if it is not supplied.
+   */
+  maintenance?: {
+    propertyId: string;
+    roomId: string | null;
+    properties: Property[];
+    rooms: Room[];
+    serviceTypes: ServiceType[];
+    contacts: Contact[];
+    bookedSectionIds: string[];
+  };
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -286,22 +312,54 @@ export function ChecklistEditor({
         ) : (
           <Card>
             <CardContent className="flex flex-col gap-3 p-4">
-              {defects.map(({ area, section }) => (
-                <div key={section.id} className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">
-                    {area.name} · {section.section_name}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <RatingBadge value={section.condition_rating} />
-                    <RatingBadge value={section.cleanliness_rating} />
+              {defects.map(({ area, section }) => {
+                const booked =
+                  maintenance?.bookedSectionIds.includes(section.id) ?? false;
+                return (
+                  <div key={section.id} className="flex flex-wrap items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">
+                        {area.name} · {section.section_name}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <RatingBadge value={section.condition_rating} />
+                        <RatingBadge value={section.cleanliness_rating} />
+                      </div>
+                      {section.description && (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {section.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* The whole reason the flag exists. Without this a
+                        defect list is something you read and then retype
+                        somewhere else. Marking the job done clears the flag,
+                        so the list cannot drift out of date. */}
+                    {maintenance &&
+                      (booked ? (
+                        <Badge variant="secondary" className="shrink-0">
+                          {t("inventory.repairBooked")}
+                        </Badge>
+                      ) : (
+                        <JobDialog
+                          properties={maintenance.properties}
+                          rooms={maintenance.rooms}
+                          serviceTypes={maintenance.serviceTypes}
+                          contacts={maintenance.contacts}
+                          defaultPropertyId={maintenance.propertyId}
+                          checklistSectionId={section.id}
+                          trigger={
+                            <Button variant="outline" size="sm">
+                              <Wrench className="size-4" aria-hidden />
+                              {t("inventory.bookRepair")}
+                            </Button>
+                          }
+                        />
+                      ))}
                   </div>
-                  {section.description && (
-                    <p className="text-sm text-muted-foreground">
-                      {section.description}
-                    </p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
         )}

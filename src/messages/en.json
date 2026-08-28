@@ -80,7 +80,8 @@
     "noProperties": "No properties yet.",
     "addFirst": "Add your first property",
     "deleteConfirm": "Delete this property?",
-    "deleteWarning": "This permanently removes the property, its rooms, and every tenancy record inside it. This cannot be undone."
+    "deleteWarning": "This permanently removes the property, its rooms, and every tenancy record inside it. This cannot be undone.",
+    "one": "Property"
   },
   "rooms": {
     "title": "Rooms",
@@ -99,7 +100,8 @@
     "addTenancy": "Add tenancy",
     "typeHint": "What the tenant rents. Kitchens and bathrooms are areas inside a unit, set up on the inventory checklist.",
     "unitStudio": "Studio",
-    "unitFlat": "Flat"
+    "unitFlat": "Flat",
+    "one": "Room"
   },
   "tenancy": {
     "title": "Tenancy",
@@ -218,7 +220,9 @@
     "history": "{count, plural, one {# earlier version} other {# earlier versions}}",
     "current": "Current",
     "superseded": "Superseded",
-    "receipt": "Receipt"
+    "receipt": "Receipt",
+    "file": "File",
+    "uploaded": "Uploaded"
   },
   "rent": {
     "title": "Rent",
@@ -340,7 +344,9 @@
     "sectionNamePlaceholder": "e.g. Wall fixtures",
     "custom": "Custom",
     "exportConfirmTitle": "Generate the report?",
-    "exportConfirmBody": "The PDF is saved as the permanent record for this checklist. The {count} original photos are then deleted automatically once the report has been kept for the retention period — after that the report is the only copy, at the resolution it was flattened to."
+    "exportConfirmBody": "The PDF is saved as the permanent record for this checklist. The {count} original photos are then deleted automatically once the report has been kept for the retention period — after that the report is the only copy, at the resolution it was flattened to.",
+    "bookRepair": "Book a repair",
+    "repairBooked": "Repair booked"
   },
   "analytics": {
     "title": "Analytics",
@@ -351,7 +357,16 @@
     "reasonsForLeaving": "Why tenants left",
     "complianceDetail": "Tenancies missing documents",
     "notEnoughData": "Not enough data yet. Trends appear after a few days of use.",
-    "days": "{count, plural, one {# day} other {# days}}"
+    "days": "{count, plural, one {# day} other {# days}}",
+    "runningCosts": "Running costs",
+    "lastTwelveMonths": "Last 12 months",
+    "rentCollected": "Rent collected",
+    "spent": "Spent",
+    "net": "Net",
+    "work": "Work",
+    "purchases": "Purchases",
+    "spendByType": "Where it went",
+    "unpaidBills": "{amount} unpaid"
   },
   "admins": {
     "title": "Admins",
@@ -462,7 +477,8 @@
       "identity_documents": "Home Office, Landlord's guide to right to rent checks (26 June 2025): copies must be retained for the duration of the tenancy and at least one year thereafter, and \"must then be securely destroyed\".",
       "tenancy_records": "Limitation Act 1980 s.5 — six years to bring a claim on a simple contract. HMRC requires business records for five years after the 31 January filing deadline, which falls inside the same window.",
       "inventory_photos": "No statutory period. The report preserves the visual record, so the originals stop being necessary once it exists — UK GDPR Article 5(1)(e)."
-    }
+    },
+    "erasedOn": "Erased on"
   },
   "settings": {
     "subtitle": "Your account, how the app looks, and what the automatic jobs do.",
@@ -532,7 +548,6 @@
     "showWholeMonth": "Show the whole month",
     "jobCount": "{count, plural, one {# job} other {# jobs}}",
     "unpaidCount": "{count} unpaid",
-    "standingCount": "{count, plural, one {# standing arrangement} other {# standing arrangements}}",
     "noJobs": "Nothing scheduled. Add a job to put it on the calendar.",
     "statusDone": "Done",
     "unpaid": "Unpaid",
@@ -568,6 +583,24 @@
     "warrantyExpired": "Warranty expired",
     "warrantyDays": "{count, plural, one {# day left} other {# days left}}",
     "noAssets": "Nothing logged yet. Add things as you buy them — there's no need to go back over what you already own.",
-    "assetsHelp": "What you've bought, what it cost, and what's still under warranty."
+    "assetsHelp": "What you've bought, what it cost, and what's still under warranty.",
+    "standing": "Standing arrangements",
+    "standingHelp": "Work that repeats on its own. Jobs appear on the calendar automatically, three months ahead.",
+    "addStanding": "Add an arrangement",
+    "recurrenceSaved": "Saved — jobs appear on the calendar overnight",
+    "recurrenceTitlePlaceholder": "e.g. Weekly communal clean",
+    "repeats": "Repeats",
+    "dayOfWeek": "Day",
+    "dayOfMonth": "Day of the month",
+    "dayOfMonthHint": "Shorter months use their last day.",
+    "startsOn": "Starts",
+    "endsOn": "Ends",
+    "endsOnHint": "Leave blank to carry on. Useful for seasonal work.",
+    "weeklyOn": "Every {day}",
+    "fortnightlyOn": "Every other {day}",
+    "monthlyOn": "Monthly on the {day}",
+    "until": "Until {date}",
+    "stop": "Stop",
+    "attach": "Attach invoice or receipt"
   }
 }

@@ -8,6 +8,8 @@ import { Wrench } from "lucide-react";
 import type {
   Asset,
   Contact,
+  DocumentRecord,
+  JobRecurrence,
   JobWithContext,
   Property,
   Room,
@@ -56,6 +58,7 @@ export default async function MaintenancePage({
     { data: contacts },
     { data: assets },
     { data: recurrences },
+    { data: attachments },
   ] = await Promise.all([
     supabase
       .from("maintenance_jobs")
@@ -82,6 +85,12 @@ export default async function MaintenancePage({
       .select("*")
       .order("purchased_on", { ascending: false, nullsFirst: false }),
     supabase.from("job_recurrences").select("*").eq("is_active", true),
+    // Only the paperwork attached from in here — the wider library is its
+    // own page and does not belong on this one.
+    supabase
+      .from("documents")
+      .select("*")
+      .or("maintenance_job_id.not.is.null,asset_id.not.is.null"),
   ]);
 
   // Flattened here rather than in the client: the joined shape PostgREST
@@ -131,7 +140,8 @@ export default async function MaintenancePage({
             rooms={(rooms ?? []) as Room[]}
             serviceTypes={(serviceTypes ?? []) as ServiceType[]}
             contacts={(contacts ?? []) as Contact[]}
-            recurrenceCount={recurrences?.length ?? 0}
+            recurrences={(recurrences ?? []) as JobRecurrence[]}
+            documents={(attachments ?? []) as DocumentRecord[]}
           />
         </TabsContent>
 
@@ -149,6 +159,7 @@ export default async function MaintenancePage({
             assets={(assets ?? []) as Asset[]}
             properties={(properties ?? []) as Property[]}
             rooms={(rooms ?? []) as Room[]}
+            documents={(attachments ?? []) as DocumentRecord[]}
           />
         </TabsContent>
       </Tabs>
