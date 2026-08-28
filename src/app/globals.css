@@ -4,29 +4,57 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   Roomly design tokens
+
+   The palette was previously entirely achromatic — every token oklch(… 0 0),
+   pure grey, with only --destructive carrying a hue. That is why status colour
+   had leaked out as hardcoded Tailwind classes across a dozen components: there
+   were no semantic tokens to reach for.
+
+   Two colour systems live here and they do different jobs:
+
+     BRAND + AURORA (violet, magenta, orange, blue) — atmosphere. The mesh
+     gradient behind everything, and the logo. Decorative only.
+
+     SEMANTIC (info, success, warning, caution, destructive) — information.
+     Paid, overdue, needs attention. Applied to badges, borders and figures.
+
+   They are kept apart on purpose. If a magenta glow sits at full strength
+   behind a card, it competes with the red "overdue" badge on it, and colour
+   stops meaning anything. Nothing here means two things.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The logo gradient is deliberately NOT theme-aware.
+   The aurora tokens shift between a pale wash in light mode and full neon in
+   dark, which is right for a background and wrong for an identity — a mark
+   that fades out on a white page is not a mark. These three stay put. */
+:root,
+.dark {
+  --brand-grad-1: oklch(0.55 0.27 292);
+  --brand-grad-2: oklch(0.60 0.29 340);
+  --brand-grad-3: oklch(0.74 0.19 55);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Latin from Geist; Chinese from the system.
+     A CJK webfont is several megabytes for a bilingual admin tool nobody
+     wants waiting on a font. PingFang SC (Apple), Microsoft YaHei (Windows)
+     and Noto Sans CJK (Linux/Android) are already installed, already correct,
+     and render instantly — they are named explicitly here rather than left to
+     whatever the browser's default happens to be. */
+  --font-sans:
+    var(--font-geist), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans CJK SC", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
-  --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -39,6 +67,42 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Semantic status. Each has a solid tone, a text-safe foreground, and a
+     muted surface for tinted chips and callouts. */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-muted: var(--destructive-muted);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-muted: var(--success-muted);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-muted: var(--warning-muted);
+  --color-caution: var(--caution);
+  --color-caution-foreground: var(--caution-foreground);
+  --color-caution-muted: var(--caution-muted);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-muted: var(--info-muted);
+
+  /* Brand + aurora hues. Decorative; not for status. */
+  --color-brand: var(--brand);
+  --color-brand-grad-1: var(--brand-grad-1);
+  --color-brand-grad-2: var(--brand-grad-2);
+  --color-brand-grad-3: var(--brand-grad-3);
+  --color-aurora-violet: var(--aurora-violet);
+  --color-aurora-magenta: var(--aurora-magenta);
+  --color-aurora-orange: var(--aurora-orange);
+  --color-aurora-blue: var(--aurora-blue);
+
+  /* Distinguishable hues, not the grey ramp they replace. */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -46,78 +110,341 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --ease-out: var(--ease-out-token);
+  --ease-in: var(--ease-in-token);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --background: oklch(0.985 0.004 285);
+  --foreground: oklch(0.18 0.02 285);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.18 0.02 285);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.18 0.02 285);
+
+  /* ── Brand ────────────────────────────────────────────────────────────── */
+  /* Violet, taken from the base of the gradient reference. Deliberately not
+     blue: blue is needed for "info", and a brand hue that collides with a
+     status hue makes both ambiguous. */
+  --brand: oklch(0.52 0.24 292);
+  --primary: oklch(0.52 0.24 292);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.96 0.008 285);
+  --secondary-foreground: oklch(0.28 0.03 285);
+  --muted: oklch(0.96 0.008 285);
+  --muted-foreground: oklch(0.50 0.02 285);
+  --accent: oklch(0.95 0.02 292);
+  --accent-foreground: oklch(0.34 0.10 292);
+
+  /* ── Semantic status ──────────────────────────────────────────────────── */
+  --destructive: oklch(0.55 0.21 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --destructive-muted: oklch(0.95 0.04 27);
+
+  --success: oklch(0.52 0.14 155);
+  --success-foreground: oklch(0.99 0 0);
+  --success-muted: oklch(0.95 0.04 155);
+
+  --warning: oklch(0.55 0.12 75);
+  --warning-foreground: oklch(0.20 0.04 75);
+  --warning-muted: oklch(0.96 0.05 85);
+
+  --caution: oklch(0.55 0.16 45);
+  --caution-foreground: oklch(0.99 0 0);
+  --caution-muted: oklch(0.95 0.05 50);
+
+  --info: oklch(0.55 0.18 255);
+  --info-foreground: oklch(0.99 0 0);
+  --info-muted: oklch(0.95 0.04 255);
+
+  --border: oklch(0.90 0.008 285);
+  --input: oklch(0.90 0.008 285);
+  --ring: oklch(0.52 0.24 292);
+
+  /* ── Charts ───────────────────────────────────────────────────────────── */
+  --chart-1: oklch(0.52 0.24 292);
+  --chart-2: oklch(0.58 0.18 255);
+  --chart-3: oklch(0.62 0.16 155);
+  --chart-4: oklch(0.70 0.16 65);
+  --chart-5: oklch(0.60 0.22 350);
+
+  /* ── Aurora ───────────────────────────────────────────────────────────── */
+  /* Same hue positions as the dark reference but far lighter and much less
+     saturated. A dimmed version of a neon gradient reads as dirty; a pale
+     wash of the same hues reads as deliberate. */
+  --aurora-blue: oklch(0.80 0.10 255);
+  --aurora-orange: oklch(0.86 0.10 60);
+  --aurora-magenta: oklch(0.82 0.13 340);
+  --aurora-violet: oklch(0.78 0.14 292);
+  --aurora-opacity: 0.42;
+  --aurora-edge: transparent;
+
+  /* ── Glass ────────────────────────────────────────────────────────────── */
+  /* Far more opaque than the 15% a style guide suggests for overlays. On a
+     data screen the look has to come from blur, saturation and the light
+     border — not from actually being see-through, which is where text
+     contrast dies. */
+  /* Three weights, because material weight is how hierarchy is expressed.
+     Chrome (header, nav) is the heaviest and sits above everything; cards are
+     the working surface; chips are the lightest and sit ON a card.
+
+     The rule that matters: never stack two translucent surfaces of the same
+     weight. A glass chip on a glass card blurs an already-blurred backdrop
+     and legibility collapses — so the chip weight is nearly opaque. */
+  --glass-chrome: oklch(1 0 0 / 0.86);
+  --glass-bg: oklch(1 0 0 / 0.78);
+  --glass-bg-strong: oklch(1 0 0 / 0.90);
+  --glass-chip: oklch(1 0 0 / 0.96);
+  --glass-border: oklch(1 0 0 / 0.65);
+  /* Bigger surfaces read as thicker glass. A small chip with a 20px blur
+     looks like a mistake; a full-width toolbar with a 6px blur looks thin. */
+  --glass-blur-sm: 8px;
+  --glass-blur: 20px;
+  --glass-blur-lg: 32px;
+  --glass-saturate: 165%;
+
+  /* ── Depth ────────────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px oklch(0.2 0.03 285 / 0.05);
+  --shadow-md:
+    0 2px 4px oklch(0.2 0.03 285 / 0.05), 0 6px 16px oklch(0.2 0.03 285 / 0.07);
+  --shadow-lg:
+    0 4px 8px oklch(0.2 0.03 285 / 0.06), 0 16px 40px oklch(0.2 0.03 285 / 0.10);
+  --shadow-lift:
+    0 8px 16px oklch(0.2 0.03 285 / 0.08), 0 24px 56px oklch(0.2 0.03 285 / 0.14);
+
+  /* ── Motion ───────────────────────────────────────────────────────────── */
+  --ease-out-token: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-token: cubic-bezier(0.64, 0, 0.78, 0);
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-slow: 300ms;
+
+  --radius: 0.875rem;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.145 0.012 285);
+  --foreground: oklch(0.97 0.004 285);
+  --card: oklch(0.21 0.016 285);
+  --card-foreground: oklch(0.97 0.004 285);
+  --popover: oklch(0.21 0.016 285);
+  --popover-foreground: oklch(0.97 0.004 285);
+
+  /* Lifted so it holds contrast against a dark surface. */
+  --brand: oklch(0.68 0.19 292);
+  --primary: oklch(0.68 0.19 292);
+  --primary-foreground: oklch(0.16 0.03 292);
+
+  --secondary: oklch(0.27 0.018 285);
+  --secondary-foreground: oklch(0.97 0.004 285);
+  --muted: oklch(0.27 0.018 285);
+  --muted-foreground: oklch(0.72 0.015 285);
+  --accent: oklch(0.30 0.04 292);
+  --accent-foreground: oklch(0.92 0.04 292);
+
+  /* Every status tone lifted for dark surfaces; the muted variants become
+     low-lightness tints rather than pale washes. */
+  --destructive: oklch(0.70 0.19 25);
+  --destructive-foreground: oklch(0.16 0.03 25);
+  --destructive-muted: oklch(0.30 0.09 25);
+
+  --success: oklch(0.72 0.16 158);
+  --success-foreground: oklch(0.16 0.03 158);
+  --success-muted: oklch(0.29 0.07 158);
+
+  --warning: oklch(0.80 0.15 80);
+  --warning-foreground: oklch(0.18 0.04 80);
+  --warning-muted: oklch(0.31 0.07 80);
+
+  --caution: oklch(0.74 0.17 48);
+  --caution-foreground: oklch(0.17 0.04 48);
+  --caution-muted: oklch(0.30 0.08 48);
+
+  --info: oklch(0.70 0.16 255);
+  --info-foreground: oklch(0.16 0.03 255);
+  --info-muted: oklch(0.29 0.07 255);
+
+  --border: oklch(1 0 0 / 0.10);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: oklch(0.68 0.19 292);
+
+  --chart-1: oklch(0.68 0.19 292);
+  --chart-2: oklch(0.70 0.16 255);
+  --chart-3: oklch(0.74 0.16 158);
+  --chart-4: oklch(0.80 0.15 70);
+  --chart-5: oklch(0.72 0.19 350);
+
+  /* The reference gradient, at full saturation. It only works over near-black. */
+  --aurora-blue: oklch(0.60 0.20 258);
+  --aurora-orange: oklch(0.72 0.19 55);
+  --aurora-magenta: oklch(0.60 0.29 340);
+  --aurora-violet: oklch(0.48 0.27 292);
+  --aurora-opacity: 0.30;
+  --aurora-edge: oklch(0.09 0.01 285);
+
+  --glass-chrome: oklch(0.18 0.015 285 / 0.82);
+  --glass-bg: oklch(0.24 0.018 285 / 0.66);
+  --glass-bg-strong: oklch(0.24 0.018 285 / 0.86);
+  --glass-chip: oklch(0.28 0.02 285 / 0.94);
+  --glass-border: oklch(1 0 0 / 0.12);
+  --glass-blur-sm: 8px;
+  --glass-blur: 22px;
+  --glass-blur-lg: 34px;
+  --glass-saturate: 150%;
+
+  /* Dark surfaces need a light rim as well as a shadow — a pure black shadow
+     on a dark background is invisible, so depth comes from the top edge. */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.35);
+  --shadow-md: 0 2px 4px oklch(0 0 0 / 0.35), 0 6px 16px oklch(0 0 0 / 0.40);
+  --shadow-lg: 0 4px 8px oklch(0 0 0 / 0.40), 0 16px 40px oklch(0 0 0 / 0.50);
+  --shadow-lift: 0 8px 16px oklch(0 0 0 / 0.45), 0 24px 56px oklch(0 0 0 / 0.55);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The aurora
+
+   One fixed layer beneath everything. Built from overlapping radial blobs
+   rather than a linear gradient, which is what gives the soft mesh look of
+   the reference.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      42% 30% at 16% 2%,
+      color-mix(in oklch, var(--aurora-blue), transparent 25%),
+      transparent 72%
+    ),
+    radial-gradient(
+      42% 30% at 84% 2%,
+      color-mix(in oklch, var(--aurora-blue), transparent 25%),
+      transparent 72%
+    ),
+    radial-gradient(
+      50% 32% at 50% 10%,
+      color-mix(in oklch, var(--aurora-orange), transparent 20%),
+      transparent 70%
+    ),
+    radial-gradient(
+      58% 36% at 50% 42%,
+      color-mix(in oklch, var(--aurora-magenta), transparent 18%),
+      transparent 72%
+    ),
+    radial-gradient(
+      72% 46% at 50% 82%,
+      color-mix(in oklch, var(--aurora-violet), transparent 15%),
+      transparent 74%
+    ),
+    var(--aurora-edge);
+  opacity: var(--aurora-opacity);
+}
+
+/* Film grain.
+
+   Not decoration: a soft gradient this large will band into visible stripes on
+   an 8-bit display, and noise is what breaks the bands up. It is also most of
+   why the reference images look photographic rather than like a default CSS
+   gradient. One layer over the whole page, never per-card. */
+.aurora::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.42;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* Full strength where there is almost nothing to read — the login screen. */
+.aurora-hero {
+  --aurora-opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+}
+
+@utility glass-chrome {
+  background: var(--glass-chrome);
+  backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+}
+
+/* Sits on a card, so it is nearly opaque — see the stacking note above. */
+@utility glass-chip {
+  background: var(--glass-chip);
+  backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
+}
+
+@utility glass-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+}
+
+/* Entrance: fade and a short rise. Applied to groups of tiles, never to every
+   element on a page — "animate everything" is a documented high-severity
+   usability problem, not just taste. Fires once; nothing replays on scroll. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility rise-in {
+  animation: rise-in var(--duration-slow) var(--ease-out-token) both;
 }
 
 @layer base {
+  /* Display figures — the big bento numbers. */
+  .text-display {
+    font-size: clamp(2rem, 1.4rem + 2vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+  }
+  .text-stat {
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  h1,
+  .text-title {
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+  /* Small labels open up slightly rather than closing in. */
+  .text-label {
+    letter-spacing: 0.01em;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -126,5 +453,49 @@
   }
   html {
     @apply font-sans;
+  }
+
+  /* Over a translucent surface the backdrop shifts as you scroll, so thin
+     grey text loses its footing. Apple's answer is weight rather than more
+     grey — a slightly heavier stroke holds up over a moving backdrop. */
+  .glass .text-muted-foreground,
+  [data-slot="card"] .text-muted-foreground {
+    font-weight: 450;
+  }
+
+  /* Tabular figures everywhere numbers are compared down a column — rent,
+     occupancy, costs. Without this, digits have different widths and columns
+     visibly wobble between rows. */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Accessibility fallbacks.
+
+   Both of these are real user settings, not hypotheticals. Someone who has
+   asked their OS to reduce transparency or motion has usually done so because
+   the alternative makes the interface unusable for them. */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  .dark {
+    --glass-bg: var(--card);
+    --glass-bg-strong: var(--card);
+    --glass-blur: 0px;
+    --glass-saturate: 100%;
+  }
+  .aurora {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

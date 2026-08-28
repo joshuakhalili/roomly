@@ -2,13 +2,23 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Geist } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
-const geist = Geist({ variable: "--font-sans", subsets: ["latin"] });
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
+
+/**
+ * The numerals face, for rent totals, occupancy figures and dates.
+ *
+ * globals.css already pointed `--font-mono` at `--font-geist-mono`, which was
+ * never defined anywhere — so `font-mono` silently did nothing. This is that
+ * fix and the "we need a face for data" decision in one: Geist Mono is from the
+ * same family as the UI face, so nothing new has to be designed around.
+ */
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -67,10 +77,13 @@ export default async function LocaleLayout({
     // and the client's first render legitimately differ on this one element.
     <html
       lang={locale === "zh" ? "zh-Hans" : "en"}
-      className={geist.variable}
+      className={`${geist.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
+        {/* The gradient, behind everything. Fixed and pointer-events-none, so
+            it never scrolls with content or intercepts a click. */}
+        <div className="aurora" aria-hidden />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

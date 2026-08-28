@@ -5,7 +5,7 @@ import { LanguageSwitcher } from "@/components/nav/language-switcher";
 import { SignOutButton } from "@/components/nav/sign-out-button";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { createClient } from "@/lib/supabase/server";
-import { Home } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 /**
  * Shell for every signed-in page. The proxy already guarantees there's a
@@ -30,11 +30,17 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+      {/* Chrome floats above content, so it gets the strongest glass. */}
+      <header className="glass-chrome sticky top-0 z-40 border-0 shadow-[0_1px_0_var(--glass-border)]">
         <div className="flex h-14 items-center gap-3 px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <Home className="size-5 text-primary" aria-hidden />
-            <span className="hidden sm:inline">{t("name")}</span>
+          <Link
+            href="/"
+            className="flex items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={t("name")}
+          >
+            {/* Wordmark hides on the narrowest screens; the mark alone still
+                identifies the app, which is what it is designed to do. */}
+            <Logo variant="lockup" className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline" />
           </Link>
           <div className="ml-auto flex items-center gap-1">
             <span className="hidden max-w-[16ch] truncate text-sm text-muted-foreground lg:inline">
@@ -47,7 +53,7 @@ export default async function AppLayout({
       </header>
 
       <div className="flex flex-1">
-        <aside className="hidden w-56 shrink-0 border-r md:block">
+        <aside className="hidden w-56 shrink-0 border-r border-border/60 md:block">
           <div className="sticky top-14">
             <SidebarNav />
           </div>

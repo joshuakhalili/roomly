@@ -2,17 +2,31 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Cards are the glass surface the whole interface is built from.
+ *
+ * `interactive` is opt-in rather than automatic: a lift on hover promises that
+ * clicking does something, so a static card that rises when you pass over it is
+ * a small lie. It also does nothing on a touch screen, which is why the affordance
+ * is never the only signal that something is tappable.
+ */
 function Card({
   className,
   size = "default",
+  interactive = false,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  interactive?: boolean
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card glass flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm text-card-foreground shadow-(--shadow-md) [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        interactive &&
+          "transition-[transform,box-shadow] duration-(--duration) ease-(--ease-out) hover:-translate-y-0.5 hover:shadow-(--shadow-lift)",
         className
       )}
       {...props}
