@@ -3,7 +3,6 @@
   "crons": [
     {
       "path": "/api/cron/daily",
-      "//": "07:00 UTC — early enough that today's alerts are waiting before the working day starts. Hobby plans allow one run per day, which is all this needs.",
       "schedule": "0 7 * * *"
     }
   ]

@@ -16,6 +16,10 @@ import type { RentFrequency, Tenancy } from "@/lib/types";
  * Runs with the service role — there is no session on a cron request — so
  * it authenticates on CRON_SECRET instead. Without that check the URL would
  * be an unauthenticated write endpoint.
+ *
+ * Scheduled at 07:00 UTC by vercel.json, early enough that the day's alerts
+ * are waiting before anyone starts work. (vercel.json is strict JSON and
+ * rejects comment keys, so the schedule is explained here instead.)
  */
 
 export const dynamic = "force-dynamic";
