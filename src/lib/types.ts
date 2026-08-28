@@ -52,6 +52,7 @@ export type DocumentType =
   | "insurance"
   | "business_licence"
   | "warranty"
+  | "receipt"
   | "other";
 export type AppLanguage = "en" | "zh";
 export type LeavingReason =
@@ -102,6 +103,7 @@ export const LIBRARY_DOCUMENT_TYPES: DocumentType[] = [
   "insurance",
   "business_licence",
   "warranty",
+  "receipt",
   "other",
 ];
 
@@ -120,6 +122,7 @@ export const INVOICE_TYPES: DocumentType[] = [
   "maintenance_invoice",
   "insurance",
   "warranty",
+  "receipt",
 ];
 
 /**
@@ -278,6 +281,9 @@ export interface DocumentRecord {
   /** Who did the work or issued the policy — invoices and warranties. */
   supplier_name: string | null;
   amount: number | null;
+  /** Filed from inside Maintenance: the job's invoice, the purchase receipt. */
+  maintenance_job_id: string | null;
+  asset_id: string | null;
   uploaded_at: string;
 }
 
@@ -381,4 +387,106 @@ export interface ChecklistPdfExport {
 export interface RoomWithTenancy extends Room {
   property_name?: string;
   tenancy: (Tenancy & { tenants: TenantOnTenancy[] }) | null;
+}
+
+// ── Maintenance ────────────────────────────────────────────────────────────
+
+export type JobStatus = "booked" | "done" | "cancelled";
+export type JobSource = "manual" | "recurring" | "tenancy_end";
+export type RecurrenceFrequency = "weekly" | "fortnightly" | "monthly";
+
+/**
+ * A category of work — and, on a contact, the work that person does.
+ *
+ * `slug` is set only on the seeded rows. Code looks a category up by slug
+ * rather than by name, so renaming "Cleaning" does not break the turnaround
+ * trigger, and the UI translates seeded names through it while showing
+ * custom ones exactly as typed.
+ */
+export interface ServiceType {
+  id: string;
+  name: string;
+  slug: string | null;
+  sort_order: number;
+  is_archived: boolean;
+  created_at: string;
+}
+
+export interface Contact {
+  id: string;
+  name: string;
+  company: string | null;
+  service_type_id: string | null;
+  phone: string | null;
+  email: string | null;
+  usual_property_id: string | null;
+  notes: string | null;
+  is_archived: boolean;
+  created_at: string;
+}
+
+export interface Asset {
+  id: string;
+  property_id: string;
+  room_id: string | null;
+  name: string;
+  make_model: string | null;
+  serial_number: string | null;
+  purchased_on: string | null;
+  cost: number | null;
+  supplier_name: string | null;
+  warranty_expires_on: string | null;
+  notes: string | null;
+  is_disposed: boolean;
+  created_at: string;
+}
+
+export interface JobRecurrence {
+  id: string;
+  property_id: string;
+  room_id: string | null;
+  service_type_id: string | null;
+  contact_id: string | null;
+  title: string;
+  frequency: RecurrenceFrequency;
+  day_of_week: number | null;
+  day_of_month: number | null;
+  cost: number | null;
+  starts_on: string;
+  ends_on: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface MaintenanceJob {
+  id: string;
+  property_id: string;
+  room_id: string | null;
+  service_type_id: string | null;
+  contact_id: string | null;
+  title: string;
+  description: string | null;
+  scheduled_for: string;
+  scheduled_time: string | null;
+  status: JobStatus;
+  completed_on: string | null;
+  cost: number | null;
+  is_paid: boolean;
+  paid_on: string | null;
+  source: JobSource;
+  recurrence_id: string | null;
+  checklist_section_id: string | null;
+  asset_id: string | null;
+  tenancy_id: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+/** A job with the names it needs to be readable on its own. */
+export interface JobWithContext extends MaintenanceJob {
+  property_name: string | null;
+  room_name: string | null;
+  service_type_name: string | null;
+  service_type_slug: string | null;
+  contact_name: string | null;
 }

@@ -27,5 +27,6 @@ export const DOC_TYPE_KEYS: Record<DocumentType, string> = {
   insurance: "documents.insurance",
   business_licence: "documents.businessLicence",
   warranty: "documents.warranty",
+  receipt: "documents.receipt",
   other: "documents.other",
 };

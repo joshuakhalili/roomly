@@ -33,6 +33,7 @@ const BUCKETS: Record<DocumentType, string> = {
   insurance: "handbooks",
   business_licence: "handbooks",
   warranty: "handbooks",
+  receipt: "handbooks",
   other: "handbooks",
 };
 
@@ -69,11 +70,16 @@ export async function uploadDocument(
   const tenantId = optionalText(formData.get("tenant_id"));
   const propertyId = optionalText(formData.get("property_id"));
   const roomId = optionalText(formData.get("room_id"));
+  // Filed from inside Maintenance. The document still belongs to the
+  // property so it appears in the library where paperwork lives — these
+  // only add the back-reference to the work it came from.
+  const jobId = optionalText(formData.get("maintenance_job_id"));
+  const assetId = optionalText(formData.get("asset_id"));
   const isCompanyWide = formData.get("is_company_wide") === "on";
   const docTypeRaw = optionalText(formData.get("doc_type"));
   const file = formData.get("file");
 
-  if (!tenancyId && !tenantId && !propertyId && !roomId && !isCompanyWide)
+  if (!tenancyId && !tenantId && !propertyId && !roomId && !isCompanyWide && !jobId && !assetId)
     return { ok: false, error: "Missing owner for this document." };
   if (!isDocumentType(docTypeRaw))
     return { ok: false, error: "Choose a document type." };
@@ -122,6 +128,8 @@ export async function uploadDocument(
     .from("documents")
     .insert({
       ...owner,
+      maintenance_job_id: jobId,
+      asset_id: assetId,
       doc_type: docTypeRaw,
       file_name: file.name,
       storage_path: `${bucket}/${path}`,

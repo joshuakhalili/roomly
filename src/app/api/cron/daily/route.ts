@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { generateDueDates, toDateString } from "@/lib/rent";
+import { generateJobDates } from "@/lib/jobs";
 import { addDays, differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
-import type { RentFrequency, Tenancy } from "@/lib/types";
+import type { JobRecurrence, RentFrequency, Tenancy } from "@/lib/types";
 
 /**
  * The once-a-day job.
@@ -50,13 +51,21 @@ export async function GET(request: Request) {
   const today = startOfDay(new Date());
   const todayStr = toDateString(today);
   const log: Record<string, number> = {};
+  // Anything that failed, returned rather than hidden — a cron whose only
+  // output is a success message cannot be trusted to have done anything.
+  const errors: string[] = [];
 
-  const { data: leadTime } = await supabase
-    .from("app_settings")
-    .select("value")
-    .eq("key", "move_alert_days")
-    .maybeSingle();
-  const moveAlertDays = Number(leadTime?.value) || DEFAULT_MOVE_ALERT_DAYS;
+  const setting = async (key: string, fallback: string) => {
+    const { data } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", key)
+      .maybeSingle();
+    return data?.value ?? fallback;
+  };
+
+  const moveAlertDays =
+    Number(await setting("move_alert_days", "")) || DEFAULT_MOVE_ALERT_DAYS;
 
   // ── 1. Extend rent schedules ─────────────────────────────────────────────
   const { data: tenancies } = await supabase
@@ -198,6 +207,133 @@ export async function GET(request: Request) {
     log.alerts = alerts.length;
   }
 
+  // ── 3b. Maintenance ──────────────────────────────────────────────────────
+  // Recurring arrangements are materialised into real rows the same way rent
+  // is, and for the same reason: a job you can see on a calendar, assign, and
+  // mark paid has to exist as a row. Computing it live would leave nothing to
+  // edit and no way to record what it cost.
+  const jobHorizon = new Date(today);
+  jobHorizon.setMonth(
+    jobHorizon.getMonth() + Number(await setting("job_horizon_months", "3")),
+  );
+
+  const { data: recurrences } = await supabase
+    .from("job_recurrences")
+    .select("*")
+    .eq("is_active", true);
+
+  const newJobs: Record<string, unknown>[] = [];
+  for (const r of (recurrences ?? []) as JobRecurrence[]) {
+    const dates = generateJobDates({
+      startsOn: r.starts_on,
+      endsOn: r.ends_on,
+      frequency: r.frequency,
+      dayOfWeek: r.day_of_week,
+      dayOfMonth: r.day_of_month,
+      horizon: jobHorizon,
+      from: today,
+    });
+    for (const scheduled_for of dates) {
+      newJobs.push({
+        property_id: r.property_id,
+        room_id: r.room_id,
+        service_type_id: r.service_type_id,
+        contact_id: r.contact_id,
+        title: r.title,
+        scheduled_for,
+        cost: r.cost,
+        source: "recurring",
+        recurrence_id: r.id,
+      });
+    }
+  }
+
+  if (newJobs.length) {
+    // Errors are surfaced, not swallowed. The first version ignored them and
+    // reported seventeen jobs "considered" while silently creating none —
+    // a failing write that looked exactly like a successful one.
+    const { error } = await supabase.from("maintenance_jobs").upsert(newJobs, {
+      onConflict: "recurrence_id,scheduled_for",
+      ignoreDuplicates: true,
+    });
+    if (error) errors.push(`recurring jobs: ${error.message}`);
+    log.jobs_considered = newJobs.length;
+  }
+
+  // The turnaround clean. This is the one the cleaning alert was gesturing at
+  // and never delivered: in practice cleans are not scheduled, they are
+  // caused by somebody moving out. A partial unique index keeps it to one per
+  // tenancy however many times this runs.
+  const turnaroundDays = Number(await setting("turnaround_clean_days", "2"));
+  if (turnaroundDays > 0 && recentlyEnded?.length) {
+    const { data: cleaning } = await supabase
+      .from("service_types")
+      .select("id")
+      .eq("slug", "cleaning")
+      .maybeSingle();
+
+    // Checked rather than upserted: the one-per-tenancy index has to stay
+    // partial (a plain unique on tenancy_id would stop a manual job ever
+    // referencing a tenancy), and ON CONFLICT cannot arbitrate on a partial
+    // index through PostgREST.
+    const { data: existing } = await supabase
+      .from("maintenance_jobs")
+      .select("tenancy_id")
+      .eq("source", "tenancy_end")
+      .in("tenancy_id", recentlyEnded.map((t) => t.id));
+    const alreadyBooked = new Set(
+      (existing ?? []).map((r) => r.tenancy_id as string),
+    );
+
+    const turnarounds: Record<string, unknown>[] = [];
+    for (const t of recentlyEnded) {
+      if (!t.end_date || alreadyBooked.has(t.id)) continue;
+
+      const { data: tenancy } = await supabase
+        .from("tenancies")
+        .select("room_id, rooms(property_id, name)")
+        .eq("id", t.id)
+        .single();
+      const room = tenancy?.rooms as unknown as
+        | { property_id: string; name: string }
+        | null;
+      if (!room) continue;
+
+      // Prefill whoever last cleaned this building — the usual answer, and
+      // still changeable before it happens.
+      const { data: lastCleaner } = await supabase
+        .from("maintenance_jobs")
+        .select("contact_id")
+        .eq("property_id", room.property_id)
+        .eq("service_type_id", cleaning?.id ?? "")
+        .not("contact_id", "is", null)
+        .order("scheduled_for", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      turnarounds.push({
+        property_id: room.property_id,
+        room_id: tenancy?.room_id ?? null,
+        service_type_id: cleaning?.id ?? null,
+        contact_id: lastCleaner?.contact_id ?? null,
+        title: `Turnaround clean — ${room.name}`,
+        scheduled_for: toDateString(
+          addDays(parseISO(t.end_date), turnaroundDays),
+        ),
+        source: "tenancy_end",
+        tenancy_id: t.id,
+      });
+    }
+
+    if (turnarounds.length) {
+      const { error } = await supabase
+        .from("maintenance_jobs")
+        .insert(turnarounds);
+      if (error) errors.push(`turnaround cleans: ${error.message}`);
+      else log.turnaround_cleans = turnarounds.length;
+    }
+  }
+
   // ── 4. Snapshot today's metrics ──────────────────────────────────────────
   // A live query can only ever answer "now". Without this row there is no
   // history to draw a trend from.
@@ -230,5 +366,10 @@ export async function GET(request: Request) {
     { onConflict: "snapshot_date" },
   );
 
-  return NextResponse.json({ ok: true, date: todayStr, ...log });
+  return NextResponse.json({
+    ok: errors.length === 0,
+    date: todayStr,
+    ...log,
+    ...(errors.length ? { errors } : {}),
+  });
 }

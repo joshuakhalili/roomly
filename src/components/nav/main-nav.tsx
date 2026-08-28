@@ -11,6 +11,7 @@ import {
   ChartLine,
   UserRound,
   FolderLock,
+  Wrench,
   Settings,
 } from "lucide-react";
 
@@ -30,6 +31,7 @@ const ITEMS = [
   { href: "/rent", labelKey: "rent", Icon: Banknote },
   { href: "/inventory", labelKey: "inventory", Icon: ClipboardList },
   { href: "/documents", labelKey: "documents", Icon: FolderLock },
+  { href: "/maintenance", labelKey: "maintenance", Icon: Wrench },
   { href: "/analytics", labelKey: "analytics", Icon: ChartLine },
   { href: "/settings", labelKey: "settings", Icon: Settings },
 ] as const;
@@ -49,7 +51,7 @@ const ITEMS = [
 const GROUPS = [
   { labelKey: "groupOverview", hrefs: ["/", "/analytics"] },
   { labelKey: "groupLettings", hrefs: ["/properties", "/tenants", "/rent"] },
-  { labelKey: "groupRecords", hrefs: ["/inventory", "/documents"] },
+  { labelKey: "groupRecords", hrefs: ["/inventory", "/documents", "/maintenance"] },
   { labelKey: "groupSystem", hrefs: ["/settings"] },
 ] as const;
 
@@ -110,9 +112,13 @@ export function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="grid grid-cols-8">
+      {/* Scrolls rather than squeezing. Nine items across a 375px phone
+          leaves 41px each, which fits the icons and truncates every label
+          to two characters. Fixed-width items with snap points keep the
+          labels readable and the first five visible without scrolling. */}
+      <ul className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {ITEMS.map(({ href, labelKey, Icon }) => (
-          <li key={href}>
+          <li key={href} className="w-[4.5rem] shrink-0 snap-start">
             <Link
               href={href}
               className={cn(
