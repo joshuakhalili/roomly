@@ -220,7 +220,10 @@
     "undoPaid": "撤销",
     "sendReminder": "发送提醒",
     "noPayments": "尚无租金记录。",
-    "paidOn": "已于 {date} 付款"
+    "paidOn": "已于 {date} 付款",
+    "needsChasing": "需要催缴",
+    "upcoming": "即将到期",
+    "nothingToChase": "无逾期款项。今天到期的租金将于明天开始催缴。"
   },
   "reminder": {
     "title": "发送提醒",
@@ -231,7 +234,8 @@
     "copied": "消息已复制。请打开微信并粘贴到 {name} 的聊天中。",
     "noPhone": "此租客未保存电话号码。",
     "noWechat": "此租客未保存微信号。",
-    "wechatNote": "微信没有可直接打开聊天的链接，因此消息已复制供您粘贴。"
+    "wechatNote": "微信没有可直接打开聊天的链接，因此消息已复制供您粘贴。",
+    "preferred": "该租客的偏好语言"
   },
   "inventory": {
     "title": "物品清点",
@@ -347,7 +351,8 @@
     "regenerate": "重置链接",
     "regenerateConfirm": "确定重置日历链接？",
     "regenerateWarning": "您当前的订阅将失效，需要使用新链接重新订阅。",
-    "keepPrivate": "请妥善保管此链接 — 任何持有该链接的人都能查看您的提醒。"
+    "keepPrivate": "请妥善保管此链接 — 任何持有该链接的人都能查看您的提醒。",
+    "you": "本人"
   },
   "common": {
     "save": "保存",

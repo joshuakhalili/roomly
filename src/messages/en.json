@@ -220,7 +220,10 @@
     "undoPaid": "Undo",
     "sendReminder": "Send reminder",
     "noPayments": "No rent payments recorded yet.",
-    "paidOn": "Paid {date}"
+    "paidOn": "Paid {date}",
+    "needsChasing": "Needs chasing",
+    "upcoming": "Upcoming",
+    "nothingToChase": "Nothing overdue. Rent due today is not chased until tomorrow."
   },
   "reminder": {
     "title": "Send a reminder",
@@ -231,7 +234,8 @@
     "copied": "Message copied. Open WeChat and paste it into {name}'s chat.",
     "noPhone": "No phone number saved for this tenant.",
     "noWechat": "No WeChat ID saved for this tenant.",
-    "wechatNote": "WeChat has no link that opens a chat directly, so the message is copied for you to paste."
+    "wechatNote": "WeChat has no link that opens a chat directly, so the message is copied for you to paste.",
+    "preferred": "Their preferred language"
   },
   "inventory": {
     "title": "Inventory",
@@ -347,7 +351,8 @@
     "regenerate": "Reset link",
     "regenerateConfirm": "Reset your calendar link?",
     "regenerateWarning": "Your current subscription will stop working and you will need to subscribe again with the new link.",
-    "keepPrivate": "Keep this link private — anyone who has it can see your reminders."
+    "keepPrivate": "Keep this link private — anyone who has it can see your reminders.",
+    "you": "You"
   },
   "common": {
     "save": "Save",
