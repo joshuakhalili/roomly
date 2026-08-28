@@ -48,6 +48,7 @@ export default async function AnalyticsPage({
     { data: jobs },
     { data: assets },
     { data: rentPaid },
+    { data: serviceTypes },
   ] = await Promise.all([
       /* Descending, then reversed below.
          Ascending + limit returns the *oldest* 180 days, so the chart drew
@@ -77,11 +78,13 @@ export default async function AnalyticsPage({
         .select("tenancy_id, amount_due, due_date")
         .eq("status", "paid")
         .gte("due_date", yearStartIso),
+      /* In the batch, not awaited after it.
+         This was a second `await` below the Promise.all, which made it a
+         separate round trip to the database for no reason — it depends on
+         nothing above it. Parallel queries cost one round trip between them;
+         a sequential one costs another in full. */
+      supabase.from("service_types").select("id, name, slug"),
     ]);
-
-  const { data: serviceTypes } = await supabase
-    .from("service_types")
-    .select("id, name, slug");
 
   const all = (tenancies ?? []) as Tenancy[];
 
