@@ -1,9 +1,20 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { version } from "./package.json";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Baked in at build time so the Settings page can say which build is
+  // actually running. Without the commit, "0.1.0" is the same string for
+  // every deploy and tells you nothing when something looks wrong in
+  // production but not locally.
+  env: {
+    APP_VERSION: version,
+    APP_COMMIT: (process.env.VERCEL_GIT_COMMIT_SHA ?? "local").slice(0, 7),
+    APP_ENV: process.env.VERCEL_ENV ?? "development",
+    APP_BUILT_AT: new Date().toISOString(),
+  },
   images: {
     remotePatterns: [
       {

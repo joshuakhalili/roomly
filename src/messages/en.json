@@ -14,7 +14,12 @@
     "language": "Language",
     "tenants": "Tenants",
     "documents": "Documents",
-    "retention": "Retention"
+    "retention": "Retention",
+    "settings": "Settings",
+    "groupOverview": "Overview",
+    "groupLettings": "Lettings",
+    "groupRecords": "Records",
+    "groupSystem": "System"
   },
   "auth": {
     "signIn": "Sign in",
@@ -456,5 +461,41 @@
       "tenancy_records": "Limitation Act 1980 s.5 — six years to bring a claim on a simple contract. HMRC requires business records for five years after the 31 January filing deadline, which falls inside the same window.",
       "inventory_photos": "No statutory period. The report preserves the visual record, so the originals stop being necessary once it exists — UK GDPR Article 5(1)(e)."
     }
+  },
+  "settings": {
+    "subtitle": "Your account, how the app looks, and what the automatic jobs do.",
+    "account": "Account",
+    "displayName": "Display name",
+    "language": "Language",
+    "digest": "Daily email summary",
+    "digestHelp": "One email each morning with the day's move-ins, move-outs and overdue rent.",
+    "digestUnavailable": "No email service is configured on this deployment, so the digest cannot be sent.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "changePassword": "Change password",
+    "passwordChanged": "Password changed",
+    "signOutHelp": "Signs you out on this device only.",
+    "appearance": "Appearance",
+    "appearanceHelp": "Applies to this device, not your account.",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "notifications": "Notifications",
+    "notificationsHelp": "Subscribe your calendar and the reminders arrive on your phone.",
+    "shared": "Shared settings",
+    "sharedHelp": "These affect everyone using Roomly, not just you.",
+    "adminsCount": "{count, plural, one {# person has access} other {# people have access}}",
+    "jobs": "Automatic jobs",
+    "jobsHelp": "What the nightly jobs do. Changing these affects everyone.",
+    "moveAlertDays": "Warn me this many days before a move",
+    "moveAlertHelp": "Applies to move-ins and move-outs. Rent is always flagged the day after it was due, so nobody is chased on the day itself.",
+    "photoPurgeDays": "Keep original photos for",
+    "photoPurgeHelp": "Days after a report is generated before the original photos are deleted and the PDF becomes the only copy.",
+    "purgeOnEnd": "Also delete photos when a tenancy ends",
+    "purgeOnEndHelp": "Clears the originals as soon as the tenancy is over, without waiting out the period above.",
+    "about": "About",
+    "version": "Version",
+    "build": "Build",
+    "environment": "Environment"
   }
 }

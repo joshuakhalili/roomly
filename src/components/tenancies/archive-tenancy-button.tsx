@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FormError } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import {
   Dialog,
   DialogContent,
@@ -88,23 +82,22 @@ export function ArchiveTenancyButton({
           </Field>
 
           <Field label={t("tenancy.reasonForLeaving")}>
-            <Select name="reason_for_leaving" defaultValue="end_of_term">
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="end_of_term">
-                  {t("tenancy.reasonEndOfTerm")}
-                </SelectItem>
-                <SelectItem value="tenant_gave_notice">
-                  {t("tenancy.reasonTenantNotice")}
-                </SelectItem>
-                <SelectItem value="given_notice_by_admin">
-                  {t("tenancy.reasonAdminNotice")}
-                </SelectItem>
-                <SelectItem value="other">{t("tenancy.reasonOther")}</SelectItem>
-              </SelectContent>
-            </Select>
+            <OptionSelect
+              name="reason_for_leaving"
+              defaultValue="end_of_term"
+              options={[
+                { value: "end_of_term", label: t("tenancy.reasonEndOfTerm") },
+                {
+                  value: "tenant_gave_notice",
+                  label: t("tenancy.reasonTenantNotice"),
+                },
+                {
+                  value: "given_notice_by_admin",
+                  label: t("tenancy.reasonAdminNotice"),
+                },
+                { value: "other", label: t("tenancy.reasonOther") },
+              ]}
+            />
           </Field>
 
           <Field label={t("tenancy.notes")}>

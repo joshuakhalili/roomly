@@ -4,6 +4,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Geist } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -35,7 +36,12 @@ export async function generateMetadata({
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  // Two values so iOS paints the status bar to match the active theme
+  // rather than showing a dark strip above a light page.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
   // Let iOS fill the notch area when installed to the home screen.
   viewportFit: "cover",
   width: "device-width",
@@ -56,12 +62,26 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale === "zh" ? "zh-Hans" : "en"} className={geist.variable}>
+    // suppressHydrationWarning is required by next-themes: it writes the
+    // theme class onto <html> before React hydrates, so the server's markup
+    // and the client's first render legitimately differ on this one element.
+    <html
+      lang={locale === "zh" ? "zh-Hans" : "en"}
+      className={geist.variable}
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        <NextIntlClientProvider>
-          {children}
-          <Toaster position="top-center" />
-        </NextIntlClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider>
+            {children}
+            <Toaster position="top-center" />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

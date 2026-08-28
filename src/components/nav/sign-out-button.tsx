@@ -7,7 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
-export function SignOutButton() {
+/**
+ * Icon-only in the header, where space is tight and the icon is universal.
+ * Labelled on the Settings page, where an unlabelled icon among form fields
+ * reads as decoration rather than the one control that ends your session.
+ */
+export function SignOutButton({ showLabel = false }: { showLabel?: boolean }) {
   const t = useTranslations("nav");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -24,14 +29,14 @@ export function SignOutButton() {
 
   return (
     <Button
-      variant="ghost"
+      variant={showLabel ? "outline" : "ghost"}
       size="sm"
       onClick={signOut}
       disabled={isPending}
       aria-label={t("signOut")}
     >
       <LogOut className="size-4" aria-hidden />
-      <span className="sr-only">{t("signOut")}</span>
+      {showLabel ? t("signOut") : <span className="sr-only">{t("signOut")}</span>}
     </Button>
   );
 }

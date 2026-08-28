@@ -28,8 +28,8 @@ export const maxDuration = 60;
 /** How far ahead rent rows are kept materialised. */
 const RENT_HORIZON_MONTHS = 3;
 
-/** Move-in and move-out are flagged from this many days out. */
-const MOVE_ALERT_DAYS = 3;
+/** Fallback if the setting is missing; the real value comes from app_settings. */
+const DEFAULT_MOVE_ALERT_DAYS = 3;
 
 /** Cleaning stays on the list this long after a tenancy ends. */
 const CLEANING_WINDOW_DAYS = 7;
@@ -50,6 +50,13 @@ export async function GET(request: Request) {
   const today = startOfDay(new Date());
   const todayStr = toDateString(today);
   const log: Record<string, number> = {};
+
+  const { data: leadTime } = await supabase
+    .from("app_settings")
+    .select("value")
+    .eq("key", "move_alert_days")
+    .maybeSingle();
+  const moveAlertDays = Number(leadTime?.value) || DEFAULT_MOVE_ALERT_DAYS;
 
   // ── 1. Extend rent schedules ─────────────────────────────────────────────
   const { data: tenancies } = await supabase
@@ -127,7 +134,7 @@ export async function GET(request: Request) {
   for (const t of (tenancies ?? []) as Tenancy[]) {
     if (t.status === "upcoming") {
       const days = differenceInCalendarDays(parseISO(t.start_date), today);
-      if (days >= 0 && days <= MOVE_ALERT_DAYS)
+      if (days >= 0 && days <= moveAlertDays)
         alerts.push({
           tenancy_id: t.id,
           rent_payment_id: null,
@@ -137,7 +144,7 @@ export async function GET(request: Request) {
     }
     if (t.status === "active" && t.end_date) {
       const days = differenceInCalendarDays(parseISO(t.end_date), today);
-      if (days >= 0 && days <= MOVE_ALERT_DAYS)
+      if (days >= 0 && days <= moveAlertDays)
         alerts.push({
           tenancy_id: t.id,
           rent_payment_id: null,

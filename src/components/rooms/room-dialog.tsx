@@ -10,13 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Field, FormError } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import {
   Dialog,
   DialogContent,
@@ -95,19 +89,16 @@ export function RoomDialog({
             htmlFor="unit_type"
             hint={t("rooms.typeHint")}
           >
-            <Select
+            <OptionSelect
+              id="unit_type"
               name="unit_type"
               defaultValue={room?.unit_type ?? "studio"}
               disabled={isPending}
-            >
-              <SelectTrigger id="unit_type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="studio">{t("rooms.unitStudio")}</SelectItem>
-                <SelectItem value="flat">{t("rooms.unitFlat")}</SelectItem>
-              </SelectContent>
-            </Select>
+              options={[
+                { value: "studio", label: t("rooms.unitStudio") },
+                { value: "flat", label: t("rooms.unitFlat") },
+              ]}
+            />
           </Field>
 
           <div className="flex items-center gap-2">

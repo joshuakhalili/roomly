@@ -73,15 +73,19 @@ export function CalendarFeedCard({
           </div>
         </div>
 
+        {/* min-w-0 on the input's wrapper: a flex item defaults to its
+            content's minimum width, and this URL is one long unbroken
+            string, so without it the input refuses to shrink and pushes the
+            buttons past the edge of the card. */}
         <div className="flex flex-col gap-2 sm:flex-row">
           <Input
             readOnly
             value={webcalUrl}
             onFocus={(e) => e.currentTarget.select()}
-            className="font-mono text-xs"
+            className="min-w-0 flex-1 font-mono text-xs"
             aria-label={t("admins.calendarFeed")}
           />
-          <div className="flex gap-2">
+          <div className="flex shrink-0 gap-2">
             <Button onClick={copy} disabled={isPending}>
               <Copy className="size-4" aria-hidden />
               {t("admins.copyLink")}

@@ -13,13 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Field } from "@/components/ui/field";
 import { ConfirmDelete } from "@/components/ui/confirm-delete";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import {
   Dialog,
   DialogContent,
@@ -191,18 +185,14 @@ export function ChecklistEditor({
               </DialogHeader>
               <form action={onAddArea} className="flex flex-col gap-4">
                 <Field label={t("rooms.type")} required>
-                  <Select name="area_type_id" defaultValue={areaTypes[0]?.id}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {areaTypes.map((at) => (
-                        <SelectItem key={at.id} value={at.id}>
-                          {at.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <OptionSelect
+                    name="area_type_id"
+                    defaultValue={areaTypes[0]?.id}
+                    options={areaTypes.map((at) => ({
+                      value: at.id,
+                      label: at.name,
+                    }))}
+                  />
                 </Field>
                 <Field
                   label={t("rooms.name")}

@@ -10,13 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FormError } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import { TenantPicker } from "@/components/tenants/tenant-picker";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Tenancy, Tenant, TenantOnTenancy } from "@/lib/types";
@@ -136,22 +130,16 @@ export function TenancyForm({
           </Field>
 
           <Field label={t("tenancy.status")}>
-            <Select
+            <OptionSelect
               name="status"
               defaultValue={tenancy?.status ?? "upcoming"}
               disabled={isPending}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="upcoming">
-                  {t("tenancy.statusUpcoming")}
-                </SelectItem>
-                <SelectItem value="active">{t("tenancy.statusActive")}</SelectItem>
-                <SelectItem value="ended">{t("tenancy.statusEnded")}</SelectItem>
-              </SelectContent>
-            </Select>
+              options={[
+                { value: "upcoming", label: t("tenancy.statusUpcoming") },
+                { value: "active", label: t("tenancy.statusActive") },
+                { value: "ended", label: t("tenancy.statusEnded") },
+              ]}
+            />
           </Field>
 
           <Field label={t("tenancy.rentAmount")} required>
@@ -167,28 +155,24 @@ export function TenancyForm({
           </Field>
 
           <Field label={t("tenancy.rentFrequency")}>
-            <Select
+            <OptionSelect
               name="rent_frequency"
-              defaultValue={frequency}
+              value={frequency}
               onValueChange={(v) => setFrequency(v as typeof frequency)}
               disabled={isPending}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="monthly">
-                  {t("tenancy.frequencyMonthly")}
-                </SelectItem>
-                <SelectItem value="weekly">{t("tenancy.frequencyWeekly")}</SelectItem>
-                <SelectItem value="fortnightly">
-                  {t("tenancy.frequencyFortnightly")}
-                </SelectItem>
-                <SelectItem value="four_weekly">
-                  {t("tenancy.frequencyFourWeekly")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              options={[
+                { value: "monthly", label: t("tenancy.frequencyMonthly") },
+                { value: "weekly", label: t("tenancy.frequencyWeekly") },
+                {
+                  value: "fortnightly",
+                  label: t("tenancy.frequencyFortnightly"),
+                },
+                {
+                  value: "four_weekly",
+                  label: t("tenancy.frequencyFourWeekly"),
+                },
+              ]}
+            />
           </Field>
 
           {/* Only meaningful for monthly rent — weekly schedules follow the
@@ -236,22 +220,16 @@ export function TenancyForm({
 
           {bankAccounts.length > 0 && (
             <Field label={t("tenancy.bankAccount")}>
-              <Select
+              <OptionSelect
                 name="bank_account_id"
                 defaultValue={tenancy?.bank_account_id ?? undefined}
                 disabled={isPending}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("common.notSet")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {bankAccounts.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>
-                      {b.bank_name} — {b.account_label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder={t("common.notSet")}
+                options={bankAccounts.map((b) => ({
+                  value: b.id,
+                  label: `${b.bank_name} — ${b.account_label}`,
+                }))}
+              />
             </Field>
           )}
         </div>

@@ -14,7 +14,12 @@
     "language": "语言",
     "tenants": "租客",
     "documents": "文件",
-    "retention": "数据保存"
+    "retention": "数据保存",
+    "settings": "设置",
+    "groupOverview": "概览",
+    "groupLettings": "租赁",
+    "groupRecords": "记录",
+    "groupSystem": "系统"
   },
   "auth": {
     "signIn": "登录",
@@ -456,5 +461,41 @@
       "tenancy_records": "《1980年时效法》第5条 — 简单合同的索赔时效为六年。英国税务海关总署要求业务记录在1月31日申报截止日后保留五年，该期限落在同一区间内。",
       "inventory_photos": "无法定期限。报告已保留视觉记录，因此原始照片在报告生成后即不再必要 — 英国《通用数据保护条例》第5(1)(e)条。"
     }
+  },
+  "settings": {
+    "subtitle": "您的账户、应用外观，以及自动任务的设置。",
+    "account": "账户",
+    "displayName": "显示名称",
+    "language": "语言",
+    "digest": "每日邮件摘要",
+    "digestHelp": "每天早上发送一封邮件，汇总当日的入住、退租与逾期租金。",
+    "digestUnavailable": "此部署未配置邮件服务，无法发送摘要。",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "changePassword": "修改密码",
+    "passwordChanged": "密码已修改",
+    "signOutHelp": "仅在此设备上退出登录。",
+    "appearance": "外观",
+    "appearanceHelp": "仅适用于此设备，不影响您的账户。",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeSystem": "跟随系统",
+    "notifications": "通知",
+    "notificationsHelp": "订阅日历后，提醒会直接发送到您的手机。",
+    "shared": "共享设置",
+    "sharedHelp": "以下设置对所有使用 Roomly 的人生效，不只是您。",
+    "adminsCount": "{count} 人拥有访问权限",
+    "jobs": "自动任务",
+    "jobsHelp": "每晚自动任务的行为。修改会影响所有人。",
+    "moveAlertDays": "提前多少天提醒搬迁",
+    "moveAlertHelp": "适用于入住与退租。租金始终在到期次日提醒，因此不会在当天催促任何人。",
+    "photoPurgeDays": "原始照片保留天数",
+    "photoPurgeHelp": "生成报告后经过多少天删除原始照片，此后 PDF 将成为唯一副本。",
+    "purgeOnEnd": "租约结束时一并删除照片",
+    "purgeOnEndHelp": "租约结束后立即清除原始照片，不必等待上述期限。",
+    "about": "关于",
+    "version": "版本",
+    "build": "构建",
+    "environment": "环境"
   }
 }

@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FormError } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import {
   Dialog,
   DialogContent,
@@ -115,40 +109,26 @@ export function LibraryUploadDialog({
 
         <form ref={formRef} action={onUpload} className="flex flex-col gap-4">
           <Field label={t("documents.type")} required>
-            <Select
+            <OptionSelect
               name="doc_type"
               value={docType}
               onValueChange={(v) => setDocType(v as DocumentType)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LIBRARY_DOCUMENT_TYPES.map((dt) => (
-                  <SelectItem key={dt} value={dt}>
-                    {t(DOC_TYPE_KEYS[dt])}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              options={LIBRARY_DOCUMENT_TYPES.map((dt) => ({
+                value: dt,
+                label: t(DOC_TYPE_KEYS[dt]),
+              }))}
+            />
           </Field>
 
           <Field label={t("documents.belongsTo")} required>
-            <Select value={owner} onValueChange={setOwner}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {properties.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-                <SelectItem value={COMPANY_VALUE}>
-                  {t("documents.companyWide")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <OptionSelect
+              value={owner}
+              onValueChange={setOwner}
+              options={[
+                ...properties.map((p) => ({ value: p.id, label: p.name })),
+                { value: COMPANY_VALUE, label: t("documents.companyWide") },
+              ]}
+            />
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">

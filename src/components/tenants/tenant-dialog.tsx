@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, FormError } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import {
   Dialog,
   DialogContent,
@@ -133,19 +127,15 @@ export function TenantDialog({
               />
             </Field>
             <Field label={t("tenancy.language")}>
-              <Select
+              <OptionSelect
                 name="preferred_language"
                 defaultValue={tenant?.preferred_language ?? "en"}
                 disabled={isPending}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="zh">简体中文</SelectItem>
-                </SelectContent>
-              </Select>
+                options={[
+                  { value: "en", label: "English" },
+                  { value: "zh", label: "简体中文" },
+                ]}
+              />
             </Field>
           </div>
 

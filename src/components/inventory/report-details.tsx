@@ -19,13 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Field } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import { Plus, Trash2, Gauge, KeyRound, BellRing, PenLine } from "lucide-react";
 import type {
   ChecklistDeclaration,
@@ -140,18 +134,18 @@ export function ReportDetails({
             className="flex flex-col gap-3 border-t pt-3"
           >
             <Field label={t("rooms.type")}>
-              <Select name="meter_type" defaultValue="electricity">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="electricity">
-                    {t("inventory.meterElectricity")}
-                  </SelectItem>
-                  <SelectItem value="gas">{t("inventory.meterGas")}</SelectItem>
-                  <SelectItem value="water">{t("inventory.meterWater")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <OptionSelect
+                name="meter_type"
+                defaultValue="electricity"
+                options={[
+                  {
+                    value: "electricity",
+                    label: t("inventory.meterElectricity"),
+                  },
+                  { value: "gas", label: t("inventory.meterGas") },
+                  { value: "water", label: t("inventory.meterWater") },
+                ]}
+              />
             </Field>
             <Field label={t("inventory.reading")} required>
               <Input name="reading" required inputMode="numeric" />
@@ -279,15 +273,14 @@ export function ReportDetails({
             className="flex flex-col gap-3 border-t pt-3"
           >
             <Field label={t("rooms.type")}>
-              <Select name="detector_type" defaultValue="smoke">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="smoke">{t("inventory.smokeAlarm")}</SelectItem>
-                  <SelectItem value="co">{t("inventory.coDetector")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <OptionSelect
+                name="detector_type"
+                defaultValue="smoke"
+                options={[
+                  { value: "smoke", label: t("inventory.smokeAlarm") },
+                  { value: "co", label: t("inventory.coDetector") },
+                ]}
+              />
             </Field>
             <Field label={t("inventory.location")}>
               <Input name="location" placeholder="Hallway" />

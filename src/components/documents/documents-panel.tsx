@@ -15,13 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Field, FormError } from "@/components/ui/field";
 import { ConfirmDelete } from "@/components/ui/confirm-delete";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { OptionSelect } from "@/components/ui/option-select";
 import {
   Dialog,
   DialogContent,
@@ -133,34 +127,27 @@ export function DocumentsPanel({
               )}
 
               <Field label={t("documents.type")} required>
-                <Select name="doc_type" defaultValue={offered[0]} required>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {offered.map((dt) => (
-                      <SelectItem key={dt} value={dt}>
-                        {t(DOC_TYPE_KEYS[dt])}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <OptionSelect
+                  name="doc_type"
+                  defaultValue={offered[0]}
+                  required
+                  options={offered.map((dt) => ({
+                    value: dt,
+                    label: t(DOC_TYPE_KEYS[dt]),
+                  }))}
+                />
               </Field>
 
               {scope === "tenancy" && tenants.length > 1 && (
                 <Field label={t("tenants.title")}>
-                  <Select name="tenant_id" defaultValue={tenants[0].id}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tenants.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.first_name} {p.surname}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <OptionSelect
+                    name="tenant_id"
+                    defaultValue={tenants[0].id}
+                    options={tenants.map((p) => ({
+                      value: p.id,
+                      label: `${p.first_name} ${p.surname}`,
+                    }))}
+                  />
                 </Field>
               )}
 
