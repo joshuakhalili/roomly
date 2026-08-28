@@ -6,7 +6,7 @@ import type { DocumentType } from "@/lib/types";
  */
 export const DOC_TYPE_KEYS: Record<DocumentType, string> = {
   // Follow the person
-  passport: "documents.passport",
+  id_document: "documents.idDocument",
   right_to_rent: "documents.rightToRent",
   reference_check: "documents.referenceCheck",
   // Belong to the letting
@@ -23,5 +23,9 @@ export const DOC_TYPE_KEYS: Record<DocumentType, string> = {
   hmo_licence: "documents.hmoLicence",
   legionella_assessment: "documents.legionellaAssessment",
   fire_safety: "documents.fireSafety",
+  maintenance_invoice: "documents.maintenanceInvoice",
+  insurance: "documents.insurance",
+  business_licence: "documents.businessLicence",
+  warranty: "documents.warranty",
   other: "documents.other",
 };

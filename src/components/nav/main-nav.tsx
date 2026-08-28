@@ -11,6 +11,7 @@ import {
   ChartLine,
   Users,
   UserRound,
+  FolderLock,
 } from "lucide-react";
 
 const ITEMS = [
@@ -19,6 +20,7 @@ const ITEMS = [
   { href: "/tenants", labelKey: "tenants", Icon: UserRound },
   { href: "/rent", labelKey: "rent", Icon: Banknote },
   { href: "/inventory", labelKey: "inventory", Icon: ClipboardList },
+  { href: "/documents", labelKey: "documents", Icon: FolderLock },
   { href: "/analytics", labelKey: "analytics", Icon: ChartLine },
   { href: "/admins", labelKey: "admins", Icon: Users },
 ] as const;
@@ -68,7 +70,7 @@ export function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="grid grid-cols-7">
+      <ul className="grid grid-cols-8">
         {ITEMS.map(({ href, labelKey, Icon }) => (
           <li key={href}>
             <Link

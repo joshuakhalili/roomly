@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PropertyDialog } from "@/components/properties/property-dialog";
 import { RoomDialog } from "@/components/rooms/room-dialog";
 import { DeletePropertyButton } from "@/components/properties/delete-property-button";
-import { CertificatesPanel } from "@/components/documents/certificates-panel";
+import { PropertyDocuments } from "@/components/documents/property-documents";
 import { ArrowLeft, ChevronRight, DoorOpen, Pencil, User } from "lucide-react";
 import type {
   DocumentRecord,
@@ -119,8 +119,8 @@ export default async function PropertyPage({
         </Card>
       )}
 
-      <CertificatesPanel
-        propertyId={propertyId}
+      <PropertyDocuments
+        property={prop}
         documents={(certificates ?? []) as DocumentRecord[]}
       />
 

@@ -31,7 +31,7 @@ export type ChecklistStatus = "draft" | "completed";
  */
 export type DocumentType =
   // Follow the person
-  | "passport"
+  | "id_document"
   | "right_to_rent"
   | "reference_check"
   // Belong to the letting
@@ -41,13 +41,17 @@ export type DocumentType =
   | "renters_rights_info"
   | "inventory_report"
   | "handbook"
-  // Belong to the property or room
+  // The business's own paperwork — the document library
   | "gas_safety"
   | "epc"
   | "eicr"
   | "hmo_licence"
   | "legionella_assessment"
   | "fire_safety"
+  | "maintenance_invoice"
+  | "insurance"
+  | "business_licence"
+  | "warranty"
   | "other";
 export type AppLanguage = "en" | "zh";
 export type LeavingReason =
@@ -67,7 +71,7 @@ export const CONDITION_ORDER: ConditionRating[] = [
 
 /** Identity and vetting — reused whenever the same person rents again. */
 export const TENANT_DOCUMENT_TYPES: DocumentType[] = [
-  "passport",
+  "id_document",
   "right_to_rent",
   "reference_check",
 ];
@@ -84,17 +88,38 @@ export const TENANCY_DOCUMENT_TYPES: DocumentType[] = [
 ];
 
 /**
- * Safety and compliance certificates for the building itself. They survive
- * tenant turnover and apply to whoever lives there next.
+ * The business's own paperwork, kept apart from anything tenant-facing.
+ * These survive tenant turnover and apply to whoever lives there next.
  */
-export const PROPERTY_DOCUMENT_TYPES: DocumentType[] = [
+export const LIBRARY_DOCUMENT_TYPES: DocumentType[] = [
   "gas_safety",
-  "epc",
   "eicr",
+  "epc",
   "hmo_licence",
   "legionella_assessment",
   "fire_safety",
+  "maintenance_invoice",
+  "insurance",
+  "business_licence",
+  "warranty",
   "other",
+];
+
+/** Statutory safety certificates, which expire and must be kept current. */
+export const CERTIFICATE_TYPES: DocumentType[] = [
+  "gas_safety",
+  "eicr",
+  "epc",
+  "hmo_licence",
+  "legionella_assessment",
+  "fire_safety",
+];
+
+/** Types where a supplier and cost are worth recording alongside the file. */
+export const INVOICE_TYPES: DocumentType[] = [
+  "maintenance_invoice",
+  "insurance",
+  "warranty",
 ];
 
 /**
@@ -237,6 +262,8 @@ export interface DocumentRecord {
   tenancy_id: string | null;
   property_id: string | null;
   room_id: string | null;
+  /** Business paperwork covering the whole operation, not one building. */
+  is_company_wide: boolean;
   doc_type: DocumentType;
   file_name: string;
   storage_path: string;
@@ -245,6 +272,9 @@ export interface DocumentRecord {
   issued_at: string | null;
   /** Certificates lapse; null for documents that never expire. */
   expires_at: string | null;
+  /** Who did the work or issued the policy — invoices and warranties. */
+  supplier_name: string | null;
+  amount: number | null;
   uploaded_at: string;
 }
 
