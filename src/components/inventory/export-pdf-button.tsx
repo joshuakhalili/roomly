@@ -6,6 +6,17 @@ import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { getPhotoUrls, recordPdfExport } from "@/lib/actions/inventory";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { FileDown } from "lucide-react";
 import type { PdfReportData, PdfArea } from "./report-pdf";
 import type {
@@ -179,9 +190,39 @@ export function ExportPdfButton({
   }
 
   return (
-    <Button onClick={generate} disabled={busy} variant="outline">
-      <FileDown className="size-4" aria-hidden />
-      {busy ? t("inventory.generating") : t("inventory.exportPdf")}
-    </Button>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button disabled={busy} variant="outline">
+          <FileDown className="size-4" aria-hidden />
+          {busy ? t("inventory.generating") : t("inventory.exportPdf")}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("inventory.exportConfirmTitle")}</AlertDialogTitle>
+          {/* Stated before it happens, not discovered afterwards. Once the
+              originals go, what survives is whatever the PDF flattened — no
+              re-cropping, no zooming back to full resolution. That is the
+              intended trade at ~30 rooms of photos, but it is a real one. */}
+          <AlertDialogDescription>
+            {t("inventory.exportConfirmBody", { count: photos.length })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={busy}>
+            {t("common.cancel")}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              generate();
+            }}
+            disabled={busy}
+          >
+            {t("inventory.exportPdf")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

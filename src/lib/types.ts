@@ -215,6 +215,9 @@ export interface Tenancy {
   reason_notes: string | null;
   notes: string | null;
   archived_at: string | null;
+  /** Suspends the retention clock while a dispute or claim is live. */
+  legal_hold: boolean;
+  legal_hold_reason: string | null;
   created_at: string;
 }
 

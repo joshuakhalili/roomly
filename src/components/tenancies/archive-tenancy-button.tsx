@@ -27,8 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import { Archive } from "lucide-react";
 
-const RETENTION_YEARS = 5;
-
 /**
  * Ends a tenancy and frees the room.
  *
@@ -75,7 +73,7 @@ export function ArchiveTenancyButton({
         <DialogHeader>
           <DialogTitle>{t("tenancy.archiveConfirm")}</DialogTitle>
           <DialogDescription>
-            {t("tenancy.archiveWarning", { years: RETENTION_YEARS })}
+            {t("tenancy.archiveWarning")}
           </DialogDescription>
         </DialogHeader>
 

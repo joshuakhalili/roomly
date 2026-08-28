@@ -13,7 +13,8 @@
     "signOut": "Sign out",
     "language": "Language",
     "tenants": "Tenants",
-    "documents": "Documents"
+    "documents": "Documents",
+    "retention": "Retention"
   },
   "auth": {
     "signIn": "Sign in",
@@ -134,7 +135,7 @@
     "never": "Never",
     "archive": "Archive tenancy",
     "archiveConfirm": "Archive this tenancy?",
-    "archiveWarning": "This frees the room for the next tenant. The record and its documents are kept, then permanently deleted after {years} years.",
+    "archiveWarning": "This frees the room for the next tenant. Identity documents are erased one year after the tenancy ends; the rest of the record is kept for six years.",
     "reasonForLeaving": "Reason for leaving",
     "reasonEndOfTerm": "End of agreed term",
     "reasonTenantNotice": "Tenant gave notice",
@@ -146,7 +147,16 @@
     "deposit": "Deposit",
     "noEndDate": "No end date set",
     "depositProtected": "Protected with {scheme}",
-    "depositNotProtected": "No scheme recorded"
+    "depositNotProtected": "No scheme recorded",
+    "holdPlace": "Place legal hold",
+    "holdOn": "On legal hold",
+    "holdLift": "Lift hold",
+    "holdPlaceTitle": "Place a legal hold?",
+    "holdPlaceHelp": "Stops this tenancy and its documents being erased when their retention period ends. Use while a dispute or claim is live.",
+    "holdLiftTitle": "Lift the legal hold?",
+    "holdLiftHelp": "The normal retention periods start applying again. Anything already past its period may be erased on the next run.",
+    "holdReason": "Reason",
+    "holdReasonPlaceholder": "e.g. deposit dispute in arbitration"
   },
   "documents": {
     "title": "Documents",
@@ -321,7 +331,9 @@
     "removeSelected": "Remove {count}",
     "removeWarning": "{count, plural, one {# section has ratings or photos} other {# sections have ratings or photos}} that will be lost.",
     "sectionNamePlaceholder": "e.g. Wall fixtures",
-    "custom": "Custom"
+    "custom": "Custom",
+    "exportConfirmTitle": "Generate the report?",
+    "exportConfirmBody": "The PDF is saved as the permanent record for this checklist. The {count} original photos are then deleted automatically once the report has been kept for the retention period — after that the report is the only copy, at the resolution it was flattened to."
   },
   "analytics": {
     "title": "Analytics",
@@ -399,5 +411,50 @@
     "selectedCount": "{count, plural, =0 {No tenants chosen} one {# tenant} other {# tenants}}",
     "deleteConfirm": "Delete this tenant?",
     "deleteWarning": "This permanently deletes the person, their documents, and their tenancy history. This cannot be undone."
+  },
+  "retention": {
+    "subtitle": "How long each kind of record is kept, why, and what has been erased.",
+    "policy": "Retention policy",
+    "mustDestroy": "Destruction required",
+    "from": "From {clock}",
+    "years": "{count, plural, one {# year} other {# years}}",
+    "months": "{count, plural, one {# month} other {# months}}",
+    "onExport": "On export",
+    "catIdentity": "Identity documents",
+    "catTenancy": "Tenancy records",
+    "catPhotos": "Inventory photos",
+    "modeLive": "Automatic erasure is on",
+    "modeLiveHelp": "The nightly job permanently deletes records once they pass the periods below.",
+    "modePreview": "Preview only — nothing is being deleted",
+    "modePreviewHelp": "The nightly job works out what is due and records it, but deletes nothing until this is turned on.",
+    "enable": "Turn on automatic erasure",
+    "disable": "Switch back to preview",
+    "enableConfirmTitle": "Turn on automatic erasure?",
+    "enableConfirmBody": "The next run will permanently delete {count} records and the files behind them. This cannot be undone. Review the list below first.",
+    "refreshPreview": "Recalculate",
+    "previewRefreshed": "Preview updated",
+    "dueNow": "Due for erasure",
+    "nothingDue": "Nothing has passed its retention period.",
+    "record": "Record",
+    "category": "Category",
+    "dueSince": "Due since",
+    "rows": "Records",
+    "files": "Files",
+    "onHold": "Being kept back",
+    "heldLegal": "tenancies under legal hold",
+    "heldNoEndDate": "tenants whose last tenancy has no end date",
+    "log": "Erasure log",
+    "logHelp": "Proof that erasure happened. Deliberately records the room and date only — never a name, since this log outlives the data it describes.",
+    "logEmpty": "Nothing has been erased yet.",
+    "clock": {
+      "identity_documents": "the day the tenancy ends",
+      "tenancy_records": "the day the tenancy ends",
+      "inventory_photos": "the day the PDF report is generated"
+    },
+    "basis": {
+      "identity_documents": "Home Office, Landlord's guide to right to rent checks (26 June 2025): copies must be retained for the duration of the tenancy and at least one year thereafter, and \"must then be securely destroyed\".",
+      "tenancy_records": "Limitation Act 1980 s.5 — six years to bring a claim on a simple contract. HMRC requires business records for five years after the 31 January filing deadline, which falls inside the same window.",
+      "inventory_photos": "No statutory period. The report preserves the visual record, so the originals stop being necessary once it exists — UK GDPR Article 5(1)(e)."
+    }
   }
 }

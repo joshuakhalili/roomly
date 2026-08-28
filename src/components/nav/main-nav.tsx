@@ -12,6 +12,7 @@ import {
   Users,
   UserRound,
   FolderLock,
+  ShieldCheck,
 } from "lucide-react";
 
 const ITEMS = [
@@ -23,7 +24,13 @@ const ITEMS = [
   { href: "/documents", labelKey: "documents", Icon: FolderLock },
   { href: "/analytics", labelKey: "analytics", Icon: ChartLine },
   { href: "/admins", labelKey: "admins", Icon: Users },
+  // Settings rather than daily work. The phone's tab bar is already at
+  // eight and a ninth would make every label unreadable, so this one is
+  // desktop-only in the nav and reached from the Admins page on a phone.
+  { href: "/retention", labelKey: "retention", Icon: ShieldCheck },
 ] as const;
+
+const BOTTOM_BAR_ITEMS = ITEMS.filter((i) => i.href !== "/retention");
 
 function useIsActive() {
   const pathname = usePathname();
@@ -71,7 +78,7 @@ export function BottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="grid grid-cols-8">
-        {ITEMS.map(({ href, labelKey, Icon }) => (
+        {BOTTOM_BAR_ITEMS.map(({ href, labelKey, Icon }) => (
           <li key={href}>
             <Link
               href={href}

@@ -13,7 +13,8 @@
     "signOut": "退出登录",
     "language": "语言",
     "tenants": "租客",
-    "documents": "文件"
+    "documents": "文件",
+    "retention": "数据保存"
   },
   "auth": {
     "signIn": "登录",
@@ -134,7 +135,7 @@
     "never": "从未",
     "archive": "归档租约",
     "archiveConfirm": "确定归档此租约？",
-    "archiveWarning": "此操作将释放该房间以供下一位租客使用。记录及文件将保留，并在 {years} 年后永久删除。",
+    "archiveWarning": "房间将空出供下一位租客使用。身份证明文件将在租约结束一年后删除，其余记录保存六年。",
     "reasonForLeaving": "离开原因",
     "reasonEndOfTerm": "租期届满",
     "reasonTenantNotice": "租客提出退租",
@@ -146,7 +147,16 @@
     "deposit": "押金",
     "noEndDate": "未设置结束日期",
     "depositProtected": "已通过 {scheme} 保护",
-    "depositNotProtected": "未记录保护方案"
+    "depositNotProtected": "未记录保护方案",
+    "holdPlace": "设置法律保留",
+    "holdOn": "法律保留中",
+    "holdLift": "解除保留",
+    "holdPlaceTitle": "确定设置法律保留？",
+    "holdPlaceHelp": "此租约及其文件在保存期结束后不会被删除。适用于纠纷或索赔进行期间。",
+    "holdLiftTitle": "确定解除法律保留？",
+    "holdLiftHelp": "将恢复正常的保存期限。已超过期限的数据可能在下次运行时被删除。",
+    "holdReason": "原因",
+    "holdReasonPlaceholder": "例如：押金纠纷仲裁中"
   },
   "documents": {
     "title": "文件",
@@ -321,7 +331,9 @@
     "removeSelected": "删除 {count} 项",
     "removeWarning": "其中 {count} 个项目已有评级或照片，将一并删除。",
     "sectionNamePlaceholder": "例如：墙面固定装置",
-    "custom": "自定义"
+    "custom": "自定义",
+    "exportConfirmTitle": "确定生成报告？",
+    "exportConfirmBody": "此 PDF 将作为该清单的永久记录保存。{count} 张原始照片会在报告保存满保留期后自动删除 — 此后仅剩报告，且分辨率为生成时的版本。"
   },
   "analytics": {
     "title": "数据分析",
@@ -399,5 +411,50 @@
     "selectedCount": "{count, plural, =0 {未选择租客} other {已选 # 位租客}}",
     "deleteConfirm": "确定删除此租客？",
     "deleteWarning": "这将永久删除该租客、其文件及所有租约记录。此操作无法撤销。"
+  },
+  "retention": {
+    "subtitle": "各类记录的保存期限、依据，以及已删除的内容。",
+    "policy": "数据保存政策",
+    "mustDestroy": "法律要求销毁",
+    "from": "自{clock}起计算",
+    "years": "{count} 年",
+    "months": "{count} 个月",
+    "onExport": "导出后",
+    "catIdentity": "身份证明文件",
+    "catTenancy": "租约记录",
+    "catPhotos": "物品清单照片",
+    "modeLive": "自动删除已开启",
+    "modeLiveHelp": "每晚的任务会在记录超过下列期限后将其永久删除。",
+    "modePreview": "仅预览 — 不会删除任何内容",
+    "modePreviewHelp": "每晚的任务会计算并记录到期内容，但在开启之前不会删除任何数据。",
+    "enable": "开启自动删除",
+    "disable": "切换回预览模式",
+    "enableConfirmTitle": "确定开启自动删除？",
+    "enableConfirmBody": "下次运行将永久删除 {count} 条记录及其文件，且无法恢复。请先查看下方列表。",
+    "refreshPreview": "重新计算",
+    "previewRefreshed": "预览已更新",
+    "dueNow": "待删除",
+    "nothingDue": "目前没有超过保存期限的记录。",
+    "record": "记录",
+    "category": "类别",
+    "dueSince": "到期日",
+    "rows": "记录数",
+    "files": "文件数",
+    "onHold": "暂缓删除",
+    "heldLegal": "个租约处于法律保留状态",
+    "heldNoEndDate": "位租客的最后租约没有结束日期",
+    "log": "删除记录",
+    "logHelp": "删除行为的凭证。仅记录房间与日期，不含姓名 — 因为此日志的保存期长于它所描述的数据。",
+    "logEmpty": "尚未删除任何数据。",
+    "clock": {
+      "identity_documents": "租约结束之日",
+      "tenancy_records": "租约结束之日",
+      "inventory_photos": "生成 PDF 报告之日"
+    },
+    "basis": {
+      "identity_documents": "英国内政部《房东租房资格查验指南》（2025年6月26日）：文件副本须在租约存续期间及结束后至少保留一年，此后「必须安全销毁」。",
+      "tenancy_records": "《1980年时效法》第5条 — 简单合同的索赔时效为六年。英国税务海关总署要求业务记录在1月31日申报截止日后保留五年，该期限落在同一区间内。",
+      "inventory_photos": "无法定期限。报告已保留视觉记录，因此原始照片在报告生成后即不再必要 — 英国《通用数据保护条例》第5(1)(e)条。"
+    }
   }
 }

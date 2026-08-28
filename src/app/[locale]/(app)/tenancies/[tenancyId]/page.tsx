@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { TenancyForm } from "@/components/tenancies/tenancy-form";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { ArchiveTenancyButton } from "@/components/tenancies/archive-tenancy-button";
+import { LegalHoldButton } from "@/components/tenancies/legal-hold-button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
@@ -84,10 +85,24 @@ export default async function TenancyPage({
             <Badge variant={ten.status === "active" ? "default" : "secondary"}>
               {t(STATUS_KEY[ten.status])}
             </Badge>
+            {ten.legal_hold && (
+              <Badge variant="destructive">{t("tenancy.holdOn")}</Badge>
+            )}
           </div>
-          {ten.status !== "archived" && (
-            <ArchiveTenancyButton id={ten.id} endDate={ten.end_date} />
-          )}
+          <div className="flex flex-wrap gap-2">
+            {/* Offered once the tenancy is over — that is when the retention
+                clock starts, and so when freezing it means anything. */}
+            {(ten.status === "ended" || ten.status === "archived") && (
+              <LegalHoldButton
+                id={ten.id}
+                held={ten.legal_hold}
+                reason={ten.legal_hold_reason}
+              />
+            )}
+            {ten.status !== "archived" && (
+              <ArchiveTenancyButton id={ten.id} endDate={ten.end_date} />
+            )}
+          </div>
         </div>
       </div>
 

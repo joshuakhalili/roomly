@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AddAdminDialog } from "@/components/admins/add-admin-dialog";
 import { CalendarFeedCard } from "@/components/admins/calendar-feed-card";
-import { UserRound } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { UserRound, ShieldCheck } from "lucide-react";
 import type { Profile } from "@/lib/types";
 
 export default async function AdminsPage({
@@ -44,6 +45,22 @@ export default async function AdminsPage({
       </header>
 
       {me && <CalendarFeedCard profile={me} appUrl={appUrl} />}
+
+      {/* The Retention page is desktop-sidebar-only — the phone's tab bar is
+          full — so this is how it is reached on a phone. */}
+      <Link href="/retention" className="md:hidden">
+        <Card className="transition-colors hover:bg-secondary/40">
+          <CardContent className="flex items-center gap-3 p-4">
+            <ShieldCheck className="size-5 shrink-0" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{t("nav.retention")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("retention.subtitle")}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
 
       <section className="flex flex-col gap-3">
         <h2 className="font-semibold">{t("admins.title")}</h2>
