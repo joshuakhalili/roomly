@@ -417,18 +417,51 @@
 }
 
 @layer base {
+  /* Figures.
+
+     Numbers get the mono face, not the UI face. Two reasons, and neither is
+     decoration: its digits are all one width, so a column of amounts stops
+     wobbling row to row; and it visually separates "this is data" from "this
+     is a label", which is most of what was missing — every figure on the page
+     used to be the same size and weight as the text around it, so nothing
+     looked more important than anything else.
+
+     Tracking goes negative as size goes up: at display sizes letters drift
+     apart, and a large number set at 0 tracking reads as loose. */
+  .text-figure {
+    /* Sans, not mono. Mono was the obvious choice and the wrong one: it gives
+       the comma its own full-width cell, so "£2,378" renders as "£2 , 378" —
+       visibly broken at display size. `tabular-nums` gets the column alignment
+       that mattered while leaving punctuation its natural width.
+
+       Geist Mono still loads, because `font-mono` is used for the calendar
+       feed URL and the build hash, and its token was broken until now. */
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
   /* Display figures — the big bento numbers. */
   .text-display {
-    font-size: clamp(2rem, 1.4rem + 2vw, 3rem);
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-    font-weight: 600;
+    font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3.25rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    font-weight: 700;
   }
   .text-stat {
-    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    font-weight: 600;
+    font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  /* The label above a figure. Small, quiet, and spaced out — it is there to
+     be read once and then ignored, so the number can be the loud thing. */
+  .text-metric-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
   }
   h1,
   .text-title {

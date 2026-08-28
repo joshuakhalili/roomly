@@ -245,30 +245,24 @@ export default async function AnalyticsPage({
           <div className="grid gap-3 sm:grid-cols-3">
             <Card>
               <CardContent className="p-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("analytics.rentCollected")}
-                </p>
-                <p className="mt-2 text-2xl font-semibold tabular-nums text-emerald-600">
+                <p className="text-metric-label">{t("analytics.rentCollected")}</p>
+                <p className="text-figure text-stat mt-2 text-success">
                   {money(totalIncome)}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("analytics.spent")}
-                </p>
-                <p className="mt-2 text-2xl font-semibold tabular-nums text-destructive">
+                <p className="text-metric-label">{t("analytics.spent")}</p>
+                <p className="text-figure text-stat mt-2 text-destructive">
                   {money(totalSpend)}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t("analytics.net")}
-                </p>
-                <p className="mt-2 text-2xl font-semibold tabular-nums">
+                <p className="text-metric-label">{t("analytics.net")}</p>
+                <p className="text-figure text-stat mt-2">
                   {money(totalIncome - totalSpend)}
                 </p>
               </CardContent>
@@ -311,13 +305,13 @@ export default async function AnalyticsPage({
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">
+                      <TableCell className="text-figure text-right">
                         {money(p.income)}
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">
+                      <TableCell className="text-figure text-right">
                         {money(p.jobs)}
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">
+                      <TableCell className="text-figure text-right">
                         {money(p.purchases)}
                       </TableCell>
                       <TableCell
@@ -372,7 +366,7 @@ export default async function AnalyticsPage({
             <p className="text-sm font-medium text-muted-foreground">
               {t("analytics.timeToFill")}
             </p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums">
+            <p className="text-figure text-stat mt-2">
               {averageGap === null
                 ? "—"
                 : t("analytics.days", { count: averageGap })}

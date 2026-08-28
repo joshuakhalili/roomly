@@ -44,10 +44,10 @@ export function OccupancyTrend({ points }: { points: Point[] }) {
       <CardContent className="flex flex-col gap-4 p-4">
         <div className="flex flex-wrap items-baseline gap-3">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-metric-label">
               {t("analytics.occupancyOverTime")}
             </p>
-            <p className="text-2xl font-semibold tabular-nums">
+            <p className="text-figure text-stat">
               {latest.occupancy}%
             </p>
           </div>
@@ -64,10 +64,10 @@ export function OccupancyTrend({ points }: { points: Point[] }) {
             </span>
           )}
           <div className="ml-auto text-right">
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-metric-label">
               {t("analytics.rentRoll")}
             </p>
-            <p className="text-lg font-semibold tabular-nums">
+            <p className="text-figure text-lg font-bold">
               {format.number(latest.rent, {
                 style: "currency",
                 currency: "GBP",

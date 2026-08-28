@@ -26,21 +26,19 @@ export function MetricCard({
     <Card>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+          <p className="text-metric-label">{label}</p>
           <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         </div>
         <p
           className={cn(
-            "mt-2 text-2xl font-semibold tabular-nums",
-            tone === "warning" && "text-amber-600 dark:text-amber-500",
+            "text-figure text-stat mt-2",
+            tone === "warning" && "text-warning",
             tone === "danger" && "text-destructive",
           )}
         >
           {value}
         </p>
-        {hint && (
-          <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
-        )}
+        {hint && <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>}
       </CardContent>
     </Card>
   );

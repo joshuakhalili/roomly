@@ -111,13 +111,13 @@ export function RentTable({
           <CardContent className="flex items-center gap-3 p-4">
             <Banknote className="size-5 shrink-0 text-destructive" aria-hidden />
             <div>
-              <p className="text-2xl font-semibold tabular-nums text-destructive">
+              <p className="text-figure text-stat text-destructive">
                 {format.number(overdueTotal, {
                   style: "currency",
                   currency: "GBP",
                 })}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="mt-0.5 text-metric-label">
                 {t("dashboard.overdueCount", { count: counts.attention })}
               </p>
             </div>
@@ -193,7 +193,7 @@ export function RentTable({
                       </p>
                     </div>
 
-                    <p className="shrink-0 font-semibold tabular-nums">
+                    <p className="text-figure shrink-0 text-base font-semibold">
                       {format.number(Number(payment.amount_due), {
                         style: "currency",
                         currency: "GBP",
