@@ -48,13 +48,23 @@
     "noAlerts": "Nothing needs attention today.",
     "rooms": "Rooms",
     "noRooms": "No rooms yet. Add a property to get started.",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "collectedThisMonth": "Collected this month",
+    "ofExpected": "of {amount} expected",
+    "outstandingThisMonth": "{amount} still outstanding",
+    "vsDaysAgo": "vs {days} days ago",
+    "points": "{points, plural, one {# point} other {# points}}",
+    "roomsDelta": "{count, plural, one {# room} other {# rooms}}",
+    "vacantOfTotal": "of {total} lettable"
   },
   "alerts": {
-    "moveInSoon": "{name} moves into {room} in {days, plural, =0 {today} one {# day} other {# days}}",
-    "moveOutSoon": "{name} moves out of {room} in {days, plural, =0 {today} one {# day} other {# days}}",
-    "rentOverdue": "Rent of {amount} from {name} ({room}) was due {date}",
-    "cleaningDue": "{room} needs cleaning — tenancy ended {date}"
+    "kindOverdue": "Rent overdue",
+    "kindMoveIn": "Moving in",
+    "kindMoveOut": "Moving out",
+    "kindCleaning": "Needs cleaning",
+    "overdueSince": "{count, plural, one {# payment} other {# payments}} since {date}",
+    "inDays": "{days, plural, =0 {Today} one {In # day} other {In # days}}",
+    "endedOn": "Ended {date}"
   },
   "filters": {
     "all": "All",
@@ -81,7 +91,10 @@
     "addFirst": "Add your first property",
     "deleteConfirm": "Delete this property?",
     "deleteWarning": "This permanently removes the property, its rooms, and every tenancy record inside it. This cannot be undone.",
-    "one": "Property"
+    "one": "Property",
+    "rentRoll": "Rent roll",
+    "perMonth": "Per month, active lettings",
+    "acrossBuildings": "{count, plural, one {Across # building} other {Across # buildings}}"
   },
   "rooms": {
     "title": "Rooms",
@@ -244,7 +257,11 @@
     "paidOn": "Paid {date}",
     "needsChasing": "Needs chasing",
     "upcoming": "Upcoming",
-    "nothingToChase": "Nothing overdue. Rent due today is not chased until tomorrow."
+    "nothingToChase": "Nothing overdue. Rent due today is not chased until tomorrow.",
+    "outstandingCount": "{count, plural, one {# payment} other {# payments}} outstanding",
+    "oldestDue": "oldest due {date}",
+    "showPayments": "Show payments",
+    "hidePayments": "Hide payments"
   },
   "reminder": {
     "title": "Send a reminder",
@@ -366,7 +383,8 @@
     "work": "Work",
     "purchases": "Purchases",
     "spendByType": "Where it went",
-    "unpaidBills": "{amount} unpaid"
+    "unpaidBills": "{amount} unpaid",
+    "turnover": "Turnover"
   },
   "admins": {
     "title": "Admins",
@@ -432,7 +450,12 @@
     "pickHint": "Choose from existing tenant profiles, or create a new one. Their details and identity documents carry over.",
     "selectedCount": "{count, plural, =0 {No tenants chosen} one {# tenant} other {# tenants}}",
     "deleteConfirm": "Delete this tenant?",
-    "deleteWarning": "This permanently deletes the person, their documents, and their tenancy history. This cannot be undone."
+    "deleteWarning": "This permanently deletes the person, their documents, and their tenancy history. This cannot be undone.",
+    "archived": "Archived",
+    "inARoom": "In a room",
+    "ofActive": "of {total} people",
+    "betweenLettings": "Between lettings",
+    "keptForRecords": "Kept for records"
   },
   "retention": {
     "subtitle": "How long each kind of record is kept, why, and what has been erased.",

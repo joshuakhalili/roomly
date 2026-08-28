@@ -34,6 +34,7 @@
   --brand-grad-1: oklch(0.55 0.27 292);
   --brand-grad-2: oklch(0.60 0.29 340);
   --brand-grad-3: oklch(0.74 0.19 55);
+
 }
 
 @theme inline {
@@ -86,15 +87,11 @@
   --color-info-foreground: var(--info-foreground);
   --color-info-muted: var(--info-muted);
 
-  /* Brand + aurora hues. Decorative; not for status. */
+  /* Brand. Decorative; not for status. */
   --color-brand: var(--brand);
   --color-brand-grad-1: var(--brand-grad-1);
   --color-brand-grad-2: var(--brand-grad-2);
   --color-brand-grad-3: var(--brand-grad-3);
-  --color-aurora-violet: var(--aurora-violet);
-  --color-aurora-magenta: var(--aurora-magenta);
-  --color-aurora-orange: var(--aurora-orange);
-  --color-aurora-blue: var(--aurora-blue);
 
   /* Distinguishable hues, not the grey ramp they replace. */
   --color-chart-1: var(--chart-1);
@@ -135,7 +132,11 @@
   --secondary: oklch(0.96 0.008 285);
   --secondary-foreground: oklch(0.28 0.03 285);
   --muted: oklch(0.96 0.008 285);
-  --muted-foreground: oklch(0.50 0.02 285);
+  /* 0.48, not 0.50. Secondary text now sits on tinted cards as well as plain
+     ones, and a red-washed surface took the old value down to 4.46:1 — under
+     the 4.5 line. Solved in the browser against the worst of the six tints
+     rather than nudged by eye. */
+  --muted-foreground: oklch(0.48 0.02 285);
   --accent: oklch(0.95 0.02 292);
   --accent-foreground: oklch(0.34 0.10 292);
 
@@ -164,6 +165,9 @@
   --input: oklch(0.90 0.008 285);
   --ring: oklch(0.52 0.24 292);
 
+  /* The ruling in an unfilled meter track. */
+  --meter-rule: oklch(0.18 0.02 285 / 0.16);
+
   /* ── Charts ───────────────────────────────────────────────────────────── */
   --chart-1: oklch(0.52 0.24 292);
   --chart-2: oklch(0.58 0.18 255);
@@ -172,14 +176,23 @@
   --chart-5: oklch(0.60 0.22 350);
 
   /* ── Aurora ───────────────────────────────────────────────────────────── */
-  /* Same hue positions as the dark reference but far lighter and much less
-     saturated. A dimmed version of a neon gradient reads as dirty; a pale
-     wash of the same hues reads as deliberate. */
-  --aurora-blue: oklch(0.80 0.10 255);
-  --aurora-orange: oklch(0.86 0.10 60);
-  --aurora-magenta: oklch(0.82 0.13 340);
-  --aurora-violet: oklch(0.78 0.14 292);
-  --aurora-opacity: 0.42;
+  /* Light mode runs blue, and is a different gradient from dark rather than a
+     faded copy of it.
+
+     The earlier version took the dark violet-magenta-orange mesh and washed it
+     out, which is how you get a background that looks slightly dirty: those
+     hues are built to glow against near-black, and pale versions of them read
+     as stains on white. A blue family is its own thing — cool, quiet, and it
+     stays out of the way of every status colour in the app, none of which are
+     blue except `info`.
+
+     Kept deliberately calm. This sits behind everything on every screen, so it
+     is atmosphere, not decoration you should notice twice. */
+  --aurora-1: oklch(0.88 0.06 235);
+  --aurora-2: oklch(0.92 0.05 205);
+  --aurora-3: oklch(0.87 0.06 258);
+  --aurora-4: oklch(0.84 0.08 245);
+  --aurora-opacity: 0.55;
   --aurora-edge: transparent;
 
   /* ── Glass ────────────────────────────────────────────────────────────── */
@@ -241,7 +254,10 @@
   --secondary: oklch(0.27 0.018 285);
   --secondary-foreground: oklch(0.97 0.004 285);
   --muted: oklch(0.27 0.018 285);
-  --muted-foreground: oklch(0.72 0.015 285);
+  /* 0.78, not 0.72 — same reason as light mode. A tinted card in dark mode
+     lifts the surface toward the grey rather than away from it, which took
+     secondary text down to 3.57:1. Solved against the worst of the six. */
+  --muted-foreground: oklch(0.78 0.015 285);
   --accent: oklch(0.30 0.04 292);
   --accent-foreground: oklch(0.92 0.04 292);
 
@@ -277,11 +293,13 @@
   --chart-4: oklch(0.80 0.15 70);
   --chart-5: oklch(0.72 0.19 350);
 
+  --meter-rule: oklch(1 0 0 / 0.16);
+
   /* The reference gradient, at full saturation. It only works over near-black. */
-  --aurora-blue: oklch(0.60 0.20 258);
-  --aurora-orange: oklch(0.72 0.19 55);
-  --aurora-magenta: oklch(0.60 0.29 340);
-  --aurora-violet: oklch(0.48 0.27 292);
+  --aurora-1: oklch(0.60 0.20 258);
+  --aurora-2: oklch(0.72 0.19 55);
+  --aurora-3: oklch(0.60 0.29 340);
+  --aurora-4: oklch(0.48 0.27 292);
   --aurora-opacity: 0.30;
   --aurora-edge: oklch(0.09 0.01 285);
 
@@ -319,27 +337,27 @@
   background:
     radial-gradient(
       42% 30% at 16% 2%,
-      color-mix(in oklch, var(--aurora-blue), transparent 25%),
+      color-mix(in oklch, var(--aurora-1), transparent 25%),
       transparent 72%
     ),
     radial-gradient(
       42% 30% at 84% 2%,
-      color-mix(in oklch, var(--aurora-blue), transparent 25%),
+      color-mix(in oklch, var(--aurora-1), transparent 25%),
       transparent 72%
     ),
     radial-gradient(
       50% 32% at 50% 10%,
-      color-mix(in oklch, var(--aurora-orange), transparent 20%),
+      color-mix(in oklch, var(--aurora-2), transparent 20%),
       transparent 70%
     ),
     radial-gradient(
       58% 36% at 50% 42%,
-      color-mix(in oklch, var(--aurora-magenta), transparent 18%),
+      color-mix(in oklch, var(--aurora-3), transparent 18%),
       transparent 72%
     ),
     radial-gradient(
       72% 46% at 50% 82%,
-      color-mix(in oklch, var(--aurora-violet), transparent 15%),
+      color-mix(in oklch, var(--aurora-4), transparent 15%),
       transparent 74%
     ),
     var(--aurora-edge);
@@ -370,33 +388,61 @@
    Utilities
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Longhands throughout, not `background:` and `border:`.
+
+   The shorthands look tidier and quietly break anything layered on top:
+   `background` resets `background-image` to none, and `border` resets
+   `border-color`, so a tint applied alongside glass was being wiped out no
+   matter which rule won the cascade. Glass owns the surface *colour*; it has
+   no business clearing an image or an edge it never set. */
 @utility glass {
-  background: var(--glass-bg);
+  background-color: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  border: 1px solid var(--glass-border);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--glass-border);
 }
 
 @utility glass-chrome {
-  background: var(--glass-chrome);
+  background-color: var(--glass-chrome);
   backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
-  border: 1px solid var(--glass-border);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--glass-border);
 }
 
 /* Sits on a card, so it is nearly opaque — see the stacking note above. */
 @utility glass-chip {
-  background: var(--glass-chip);
+  background-color: var(--glass-chip);
   backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
 }
 
 @utility glass-strong {
-  background: var(--glass-bg-strong);
+  background-color: var(--glass-bg-strong);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  border: 1px solid var(--glass-border);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--glass-border);
 }
+
+/* Hatched meter track.
+
+   The empty part of a bar is ruled rather than left as flat grey. It is the
+   one piece of texture in the interface, and it earns its place: a flat track
+   and a flat fill are two rectangles, while a ruled track reads as "this is
+   the part not yet filled" without needing a second colour to say so. */
+@utility meter-track {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--meter-rule) 0 1px,
+    transparent 1px 5px
+  );
+}
+
 
 /* Entrance: fade and a short rise. Applied to groups of tiles, never to every
    element on a page — "animate everything" is a documented high-severity
@@ -419,16 +465,29 @@
 @layer base {
   /* Figures.
 
-     Numbers get the mono face, not the UI face. Two reasons, and neither is
-     decoration: its digits are all one width, so a column of amounts stops
-     wobbling row to row; and it visually separates "this is data" from "this
-     is a label", which is most of what was missing — every figure on the page
-     used to be the same size and weight as the text around it, so nothing
-     looked more important than anything else.
+     Numbers are set apart from the text around them — same face, but tabular
+     digits, tighter tracking and a size of their own. That separation is most
+     of what was missing: every figure on the page used to be the same size and
+     weight as its label, so nothing looked more important than anything else.
 
      Tracking goes negative as size goes up: at display sizes letters drift
-     apart, and a large number set at 0 tracking reads as loose. */
-  .text-figure {
+     apart, and a large number set at 0 tracking reads as loose.
+
+     ── Why these are not called `text-figure`, `text-stat` and so on ──
+
+     They were, and it silently broke them. `cn()` runs every class list
+     through tailwind-merge, which resolves conflicts by dropping all but the
+     last class in a group — and it decides the group by prefix. It has no idea
+     which project-specific `text-*` names are sizes and which are colours, so
+     it treated `text-stat` (a size) and `text-destructive` (a colour) as
+     rivals and kept only one. The result: every toned figure on the dashboard
+     rendered at body size, while the untoned ones were correct, which is
+     exactly the kind of bug that looks like a styling opinion rather than a
+     fault.
+
+     Moving them out of the `text-*` namespace removes the collision at the
+     source. Nothing in `cn()` can confuse `figure-lg` with a colour. */
+  .figure {
     /* Sans, not mono. Mono was the obvious choice and the wrong one: it gives
        the comma its own full-width cell, so "£2,378" renders as "£2 , 378" —
        visibly broken at display size. `tabular-nums` gets the column alignment
@@ -440,14 +499,26 @@
     letter-spacing: -0.02em;
   }
 
-  /* Display figures — the big bento numbers. */
-  .text-display {
-    font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3.25rem);
-    line-height: 1;
-    letter-spacing: -0.035em;
-    font-weight: 700;
+  /* Display figures — the big bento numbers.
+
+     Weight comes *down* as size goes up, which looks backwards written out and
+     is right on screen. At 68px a 700 weight is a slab; the reference
+     dashboards all set their headline figures around 600 and let the size do
+     the shouting. Bigger beats bolder. */
+  .figure-display {
+    font-size: clamp(2.75rem, 1.9rem + 3.2vw, 4.25rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    font-weight: 620;
   }
-  .text-stat {
+  /* One step down from display: the figure on a half-width bento tile. */
+  .figure-lg {
+    font-size: clamp(2rem, 1.5rem + 1.8vw, 2.875rem);
+    line-height: 1;
+    letter-spacing: -0.032em;
+    font-weight: 640;
+  }
+  .figure-stat {
     font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem);
     line-height: 1.05;
     letter-spacing: -0.025em;
@@ -456,7 +527,7 @@
 
   /* The label above a figure. Small, quiet, and spaced out — it is there to
      be read once and then ignored, so the number can be the loud thing. */
-  .text-metric-label {
+  .metric-label {
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.03em;

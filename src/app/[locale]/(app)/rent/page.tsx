@@ -20,13 +20,41 @@ export default async function RentPage({
   const horizon = new Date();
   horizon.setDate(horizon.getDate() + HORIZON_DAYS);
 
-  const [{ data: payments }, { data: tenancies }, { data: links }, { data: templates }] =
-    await Promise.all([
+  /* Two queries, not one, and the reason is a trap rather than a preference.
+     PostgREST caps a response at 1000 rows. Asking for every payment up to the
+     horizon in ascending order therefore returned the *oldest* thousand — so
+     once the database held more than a thousand payments, this page silently
+     showed two-year-old history and reported nothing outstanding. It looked
+     like an empty week, not like a bug.
+        - Anything unpaid is fetched regardless of age. Arrears do not expire,
+          and there are never many of them.
+        - Everything else is fetched only for the last twelve months, which is
+          all the "Paid" tab is for. */
+  const horizonIso = horizon.toISOString().slice(0, 10);
+  const windowStart = new Date();
+  windowStart.setFullYear(windowStart.getFullYear() - 1);
+  const windowStartIso = windowStart.toISOString().slice(0, 10);
+
+  const [
+    { data: outstanding },
+    { data: recent },
+    { data: tenancies },
+    { data: links },
+    { data: templates },
+  ] = await Promise.all([
       supabase
         .from("rent_payments")
         .select("*")
-        .lte("due_date", horizon.toISOString().slice(0, 10))
+        .in("status", ["due", "late"])
+        .lte("due_date", horizonIso)
         .order("due_date"),
+      supabase
+        .from("rent_payments")
+        .select("*")
+        .gte("due_date", windowStartIso)
+        .lte("due_date", horizonIso)
+        .order("due_date", { ascending: false })
+        .limit(1000),
       supabase
         .from("tenancies")
         .select("id, room_id, status, rooms(id, name, properties(name))"),
@@ -60,7 +88,14 @@ export default async function RentPage({
     }[]).map((x) => [x.id, x]),
   );
 
-  const rows: RentRow[] = ((payments ?? []) as RentPayment[])
+  // The two sets overlap on anything recent and unpaid; de-duplicate by id.
+  const byId = new Map<string, RentPayment>();
+  for (const p of [...(outstanding ?? []), ...(recent ?? [])] as RentPayment[]) {
+    byId.set(p.id, p);
+  }
+
+  const rows: RentRow[] = [...byId.values()]
+    .sort((a, b) => (a.due_date < b.due_date ? -1 : 1))
     .map((p) => {
       const tenancy = tenancyById.get(p.tenancy_id);
       if (!tenancy || tenancy.status === "archived") return null;

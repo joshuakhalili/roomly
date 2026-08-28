@@ -48,13 +48,23 @@
     "noAlerts": "今天没有需要处理的事项。",
     "rooms": "房间",
     "noRooms": "尚无房间。请先添加房产。",
-    "viewAll": "查看全部"
+    "viewAll": "查看全部",
+    "collectedThisMonth": "本月已收租金",
+    "ofExpected": "应收 {amount}",
+    "outstandingThisMonth": "尚欠 {amount}",
+    "vsDaysAgo": "对比 {days} 天前",
+    "points": "{points, plural, other {# 个百分点}}",
+    "roomsDelta": "{count, plural, other {# 间房}}",
+    "vacantOfTotal": "共 {total} 间可出租"
   },
   "alerts": {
-    "moveInSoon": "{name} 将于{days, plural, =0 {今天} other { # 天后}}入住 {room}",
-    "moveOutSoon": "{name} 将于{days, plural, =0 {今天} other { # 天后}}退租 {room}",
-    "rentOverdue": "{name}（{room}）的租金 {amount} 已于 {date} 到期",
-    "cleaningDue": "{room} 需要清洁 — 租约已于 {date} 结束"
+    "kindOverdue": "租金逾期",
+    "kindMoveIn": "即将入住",
+    "kindMoveOut": "即将退租",
+    "kindCleaning": "需要清洁",
+    "overdueSince": "{count, plural, other {# 笔款项}}，自 {date} 起",
+    "inDays": "{days, plural, =0 {今天} other {# 天后}}",
+    "endedOn": "已于 {date} 结束"
   },
   "filters": {
     "all": "全部",
@@ -81,7 +91,10 @@
     "addFirst": "添加第一处房产",
     "deleteConfirm": "确定删除此房产？",
     "deleteWarning": "这将永久删除该房产、其所有房间以及所有租约记录。此操作无法撤销。",
-    "one": "房产"
+    "one": "房产",
+    "rentRoll": "租金总额",
+    "perMonth": "每月，按在租租约计",
+    "acrossBuildings": "{count, plural, other {共 # 处房产}}"
   },
   "rooms": {
     "title": "房间",
@@ -244,7 +257,11 @@
     "paidOn": "已于 {date} 付款",
     "needsChasing": "需要催缴",
     "upcoming": "即将到期",
-    "nothingToChase": "无逾期款项。今天到期的租金将于明天开始催缴。"
+    "nothingToChase": "无逾期款项。今天到期的租金将于明天开始催缴。",
+    "outstandingCount": "{count, plural, other {# 笔款项}}未付",
+    "oldestDue": "最早到期 {date}",
+    "showPayments": "查看明细",
+    "hidePayments": "收起明细"
   },
   "reminder": {
     "title": "发送提醒",
@@ -366,7 +383,8 @@
     "work": "工作费用",
     "purchases": "采购",
     "spendByType": "支出去向",
-    "unpaidBills": "{amount} 未付"
+    "unpaidBills": "{amount} 未付",
+    "turnover": "租客更替"
   },
   "admins": {
     "title": "管理员",
@@ -432,7 +450,12 @@
     "pickHint": "从现有租客档案中选择，或新建一位。其个人信息和身份文件将自动沿用。",
     "selectedCount": "{count, plural, =0 {未选择租客} other {已选 # 位租客}}",
     "deleteConfirm": "确定删除此租客？",
-    "deleteWarning": "这将永久删除该租客、其文件及所有租约记录。此操作无法撤销。"
+    "deleteWarning": "这将永久删除该租客、其文件及所有租约记录。此操作无法撤销。",
+    "archived": "已归档",
+    "inARoom": "已入住",
+    "ofActive": "共 {total} 人",
+    "betweenLettings": "待安排房间",
+    "keptForRecords": "保留存档"
   },
   "retention": {
     "subtitle": "各类记录的保存期限、依据，以及已删除的内容。",

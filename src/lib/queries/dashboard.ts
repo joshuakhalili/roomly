@@ -26,12 +26,39 @@ export interface DashboardAlert {
   days?: number;
   amount?: number;
   date?: string;
+  /**
+   * How many payments one overdue card stands for.
+   *
+   * A tenant seven months behind used to produce seven identical alerts, which
+   * is the same fact stated seven times and pushes everything else off the
+   * screen. One card, a count, and the total says strictly more in one line.
+   */
+  count?: number;
+}
+
+/**
+ * The same metrics as they stood roughly a month ago, from `metrics_snapshots`.
+ *
+ * Null when the daily job has not been running long enough to have a snapshot
+ * that old. That is the honest state for a new install, and the tiles render
+ * without a comparison rather than inventing a zero — "no change" and "no
+ * history" look identical on a badge and mean opposite things.
+ */
+export interface DashboardComparison {
+  /** Actual age of the baseline snapshot, which is near 30 but rarely exactly. */
+  days: number;
+  occupancyRate: number;
+  vacantRooms: number;
+  overdueTotal: number;
 }
 
 export interface DashboardData {
   properties: Property[];
   rooms: DashboardRoom[];
   alerts: DashboardAlert[];
+  comparison: DashboardComparison | null;
+  /** Rent collected per calendar month, oldest first — the hero's trend line. */
+  collectionTrend: { month: string; amount: number }[];
   metrics: {
     lettableRooms: number;
     occupiedRooms: number;
@@ -42,6 +69,10 @@ export interface DashboardData {
     moveInsThisWeek: number;
     moveOutsThisWeek: number;
     complianceGaps: number;
+    /** Paid so far this calendar month. */
+    collectedThisMonth: number;
+    /** Billed this calendar month, waivers excluded — they are not expected. */
+    dueThisMonth: number;
   };
 }
 
@@ -60,6 +91,21 @@ export async function getDashboardData(): Promise<DashboardData> {
   const today = startOfDay(new Date());
   const todayStr = toDateString(today);
 
+  // Six complete months plus the current one — enough for the hero's trend to
+  // show a shape, short enough that it still describes how things are now.
+  const trendStart = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+  const trendStartStr = toDateString(trendStart);
+  const monthStartStr = toDateString(
+    new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const monthEndStr = toDateString(
+    new Date(today.getFullYear(), today.getMonth() + 1, 0),
+  );
+  // Far enough back to hold a ~30-day baseline even with gaps in the job's run.
+  const snapshotStartStr = toDateString(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() - 120),
+  );
+
   const [
     { data: properties },
     { data: rooms },
@@ -67,6 +113,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     { data: tenancyTenants },
     { data: payments },
     { data: documents },
+    { data: recentPayments },
+    { data: snapshots },
   ] = await Promise.all([
     supabase.from("properties").select("*").order("name"),
     supabase.from("rooms").select("*").order("name"),
@@ -79,6 +127,16 @@ export async function getDashboardData(): Promise<DashboardData> {
       .select("tenancy_id, is_lead_tenant, tenants(*)"),
     supabase.from("rent_payments").select("*").in("status", ["due", "late"]),
     supabase.from("documents").select("*"),
+    // Every status, so "collected" and "expected" come from the same rows.
+    supabase
+      .from("rent_payments")
+      .select("status, amount_due, due_date")
+      .gte("due_date", trendStartStr),
+    supabase
+      .from("metrics_snapshots")
+      .select("snapshot_date, occupied_rooms, vacant_rooms, overdue_rent_total")
+      .gte("snapshot_date", snapshotStartStr)
+      .order("snapshot_date", { ascending: true }),
   ]);
 
   const propertyById = new Map((properties ?? []).map((p) => [p.id, p]));
@@ -191,22 +249,44 @@ export async function getDashboardData(): Promise<DashboardData> {
   const overdue = ((payments ?? []) as RentPayment[]).filter(
     (p) => p.due_date < todayStr,
   );
+
+  /* One card per tenancy, not per payment. Someone seven months behind is one
+     problem to deal with, and listing it seven times buried every other kind
+     of alert underneath it. The date kept is the oldest, because how long this
+     has been running is the part that decides how urgent it is. */
+  const overdueByTenancy = new Map<string, DashboardAlert>();
   for (const p of overdue) {
     const t = tenancyById.get(p.tenancy_id);
     const room = t ? roomById.get(t.room_id) : undefined;
     if (!t || !room) continue;
+
+    const existing = overdueByTenancy.get(t.id);
+    if (existing) {
+      existing.amount = (existing.amount ?? 0) + Number(p.amount_due);
+      existing.count = (existing.count ?? 0) + 1;
+      if (p.due_date < (existing.date ?? "")) existing.date = p.due_date;
+      continue;
+    }
+
     const lead =
       tenantsByTenancy.get(t.id)?.find((x) => x.is_lead_tenant) ??
       tenantsByTenancy.get(t.id)?.[0];
-    alerts.push({
+    overdueByTenancy.set(t.id, {
       kind: "rent_overdue",
       tenancyId: t.id,
       roomName: room.name,
       personName: fullName(lead),
       amount: Number(p.amount_due),
       date: p.due_date,
+      count: 1,
     });
   }
+  // Longest-running arrears first — that is the order you would work through.
+  alerts.push(
+    ...[...overdueByTenancy.values()].sort((a, b) =>
+      (a.date ?? "") < (b.date ?? "") ? -1 : 1,
+    ),
+  );
 
   // ── Metrics ──────────────────────────────────────────────────────────────
   const lettable = dashboardRooms.filter((r) => r.is_lettable && !r.is_common_area);
@@ -258,10 +338,83 @@ export async function getDashboardData(): Promise<DashboardData> {
     return d >= 0 && d <= 7;
   };
 
+  // ── Money in ─────────────────────────────────────────────────────────────
+  const recent = (recentPayments ?? []) as Pick<
+    RentPayment,
+    "status" | "amount_due" | "due_date"
+  >[];
+
+  const thisMonth = recent.filter(
+    (p) => p.due_date >= monthStartStr && p.due_date <= monthEndStr,
+  );
+  const collectedThisMonth = thisMonth
+    .filter((p) => p.status === "paid")
+    .reduce((sum, p) => sum + Number(p.amount_due), 0);
+  // Waived rent was never going to arrive, so counting it as outstanding would
+  // make a fully-settled month look permanently short.
+  const dueThisMonth = thisMonth
+    .filter((p) => p.status !== "waived")
+    .reduce((sum, p) => sum + Number(p.amount_due), 0);
+
+  const byMonth = new Map<string, number>();
+  for (const p of recent) {
+    if (p.status !== "paid") continue;
+    const month = p.due_date.slice(0, 7);
+    byMonth.set(month, (byMonth.get(month) ?? 0) + Number(p.amount_due));
+  }
+  /* Built from a walk over the months rather than from the map's keys, so a
+     month in which nothing at all was collected shows as a zero in the line
+     instead of vanishing and quietly shortening the gap between its
+     neighbours. */
+  const collectionTrend: { month: string; amount: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const key = toDateString(d).slice(0, 7);
+    collectionTrend.push({ month: key, amount: byMonth.get(key) ?? 0 });
+  }
+
+  // ── Comparison against roughly a month ago ───────────────────────────────
+  const history = (snapshots ?? []) as {
+    snapshot_date: string;
+    occupied_rooms: number;
+    vacant_rooms: number;
+    overdue_rent_total: number;
+  }[];
+  /* The newest snapshot at least 28 days old. Not "the one 30 days ago" — the
+     job can miss a night, and demanding an exact date would silently drop the
+     comparison whenever it did. */
+  const cutoff = toDateString(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() - 28),
+  );
+  const baseline = [...history]
+    .reverse()
+    .find((s) => s.snapshot_date <= cutoff);
+
+  let comparison: DashboardComparison | null = null;
+  if (baseline) {
+    // Rooms are counted at the time of the snapshot, so a property bought since
+    // then does not distort the rate it is compared against.
+    const thenLettable = baseline.occupied_rooms + baseline.vacant_rooms;
+    comparison = {
+      days: differenceInCalendarDays(
+        today,
+        parseISO(baseline.snapshot_date),
+      ),
+      occupancyRate:
+        thenLettable === 0
+          ? 0
+          : Math.round((baseline.occupied_rooms / thenLettable) * 100),
+      vacantRooms: baseline.vacant_rooms,
+      overdueTotal: Number(baseline.overdue_rent_total),
+    };
+  }
+
   return {
     properties: (properties ?? []) as Property[],
     rooms: dashboardRooms,
     alerts,
+    comparison,
+    collectionTrend,
     metrics: {
       lettableRooms,
       occupiedRooms,
@@ -279,6 +432,8 @@ export async function getDashboardData(): Promise<DashboardData> {
         (t) => t.status === "active" && withinWeek(t.end_date),
       ).length,
       complianceGaps,
+      collectedThisMonth,
+      dueThisMonth,
     },
   };
 }

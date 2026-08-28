@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OccupancyTrend } from "@/components/analytics/occupancy-trend";
+import { ScrollToSection } from "@/components/analytics/scroll-to-section";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { ChartLine } from "lucide-react";
 import type { Tenancy } from "@/lib/types";
@@ -48,10 +49,15 @@ export default async function AnalyticsPage({
     { data: assets },
     { data: rentPaid },
   ] = await Promise.all([
+      /* Descending, then reversed below.
+         Ascending + limit returns the *oldest* 180 days, so the chart drew
+         ancient history and called its last point "latest" — invisible while
+         the database held two snapshots, obvious the moment it held two
+         years. A limit is only ever as correct as the order it follows. */
       supabase
         .from("metrics_snapshots")
         .select("*")
-        .order("snapshot_date", { ascending: true })
+        .order("snapshot_date", { ascending: false })
         .limit(180),
       supabase.from("tenancies").select("*"),
       supabase.from("rooms").select("id, name, property_id, is_lettable, is_common_area"),
@@ -198,7 +204,8 @@ export default async function AnalyticsPage({
   const money = (n: number) =>
     format.number(n, { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
-  const points = (snapshots ?? []).map((s) => ({
+  // Back into chronological order for drawing, after fetching newest-first.
+  const points = [...(snapshots ?? [])].reverse().map((s) => ({
     date: s.snapshot_date as string,
     occupancy:
       lettable > 0
@@ -210,6 +217,8 @@ export default async function AnalyticsPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <ScrollToSection />
+
       <header>
         <h1 className="text-2xl font-semibold">{t("analytics.title")}</h1>
         <p className="text-sm text-muted-foreground">
@@ -217,24 +226,30 @@ export default async function AnalyticsPage({
         </p>
       </header>
 
-      {/* Trends need history, and history only starts accumulating once the
-          daily job has run a few times. Say so rather than draw a flat line. */}
-      {points.length < 2 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <ChartLine className="size-8 text-muted-foreground" aria-hidden />
-            <p className="text-sm text-muted-foreground">
-              {t("analytics.notEnoughData")}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <OccupancyTrend points={points} />
-      )}
+      {/* The dashboard tiles link straight to these sections by fragment —
+          `/analytics#occupancy` and so on. `scroll-mt` keeps the heading clear
+          of the sticky header, which otherwise lands on top of whatever the
+          browser has just scrolled into view. */}
+      <section id="occupancy" className="scroll-mt-24">
+        {/* Trends need history, and history only starts accumulating once the
+            daily job has run a few times. Say so rather than draw a flat line. */}
+        {points.length < 2 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+              <ChartLine className="size-8 text-muted-foreground" aria-hidden />
+              <p className="text-sm text-muted-foreground">
+                {t("analytics.notEnoughData")}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <OccupancyTrend points={points} />
+        )}
+      </section>
 
       {/* ── Money in against money out ───────────────────────────────── */}
       {propertyFinances.length > 0 && (
-        <section className="flex flex-col gap-3">
+        <section id="money" className="flex scroll-mt-24 flex-col gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-semibold">{t("analytics.runningCosts")}</h2>
             <p className="text-xs text-muted-foreground">
@@ -245,24 +260,24 @@ export default async function AnalyticsPage({
           <div className="grid gap-3 sm:grid-cols-3">
             <Card>
               <CardContent className="p-4">
-                <p className="text-metric-label">{t("analytics.rentCollected")}</p>
-                <p className="text-figure text-stat mt-2 text-success">
+                <p className="metric-label">{t("analytics.rentCollected")}</p>
+                <p className="figure figure-stat mt-2 text-success">
                   {money(totalIncome)}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <p className="text-metric-label">{t("analytics.spent")}</p>
-                <p className="text-figure text-stat mt-2 text-destructive">
+                <p className="metric-label">{t("analytics.spent")}</p>
+                <p className="figure figure-stat mt-2 text-destructive">
                   {money(totalSpend)}
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
-                <p className="text-metric-label">{t("analytics.net")}</p>
-                <p className="text-figure text-stat mt-2">
+                <p className="metric-label">{t("analytics.net")}</p>
+                <p className="figure figure-stat mt-2">
                   {money(totalIncome - totalSpend)}
                 </p>
               </CardContent>
@@ -305,13 +320,13 @@ export default async function AnalyticsPage({
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-figure text-right">
+                      <TableCell className="figure text-right">
                         {money(p.income)}
                       </TableCell>
-                      <TableCell className="text-figure text-right">
+                      <TableCell className="figure text-right">
                         {money(p.jobs)}
                       </TableCell>
-                      <TableCell className="text-figure text-right">
+                      <TableCell className="figure text-right">
                         {money(p.purchases)}
                       </TableCell>
                       <TableCell
@@ -360,13 +375,15 @@ export default async function AnalyticsPage({
         </section>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <section id="turnover" className="flex scroll-mt-24 flex-col gap-3">
+        <h2 className="font-semibold">{t("analytics.turnover")}</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
         <Card>
           <CardContent className="p-4">
             <p className="text-sm font-medium text-muted-foreground">
               {t("analytics.timeToFill")}
             </p>
-            <p className="text-figure text-stat mt-2">
+            <p className="figure figure-stat mt-2">
               {averageGap === null
                 ? "—"
                 : t("analytics.days", { count: averageGap })}
@@ -407,7 +424,8 @@ export default async function AnalyticsPage({
             )}
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </section>
 
       <p className="text-xs text-muted-foreground">
         {points.length > 0 &&
