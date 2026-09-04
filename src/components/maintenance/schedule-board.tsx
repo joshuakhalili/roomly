@@ -262,7 +262,7 @@ export function ScheduleBoard({
                                 isSelected
                                   ? "bg-primary-foreground"
                                   : j.status === "done"
-                                    ? "bg-emerald-500"
+                                    ? "bg-success"
                                     : j.status === "cancelled"
                                       ? "bg-muted-foreground/40"
                                       : "bg-primary",

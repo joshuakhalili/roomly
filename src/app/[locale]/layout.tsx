@@ -2,22 +2,41 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Instrument_Sans, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
-const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
+/**
+ * The UI face — nav, labels, form fields, body copy, and anything money
+ * appears in more than once. Instrument Sans's tabular figures measured
+ * identical (600 units) at weight 400 AND 700, so a bold total row and the
+ * regular rows above it share a digit grid — Archivo's do not (568→598
+ * across the same range), which is why Archivo is display-only below.
+ *
+ * axes: ["wdth"] is required to expose the width axis at all; without it
+ * next/font only wires up wght.
+ */
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
+  subsets: ["latin"],
+  axes: ["wdth"],
+});
 
 /**
- * The numerals face, for rent totals, occupancy figures and dates.
- *
- * globals.css already pointed `--font-mono` at `--font-geist-mono`, which was
- * never defined anywhere — so `font-mono` silently did nothing. This is that
- * fix and the "we need a face for data" decision in one: Geist Mono is from the
- * same family as the UI face, so nothing new has to be designed around.
+ * The display face — the wordmark, page titles, and the one headline figure
+ * per screen. Never body text: at 13px in a dense table Archivo's default
+ * cut reads noticeably wider than Instrument Sans, and it exists to be the
+ * loud thing precisely because it is used so rarely.
  */
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  axes: ["wdth"],
+});
+
+/** Numerals face for the calendar feed URL and the build hash only. */
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export function generateStaticParams() {
@@ -49,8 +68,8 @@ export const viewport: Viewport = {
   // Two values so iOS paints the status bar to match the active theme
   // rather than showing a dark strip above a light page.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F4EF" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0A07" },
   ],
   // Let iOS fill the notch area when installed to the home screen.
   viewportFit: "cover",
@@ -77,13 +96,10 @@ export default async function LocaleLayout({
     // and the client's first render legitimately differ on this one element.
     <html
       lang={locale === "zh" ? "zh-Hans" : "en"}
-      className={`${geist.variable} ${geistMono.variable}`}
+      className={`${instrumentSans.variable} ${archivo.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        {/* The gradient, behind everything. Fixed and pointer-events-none, so
-            it never scrolls with content or intercepts a click. */}
-        <div className="aurora" aria-hidden />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

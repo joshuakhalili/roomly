@@ -69,12 +69,12 @@ export function RetentionControls({
   }
 
   return (
-    <Card className={enabled ? "border-primary/50" : "border-amber-500/50"}>
+    <Card className={enabled ? "border-primary/50" : "border-warning/50"}>
       <CardContent className="flex flex-wrap items-center gap-4 p-4">
         {enabled ? (
           <ShieldCheck className="size-5 shrink-0 text-primary" aria-hidden />
         ) : (
-          <ShieldAlert className="size-5 shrink-0 text-amber-600" aria-hidden />
+          <ShieldAlert className="size-5 shrink-0 text-warning" aria-hidden />
         )}
 
         <div className="min-w-0 flex-1">

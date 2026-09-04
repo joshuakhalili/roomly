@@ -30,8 +30,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      {/* Chrome floats above content, so it gets the strongest glass. */}
-      <header className="glass-chrome sticky top-0 z-40 border-0 shadow-[0_1px_0_var(--glass-border)]">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
         <div className="flex h-14 items-center gap-3 px-4">
           <Link
             href="/"

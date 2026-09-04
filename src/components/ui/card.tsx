@@ -3,12 +3,19 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 /**
- * Cards are the glass surface the whole interface is built from.
+ * Cards are a flat, opaque surface with a hairline border — not glass.
+ *
+ * The previous version was translucent (backdrop-filter blur + saturate)
+ * over a fixed aurora background. Both are gone: colour is reserved for what
+ * needs acting on, and a decorative mesh behind every screen was the single
+ * loudest "AI product" signal in the app. What is left is white-on-bone with
+ * a 1px border and a quiet shadow — closer to a printed card than a pane of
+ * glass.
  *
  * `interactive` is opt-in rather than automatic: a lift on hover promises that
- * clicking does something, so a static card that rises when you pass over it is
- * a small lie. It also does nothing on a touch screen, which is why the affordance
- * is never the only signal that something is tappable.
+ * clicking does something, so a static card that rises when you pass over it
+ * is a small lie. It also does nothing on a touch screen, which is why the
+ * affordance is never the only signal that something is tappable.
  */
 function Card({
   className,
@@ -24,7 +31,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card glass flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm text-card-foreground shadow-(--shadow-md) [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-border bg-card py-(--card-spacing) text-sm text-card-foreground shadow-(--shadow-sm) [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
         interactive &&
           "transition-[transform,box-shadow] duration-(--duration) ease-(--ease-out) hover:-translate-y-0.5 hover:shadow-(--shadow-lift)",
         className
@@ -98,7 +105,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing)",
+        "flex items-center rounded-b-xl border-t border-border bg-muted/50 p-(--card-spacing)",
         className
       )}
       {...props}

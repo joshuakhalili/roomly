@@ -183,7 +183,7 @@ export function DocumentsPanel({
 
       {/* Compliance gap — the same rule the dashboard counts. */}
       {missing.length > 0 && (
-        <p className="flex items-start gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <p className="flex items-start gap-2 rounded-md bg-warning-muted p-3 text-sm text-warning">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
           {t("documents.missing", {
             types: missing.map((m) => t(DOC_TYPE_KEYS[m])).join(", "),
