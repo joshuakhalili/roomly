@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import { APP_LANGUAGES, LANGUAGE_LABELS } from "@/lib/types";
 import type { Tenant } from "@/lib/types";
 
 export function TenantDialog({
@@ -131,10 +132,10 @@ export function TenantDialog({
                 name="preferred_language"
                 defaultValue={tenant?.preferred_language ?? "en"}
                 disabled={isPending}
-                options={[
-                  { value: "en", label: "English" },
-                  { value: "zh", label: "简体中文" },
-                ]}
+                options={APP_LANGUAGES.map((code) => ({
+                  value: code,
+                  label: LANGUAGE_LABELS[code],
+                }))}
               />
             </Field>
           </div>

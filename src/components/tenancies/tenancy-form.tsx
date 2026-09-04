@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field, FormError } from "@/components/ui/field";
 import { Separator } from "@/components/ui/separator";
 import { OptionSelect } from "@/components/ui/option-select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { TenantPicker } from "@/components/tenants/tenant-picker";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { Tenancy, Tenant, TenantOnTenancy } from "@/lib/types";
@@ -44,6 +46,13 @@ export function TenancyForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [frequency, setFrequency] = useState(tenancy?.rent_frequency ?? "monthly");
+  /* Decided before anything else, because it changes what the money step even
+     asks for: a booking has one total and a balance date where a tenancy has a
+     cadence and a due day. */
+  const [lettingType, setLettingType] = useState(
+    tenancy?.letting_type ?? "long_term",
+  );
+  const isShortStay = lettingType === "short_stay";
   const [selectedIds, setSelectedIds] = useState<string[]>(
     assigned.map((a) => a.id),
   );
@@ -89,6 +98,29 @@ export function TenancyForm({
       {/* Step 1 — who lives here */}
       <div className={step === 0 ? "flex flex-col gap-4" : "hidden"}>
         <h2 className="font-semibold">{t("tenancy.details")}</h2>
+
+        <Field
+          label={t("tenancy.lettingType")}
+          hint={
+            isShortStay
+              ? t("tenancy.lettingShortStayHint")
+              : t("tenancy.lettingLongTermHint")
+          }
+        >
+          <OptionSelect
+            name="letting_type"
+            value={lettingType}
+            onValueChange={(v) => setLettingType(v as typeof lettingType)}
+            disabled={isPending}
+            options={[
+              { value: "long_term", label: t("tenancy.lettingLongTerm") },
+              { value: "short_stay", label: t("tenancy.lettingShortStay") },
+            ]}
+          />
+        </Field>
+
+        <Separator />
+
         <p className="text-sm text-muted-foreground">
           {t("tenants.pickHint")}
         </p>
@@ -120,11 +152,14 @@ export function TenancyForm({
               disabled={isPending}
             />
           </Field>
-          <Field label={t("tenancy.endDate")}>
+          {/* A tenancy can run until someone gives notice; a booking cannot —
+              without a checkout date the room would never come free again. */}
+          <Field label={t("tenancy.endDate")} required={isShortStay}>
             <Input
               type="date"
               name="end_date"
               defaultValue={tenancy?.end_date ?? ""}
+              required={isShortStay}
               disabled={isPending}
             />
           </Field>
@@ -142,7 +177,10 @@ export function TenancyForm({
             />
           </Field>
 
-          <Field label={t("tenancy.rentAmount")} required>
+          <Field
+            label={isShortStay ? t("tenancy.stayTotal") : t("tenancy.rentAmount")}
+            required
+          >
             <Input
               type="number"
               step="0.01"
@@ -154,30 +192,36 @@ export function TenancyForm({
             />
           </Field>
 
-          <Field label={t("tenancy.rentFrequency")}>
-            <OptionSelect
-              name="rent_frequency"
-              value={frequency}
-              onValueChange={(v) => setFrequency(v as typeof frequency)}
-              disabled={isPending}
-              options={[
-                { value: "monthly", label: t("tenancy.frequencyMonthly") },
-                { value: "weekly", label: t("tenancy.frequencyWeekly") },
-                {
-                  value: "fortnightly",
-                  label: t("tenancy.frequencyFortnightly"),
-                },
-                {
-                  value: "four_weekly",
-                  label: t("tenancy.frequencyFourWeekly"),
-                },
-              ]}
-            />
-          </Field>
+          {/* A short stay has no cadence, so the whole question disappears
+              rather than sitting there offering answers that do not apply.
+              The server derives 'total' from the letting type, so the two can
+              never end up disagreeing. */}
+          {!isShortStay && (
+            <Field label={t("tenancy.rentFrequency")}>
+              <OptionSelect
+                name="rent_frequency"
+                value={frequency}
+                onValueChange={(v) => setFrequency(v as typeof frequency)}
+                disabled={isPending}
+                options={[
+                  { value: "monthly", label: t("tenancy.frequencyMonthly") },
+                  { value: "weekly", label: t("tenancy.frequencyWeekly") },
+                  {
+                    value: "fortnightly",
+                    label: t("tenancy.frequencyFortnightly"),
+                  },
+                  {
+                    value: "four_weekly",
+                    label: t("tenancy.frequencyFourWeekly"),
+                  },
+                ]}
+              />
+            </Field>
+          )}
 
           {/* Only meaningful for monthly rent — weekly schedules follow the
               move-in weekday instead, so the field would mislead. */}
-          {frequency === "monthly" && (
+          {!isShortStay && frequency === "monthly" && (
             <Field
               label={t("tenancy.rentDueDay")}
               hint={t("common.optional")}
@@ -193,7 +237,27 @@ export function TenancyForm({
             </Field>
           )}
 
-          <Field label={t("tenancy.depositAmount")}>
+          {isShortStay && (
+            <Field
+              label={t("tenancy.balanceDue")}
+              hint={t("tenancy.balanceDueHint")}
+            >
+              <Input
+                type="date"
+                name="balance_due_date"
+                defaultValue={tenancy?.balance_due_date ?? ""}
+                disabled={isPending}
+              />
+            </Field>
+          )}
+
+          <Field
+            label={
+              isShortStay
+                ? t("tenancy.depositHolds")
+                : t("tenancy.depositAmount")
+            }
+          >
             <Input
               type="number"
               step="0.01"
@@ -232,6 +296,20 @@ export function TenancyForm({
               />
             </Field>
           )}
+        </div>
+
+        {/* Outside the two-column grid: a checkbox next to a dropdown reads as
+            a field with a missing label. */}
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="bills_included"
+            name="bills_included"
+            defaultChecked={tenancy?.bills_included ?? false}
+            disabled={isPending}
+          />
+          <Label htmlFor="bills_included" className="font-normal">
+            {t("tenancy.billsIncluded")}
+          </Label>
         </div>
 
         <Field label={t("tenancy.notes")}>

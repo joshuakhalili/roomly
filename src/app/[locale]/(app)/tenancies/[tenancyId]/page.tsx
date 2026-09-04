@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { TenancyForm } from "@/components/tenancies/tenancy-form";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
+import {
+  getDocumentRequirements,
+  requiredTypesFor,
+} from "@/lib/queries/document-requirements";
 import { ArchiveTenancyButton } from "@/components/tenancies/archive-tenancy-button";
 import { LegalHoldButton } from "@/components/tenancies/legal-hold-button";
 import { Separator } from "@/components/ui/separator";
@@ -42,6 +46,7 @@ export default async function TenancyPage({
     { data: room },
     { data: banks },
     { data: allTenants },
+    requirements,
   ] = await Promise.all([
       supabase
         .from("tenancy_tenants")
@@ -55,6 +60,7 @@ export default async function TenancyPage({
         .single(),
       supabase.from("bank_accounts").select("id,bank_name,account_label"),
       supabase.from("tenants").select("*").order("surname"),
+      getDocumentRequirements(supabase),
     ]);
 
   const assigned: TenantOnTenancy[] = ((links ?? []) as unknown as {
@@ -120,6 +126,7 @@ export default async function TenancyPage({
         tenancyId={ten.id}
         tenants={assigned}
         documents={(documents ?? []) as DocumentRecord[]}
+        requiredTypes={requiredTypesFor(requirements, ten.letting_type, "tenancy")}
       />
     </div>
   );

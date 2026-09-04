@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { REQUIRED_DOCUMENT_TYPES, TENANT_DOCUMENT_TYPES } from "@/lib/types";
+import {
+  getDocumentRequirements,
+  requiredTypesFor,
+  tenantScopedTypes,
+} from "@/lib/queries/document-requirements";
 import type {
   Property,
   RentPayment,
@@ -115,6 +119,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     { data: documents },
     { data: recentPayments },
     { data: snapshots },
+    requirements,
   ] = await Promise.all([
     supabase.from("properties").select("*").order("name"),
     supabase.from("rooms").select("*").order("name"),
@@ -137,6 +142,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       .select("snapshot_date, occupied_rooms, vacant_rooms, overdue_rent_total")
       .gte("snapshot_date", snapshotStartStr)
       .order("snapshot_date", { ascending: true }),
+    getDocumentRequirements(supabase),
   ]);
 
   const propertyById = new Map((properties ?? []).map((p) => [p.id, p]));
@@ -312,15 +318,20 @@ export async function getDashboardData(): Promise<DashboardData> {
     }
   }
 
+  // What each kind of letting has to have is data now, so a short stay is not
+  // reported as missing a deposit certificate it was never going to need.
+  const followsThePerson = tenantScopedTypes(requirements);
+
   const complianceGaps = ((tenancies ?? []) as Tenancy[]).filter((t) => {
     if (t.status !== "active") return false;
 
+    const required = requiredTypesFor(requirements, t.letting_type);
     const have = new Set(docsByTenancy.get(t.id) ?? []);
     // Every person on the tenancy must have their own identity documents,
     // so an incomplete one leaves the tenancy incomplete.
     const people = tenantsByTenancy.get(t.id) ?? [];
-    for (const req of REQUIRED_DOCUMENT_TYPES) {
-      if (!TENANT_DOCUMENT_TYPES.includes(req)) continue;
+    for (const req of required) {
+      if (!followsThePerson.has(req)) continue;
       if (
         people.length > 0 &&
         people.every((p) => docsByTenant.get(p.id)?.has(req))
@@ -329,7 +340,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       }
     }
 
-    return REQUIRED_DOCUMENT_TYPES.some((req) => !have.has(req));
+    return required.some((req) => !have.has(req));
   }).length;
 
   const withinWeek = (dateStr: string | null) => {

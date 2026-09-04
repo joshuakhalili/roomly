@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MetricCard } from "@/components/metrics/metric-card";
 import { SegmentMeter } from "@/components/charts/segment-meter";
 import { PropertyDialog } from "@/components/properties/property-dialog";
+import { getSignedUrls } from "@/lib/actions/storage";
 import { Building2, ChevronRight, DoorOpen, Banknote, MapPin } from "lucide-react";
 import type { Property } from "@/lib/types";
 
@@ -49,6 +50,17 @@ export default async function PropertiesPage({
     monthly: 1,
   } as const;
 
+  /**
+   * A short stay is left out of this figure entirely.
+   *
+   * Its rent_amount is one total for a handful of nights, not a rate that
+   * repeats — counting it as a month's income would overstate the rent roll
+   * by whatever a booking happens to cost, and the number would swing wildly
+   * as bookings came and went. The rent roll answers "what does this building
+   * bring in every month", and a one-off booking is not an answer to that.
+   */
+  const isRecurring = (frequency: string) => frequency in PER_MONTH;
+
   const occupiedRooms = new Set((tenancies ?? []).map((x) => x.room_id));
   const roomToProperty = new Map(
     (rooms ?? []).map((r) => [r.id as string, r.property_id as string]),
@@ -72,8 +84,9 @@ export default async function PropertiesPage({
   for (const tn of tenancies ?? []) {
     const propertyId = roomToProperty.get(tn.room_id as string);
     if (!propertyId) continue;
-    const factor =
-      PER_MONTH[(tn.rent_frequency as keyof typeof PER_MONTH) ?? "monthly"] ?? 1;
+    const frequency = String(tn.rent_frequency ?? "monthly");
+    if (!isRecurring(frequency)) continue;
+    const factor = PER_MONTH[frequency as keyof typeof PER_MONTH];
     bucket(propertyId).monthlyRent += Number(tn.rent_amount) * factor;
   }
 
@@ -94,6 +107,15 @@ export default async function PropertiesPage({
       currency: "GBP",
       maximumFractionDigits: 0,
     });
+
+  /* Signed here rather than in the card, because the card is not a client
+     component and should not become one just to fetch a URL. Signing on the
+     server means the image is in the first paint instead of arriving after a
+     round trip, which on a list of buildings is the difference between
+     recognising the page and watching it assemble. */
+  const banners = list.map((p) => p.banner_path).filter((p): p is string => !!p);
+  const signed = banners.length ? await getSignedUrls(banners) : null;
+  const bannerUrls = signed?.ok ? signed.data : {};
 
   return (
     <div className="flex flex-col gap-8">
@@ -172,6 +194,19 @@ export default async function PropertiesPage({
                   className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Card interactive className="group/property h-full">
+                    {/* First child, deliberately: Card already drops its top
+                        padding and rounds the corners for a leading image, so
+                        the banner needs no layout of its own. */}
+                    {property.banner_path && bannerUrls[property.banner_path] && (
+                      /* eslint-disable-next-line @next/next/no-img-element --
+                         signed URLs expire, so the optimiser cannot cache them */
+                      <img
+                        src={bannerUrls[property.banner_path]}
+                        alt=""
+                        loading="lazy"
+                        className="aspect-[3/1] w-full object-cover"
+                      />
+                    )}
                     <CardContent className="flex h-full flex-col gap-4 p-5">
                       <div className="flex items-start gap-3">
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">

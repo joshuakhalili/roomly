@@ -1,7 +1,7 @@
 import { defineRouting } from "next-intl/routing";
 
 export const routing = defineRouting({
-  locales: ["en", "zh"],
+  locales: ["en", "zh", "tr"],
   defaultLocale: "en",
   // Keep the locale in the URL for both languages ("/en/rent", "/zh/rent").
   // Without this, English URLs have no prefix and the language switcher has

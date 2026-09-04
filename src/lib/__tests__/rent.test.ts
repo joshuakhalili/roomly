@@ -1,6 +1,11 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { generateDueDates, overduePayments, nextDueDate } from "../rent";
+import {
+  generateDueDates,
+  buildRentRows,
+  overduePayments,
+  nextDueDate,
+} from "../rent";
 import type { RentPayment } from "../types";
 
 describe("generateDueDates", () => {
@@ -122,5 +127,79 @@ describe("nextDueDate", () => {
       ]),
       "2026-02-15",
     );
+  });
+});
+
+describe("buildRentRows", () => {
+  const horizon = new Date("2026-05-20");
+
+  const stay = {
+    id: "t1",
+    start_date: "2026-06-01",
+    end_date: "2026-06-05",
+    rent_frequency: "total" as const,
+    rent_due_day: null,
+    rent_amount: 400,
+  };
+
+  test("a short stay with a deposit produces a holding charge and a balance", () => {
+    assert.deepEqual(
+      buildRentRows(
+        { ...stay, deposit_amount: 100, balance_due_date: "2026-05-25" },
+        horizon,
+      ),
+      [
+        { tenancy_id: "t1", due_date: "2026-06-01", amount_due: 100, status: "due" },
+        { tenancy_id: "t1", due_date: "2026-05-25", amount_due: 400, status: "due" },
+      ],
+    );
+  });
+
+  test("with no balance date the whole thing falls due on arrival", () => {
+    assert.deepEqual(buildRentRows({ ...stay, deposit_amount: null }, horizon), [
+      { tenancy_id: "t1", due_date: "2026-06-01", amount_due: 400, status: "due" },
+    ]);
+  });
+
+  test("folds both charges into one row when they land on the same day", () => {
+    // Two rows on one date would collide on the (tenancy_id, due_date) unique
+    // constraint and the second would be silently dropped — leaving the guest
+    // charged the deposit and nothing else.
+    assert.deepEqual(
+      buildRentRows(
+        { ...stay, deposit_amount: 100, balance_due_date: "2026-06-01" },
+        horizon,
+      ),
+      [
+        { tenancy_id: "t1", due_date: "2026-06-01", amount_due: 500, status: "due" },
+      ],
+    );
+  });
+
+  test("a short stay never generates a recurring series", () => {
+    const rows = buildRentRows(
+      { ...stay, start_date: "2026-01-01", end_date: "2026-01-04" },
+      horizon,
+    );
+    assert.equal(rows.length, 1);
+  });
+
+  test("a long tenancy still gets its recurring schedule", () => {
+    const rows = buildRentRows(
+      {
+        id: "t2",
+        start_date: "2026-01-15",
+        end_date: null,
+        rent_frequency: "monthly",
+        rent_due_day: 15,
+        rent_amount: 750,
+      },
+      horizon,
+    );
+    assert.deepEqual(
+      rows.map((r) => r.due_date),
+      ["2026-01-15", "2026-02-15", "2026-03-15", "2026-04-15", "2026-05-15"],
+    );
+    assert.equal(rows.every((r) => r.amount_due === 750), true);
   });
 });

@@ -12,17 +12,17 @@ import {
   UserRound,
   FolderLock,
   Wrench,
+  Receipt,
   Settings,
 } from "lucide-react";
 
 /**
- * Eight destinations, the same on both layouts.
+ * Ten destinations, the same on both layouts.
  *
- * Admins and Retention used to sit here as top-level items, which pushed
- * the phone's tab bar to nine and forced one of them to be desktop-only —
- * two different navigations depending on the device. They are both settings
- * rather than daily work, so they moved under Settings and the count came
- * back down. Everything left is something you might open on any given day.
+ * Admins and Retention used to sit here as top-level items, which forced one
+ * of them to be desktop-only — two different navigations depending on the
+ * device. They are both settings rather than daily work, so they moved under
+ * Settings. Everything left is something you might open on any given day.
  */
 const ITEMS = [
   { href: "/", labelKey: "dashboard", Icon: LayoutDashboard },
@@ -32,26 +32,30 @@ const ITEMS = [
   { href: "/inventory", labelKey: "inventory", Icon: ClipboardList },
   { href: "/documents", labelKey: "documents", Icon: FolderLock },
   { href: "/maintenance", labelKey: "maintenance", Icon: Wrench },
+  { href: "/expenses", labelKey: "expenses", Icon: Receipt },
   { href: "/analytics", labelKey: "analytics", Icon: ChartLine },
   { href: "/settings", labelKey: "settings", Icon: Settings },
 ] as const;
 
 /**
- * The same eight, grouped for the sidebar.
+ * The same ten, grouped for the sidebar.
  *
  * Grouped by the question each answers rather than by how often it is used:
  * "how are we doing" (Overview), "who is where and have they paid"
- * (Lettings), "what is on file" (Records). Eight flat items is a list you
- * read top to bottom every time; four small groups is one you learn the
- * shape of and then stop reading.
+ * (Lettings), "what is on file and what did it cost" (Records). Ten flat
+ * items is a list you read top to bottom every time; four small groups is one
+ * you learn the shape of and then stop reading.
  *
- * The phone's tab bar stays flat — headers cost vertical space a fixed
- * bottom bar does not have, and eight icons across is already scannable.
+ * The phone's tab bar stays flat — headers cost vertical space a fixed bottom
+ * bar does not have, and it already scrolls sideways.
  */
 const GROUPS = [
   { labelKey: "groupOverview", hrefs: ["/", "/analytics"] },
   { labelKey: "groupLettings", hrefs: ["/properties", "/tenants", "/rent"] },
-  { labelKey: "groupRecords", hrefs: ["/inventory", "/documents", "/maintenance"] },
+  {
+    labelKey: "groupRecords",
+    hrefs: ["/inventory", "/documents", "/maintenance", "/expenses"],
+  },
   { labelKey: "groupSystem", hrefs: ["/settings"] },
 ] as const;
 

@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Field, FormError } from "@/components/ui/field";
 import { OptionSelect } from "@/components/ui/option-select";
+import { APP_LANGUAGES, LANGUAGE_LABELS } from "@/lib/types";
 import type { Profile } from "@/lib/types";
 
 export function ProfileForm({
@@ -54,10 +55,10 @@ export function ProfileForm({
         <OptionSelect
           name="preferred_language"
           defaultValue={profile.preferred_language}
-          options={[
-            { value: "en", label: "English" },
-            { value: "zh", label: "简体中文" },
-          ]}
+          options={APP_LANGUAGES.map((code) => ({
+            value: code,
+            label: LANGUAGE_LABELS[code],
+          }))}
         />
       </Field>
 

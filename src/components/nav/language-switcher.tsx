@@ -13,9 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
+/* Each language named in itself, not translated — someone looking for their
+   own language is scanning for the word they already recognise. */
 const LOCALES = [
   { code: "en", label: "English" },
   { code: "zh", label: "简体中文" },
+  { code: "tr", label: "Türkçe" },
 ] as const;
 
 export function LanguageSwitcher() {

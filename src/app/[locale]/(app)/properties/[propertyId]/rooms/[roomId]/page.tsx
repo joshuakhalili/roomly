@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { RoomDialog } from "@/components/rooms/room-dialog";
 import { DeleteRoomButton } from "@/components/rooms/delete-room-button";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
+import {
+  getDocumentRequirements,
+  requiredTypesFor,
+} from "@/lib/queries/document-requirements";
 import { TenancySummary } from "@/components/tenancies/tenancy-summary";
 import { ChecklistLauncher } from "@/components/inventory/checklist-launcher";
 import {
@@ -21,6 +25,9 @@ import {
 } from "lucide-react";
 import type {
   DocumentRecord,
+  // Imported by name on purpose: the DOM has its own DocumentType, and
+  // without this the annotation below silently resolves to that instead.
+  DocumentType,
   InventoryChecklist,
   TenantOnTenancy,
   RentPayment,
@@ -70,9 +77,11 @@ export default async function RoomPage({
   let documents: DocumentRecord[] = [];
   let payments: RentPayment[] = [];
   let checklists: InventoryChecklist[] = [];
+  let requiredTypes: DocumentType[] = [];
 
   if (current) {
-    const [{ data: o }, { data: d }, { data: p }, { data: c }] = await Promise.all([
+    const [{ data: o }, { data: d }, { data: p }, { data: c }, requirements] =
+      await Promise.all([
       supabase
         .from("tenancy_tenants")
         .select("is_lead_tenant, tenants(*)")
@@ -80,6 +89,7 @@ export default async function RoomPage({
       supabase.from("documents").select("*").eq("tenancy_id", current.id),
       supabase.from("rent_payments").select("*").eq("tenancy_id", current.id),
       supabase.from("inventory_checklists").select("*").eq("tenancy_id", current.id),
+      getDocumentRequirements(supabase),
     ]);
     tenants = ((o ?? []) as unknown as {
       is_lead_tenant: boolean;
@@ -90,6 +100,11 @@ export default async function RoomPage({
     documents = (d ?? []) as DocumentRecord[];
     payments = (p ?? []) as RentPayment[];
     checklists = (c ?? []) as InventoryChecklist[];
+    requiredTypes = requiredTypesFor(
+      requirements,
+      current.letting_type,
+      "tenancy",
+    );
   }
 
   const r = room as Room;
@@ -233,6 +248,7 @@ export default async function RoomPage({
             tenancyId={current.id}
             tenants={tenants}
             documents={documents}
+            requiredTypes={requiredTypes}
           />
 
           <ChecklistLauncher tenancyId={current.id} checklists={checklists} />
