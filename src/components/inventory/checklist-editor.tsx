@@ -269,7 +269,7 @@ export function ChecklistEditor({
                   </Badge>
                   {done === areaSections.length && areaSections.length > 0 && (
                     <CircleCheck
-                      className="size-4 text-emerald-600"
+                      className="size-4 text-success"
                       aria-hidden
                     />
                   )}

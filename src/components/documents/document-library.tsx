@@ -174,7 +174,7 @@ export function DocumentLibrary({
                 <Card
                   className={cn(
                     status === "expired" && "border-destructive/50",
-                    status === "soon" && "border-amber-500/50",
+                    status === "soon" && "border-warning/50",
                   )}
                 >
                   <CardContent className="flex flex-col gap-2 p-4">

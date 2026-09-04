@@ -22,11 +22,11 @@ const LABEL_KEY: Record<ConditionRating, string> = {
 
 /** Green through red, matching how the reference reports colour their badges. */
 const SELECTED_STYLE: Record<ConditionRating, string> = {
-  excellent: "bg-emerald-600 text-white border-emerald-600",
-  good: "bg-green-600 text-white border-green-600",
-  fair: "bg-amber-500 text-white border-amber-500",
-  poor: "bg-orange-600 text-white border-orange-600",
-  unacceptable: "bg-destructive text-white border-destructive",
+  excellent: "bg-success text-success-foreground border-success",
+  good: "bg-success text-success-foreground border-success",
+  fair: "bg-warning text-warning-foreground border-warning",
+  poor: "bg-caution text-caution-foreground border-caution",
+  unacceptable: "bg-destructive text-destructive-foreground border-destructive",
 };
 
 /**

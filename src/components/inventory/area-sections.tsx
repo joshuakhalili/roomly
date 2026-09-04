@@ -149,7 +149,7 @@ export function AreaSections({
       )}
 
       {chosenWithContent > 0 && (
-        <p className="rounded-md bg-amber-50 p-2 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <p className="rounded-md bg-warning-muted p-2 text-xs text-warning">
           {t("inventory.removeWarning", { count: chosenWithContent })}
         </p>
       )}

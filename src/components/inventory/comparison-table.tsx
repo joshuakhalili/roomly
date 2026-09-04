@@ -42,7 +42,7 @@ const CHANGE_ICON = {
 
 const CHANGE_STYLE: Record<Change, string> = {
   worsened: "text-destructive",
-  improved: "text-emerald-600",
+  improved: "text-success",
   unchanged: "text-muted-foreground",
   incomplete: "text-muted-foreground",
 };

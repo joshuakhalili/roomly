@@ -109,7 +109,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="glass-chrome fixed inset-x-0 bottom-0 z-50 border-0 shadow-[0_-1px_0_var(--glass-border)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {/* Scrolls rather than squeezing. Nine items across a 375px phone

@@ -5,52 +5,50 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Roomly design tokens
+   Roomly design tokens — brand rebuild
 
-   The palette was previously entirely achromatic — every token oklch(… 0 0),
-   pure grey, with only --destructive carrying a hue. That is why status colour
-   had leaked out as hardcoded Tailwind classes across a dozen components: there
-   were no semantic tokens to reach for.
+   Three fixed values everything else is derived from:
+     bone   #F6F4EF   page ground
+     ink    #14120F   text, the primary mark colour
+     accent #4E2BCC   the one brand hue — reserved for what a person must
+                       act on or click, never for information
 
-   Two colour systems live here and they do different jobs:
+   Both anchors are warm (hue ≈83.5°, chroma ≈0.007 in OKLCH) rather than
+   neutral grey — so the whole achromatic-looking scale below is built on that
+   same warm hue at a very low, constant chroma (0.006). A pure-grey divider
+   on a warm page reads as a cold line; this keeps every hairline, border and
+   secondary label sitting on the same warmth as the page itself.
 
-     BRAND + AURORA (violet, magenta, orange, blue) — atmosphere. The mesh
-     gradient behind everything, and the logo. Decorative only.
+   The previous palette ran the opposite direction: every "neutral" carried
+   chroma 0.004–0.02 at hue 285 (violet), so the base UI was never actually
+   achromatic — it just looked grey until you measured it. That is corrected
+   here, not preserved.
 
-     SEMANTIC (info, success, warning, caution, destructive) — information.
-     Paid, overdue, needs attention. Applied to badges, borders and figures.
-
-   They are kept apart on purpose. If a magenta glow sits at full strength
-   behind a card, it competes with the red "overdue" badge on it, and colour
-   stops meaning anything. Nothing here means two things.
+   The five semantic status colours (destructive / success / warning /
+   caution / info) keep their PROTECTED hues untouched. Only lightness moved,
+   and only where the browser's own gamut clipping or a bone (rather than
+   white) ground made the original numbers fail their own contrast target —
+   see the inline notes below each one.
    ═══════════════════════════════════════════════════════════════════════════ */
-
-/* The logo gradient is deliberately NOT theme-aware.
-   The aurora tokens shift between a pale wash in light mode and full neon in
-   dark, which is right for a background and wrong for an identity — a mark
-   that fades out on a white page is not a mark. These three stay put. */
-:root,
-.dark {
-  --brand-grad-1: oklch(0.55 0.27 292);
-  --brand-grad-2: oklch(0.60 0.29 340);
-  --brand-grad-3: oklch(0.74 0.19 55);
-
-}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* Latin from Geist; Chinese from the system.
-     A CJK webfont is several megabytes for a bilingual admin tool nobody
-     wants waiting on a font. PingFang SC (Apple), Microsoft YaHei (Windows)
-     and Noto Sans CJK (Linux/Android) are already installed, already correct,
-     and render instantly — they are named explicitly here rather than left to
-     whatever the browser's default happens to be. */
+
+  /* Instrument Sans carries the interface; Archivo is reserved for the one
+     display moment per screen — a page title, the headline figure, the
+     wordmark. Chinese falls through to the same system-resident stack as
+     before in both cases: no CJK webfont is ever loaded. */
   --font-sans:
-    var(--font-geist), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    var(--font-instrument-sans), "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans CJK SC", ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-archivo), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Noto Sans CJK SC", ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* CardTitle and other in-page section headers stay on the UI face — the
+     display face is for the ONE big thing per screen, not every heading. */
   --font-heading: var(--font-sans);
 
   --color-ring: var(--ring);
@@ -87,11 +85,9 @@
   --color-info-foreground: var(--info-foreground);
   --color-info-muted: var(--info-muted);
 
-  /* Brand. Decorative; not for status. */
+  /* Brand. Reserved for what a person must act on — never decorative, never
+     a whole surface. See src/lib/tone.ts for the full rule. */
   --color-brand: var(--brand);
-  --color-brand-grad-1: var(--brand-grad-1);
-  --color-brand-grad-2: var(--brand-grad-2);
-  --color-brand-grad-3: var(--brand-grad-3);
 
   /* Distinguishable hues, not the grey ramp they replace. */
   --color-chart-1: var(--chart-1);
@@ -114,119 +110,113 @@
 
 :root {
   /* ── Surfaces ─────────────────────────────────────────────────────────── */
-  --background: oklch(0.985 0.004 285);
-  --foreground: oklch(0.18 0.02 285);
+  --background: oklch(0.9673 0.0070 88.64); /* bone, #F6F4EF */
+  --foreground: oklch(0.1834 0.0068 78.14); /* ink, #14120F */
+  /* Pure white, not bone — measured as the better card separation: a white
+     card on a bone page gives a 3.3% lightness step, versus 1.5% under the
+     previous cool-white-on-cool-white pairing. */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 285);
+  --card-foreground: var(--foreground);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 285);
+  --popover-foreground: var(--foreground);
 
   /* ── Brand ────────────────────────────────────────────────────────────── */
-  /* Violet, taken from the base of the gradient reference. Deliberately not
-     blue: blue is needed for "info", and a brand hue that collides with a
-     status hue makes both ambiguous. */
-  --brand: oklch(0.52 0.24 292);
-  --primary: oklch(0.52 0.24 292);
-  --primary-foreground: oklch(0.99 0 0);
+  --brand: oklch(0.4511 0.2269 282.34); /* #4E2BCC */
+  --primary: var(--brand);
+  --primary-foreground: var(--background); /* bone on accent: 7.52:1, AAA */
 
-  --secondary: oklch(0.96 0.008 285);
-  --secondary-foreground: oklch(0.28 0.03 285);
-  --muted: oklch(0.96 0.008 285);
-  /* 0.48, not 0.50. Secondary text now sits on tinted cards as well as plain
-     ones, and a red-washed surface took the old value down to 4.46:1 — under
-     the 4.5 line. Solved in the browser against the worst of the six tints
-     rather than nudged by eye. */
-  --muted-foreground: oklch(0.48 0.02 285);
-  --accent: oklch(0.95 0.02 292);
-  --accent-foreground: oklch(0.34 0.10 292);
+  /* A subtle warm surface below bone, for secondary buttons, hover states
+     and footer bands — not a step on the text ramp below, which is spaced
+     for reading contrast rather than for a one-notch UI tint. */
+  --secondary: oklch(0.9423 0.0060 83.46);
+  --secondary-foreground: oklch(0.3576 0.0060 83.46);
+  --muted: var(--secondary);
+  /* Corrected to 0.5300, not the ramp's mathematically even 0.5318 — at
+     .5318 secondary text reads 4.47:1 on the destructive tint and 4.48:1 on
+     the caution tint, both just under AA. .5300 clears 4.5 against bone and
+     every one of the five status tints. */
+  --muted-foreground: oklch(0.5300 0.0060 83.46);
+  /* shadcn's own "accent" role — a hover/selected surface, distinct from the
+     brand accent above. Kept lightly tinted on the brand hue so a hovered
+     menu row still reads as "this app", without being mistaken for the
+     brand colour itself. */
+  --accent: oklch(0.94 0.02 282.34);
+  --accent-foreground: oklch(0.30 0.12 282.34);
 
-  /* ── Semantic status ──────────────────────────────────────────────────── */
-  --destructive: oklch(0.55 0.21 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --destructive-muted: oklch(0.95 0.04 27);
+  /* ── Neutral ramp ─────────────────────────────────────────────────────── 
+     Warm hue 83.46°, constant chroma 0.006 — bone's own hue/chroma sits
+     almost exactly on this line (0.0070 at 88.64°), so every step below
+     reads as "the same warm neutral, darker" rather than a different grey.
+     n-0 ≈ bone, n-9 ≈ ink; both are restated as their own vars above because
+     the exact anchor hex matters and a ramp step is an approximation of it. */
+  --n-1: oklch(0.8802 0.0060 83.46); /* content hairline — 1.31 on bone */
+  --n-2: oklch(0.7931 0.0060 83.46); /* decorative rule — 1.74 */
+  --n-3: oklch(0.7060 0.0060 83.46); /* decorative rule — 2.38 */
+  --n-4: oklch(0.6189 0.0060 83.46); /* first control-legal border — 3.33 */
+  --n-6: oklch(0.4447 0.0060 83.46);
+  --n-7: oklch(0.3576 0.0060 83.46);
+  --n-8: oklch(0.2705 0.0060 83.46);
 
-  --success: oklch(0.52 0.14 155);
-  --success-foreground: oklch(0.99 0 0);
-  --success-muted: oklch(0.95 0.04 155);
+  --border: var(--n-1);
+  --input: var(--n-4); /* a real input needs a boundary that clears 3:1 */
+  /* Solid, never translucent. A 50%-alpha ring measured 2.53:1 on bone and
+     never reached 3:1 on any surface in the system — components apply this
+     as `ring-2 ring-ring ring-offset-2`, not the old `ring-3 …/50`. */
+  --ring: var(--brand);
 
-  --warning: oklch(0.55 0.12 75);
-  --warning-foreground: oklch(0.20 0.04 75);
-  --warning-muted: oklch(0.96 0.05 85);
+  /* ── Semantic status ──────────────────────────────────────────────────── 
+     Hues are untouched. Lightness was resolved against a bone (not white)
+     ground and against the browser's actual in-gamut sRGB, not the
+     aspirational oklch() values — several of the previous muted tints were
+     silently losing up to 38% of their requested chroma to gamut clipping.
+     Every solid below is legible with a light label; --warning-foreground
+     used to be a dark colour that could not reach 4.5:1 on its own solid at
+     any lightness (ceiling was 4.24:1) — deleted, all five foregrounds are
+     now the same bone value. */
+  --destructive: oklch(0.5500 0.2100 27);
+  --destructive-foreground: var(--background);
+  --destructive-muted: oklch(0.9483 0.0258 27);
 
-  --caution: oklch(0.55 0.16 45);
-  --caution-foreground: oklch(0.99 0 0);
-  --caution-muted: oklch(0.95 0.05 50);
+  --success: oklch(0.5200 0.1287 155);
+  --success-foreground: var(--background);
+  --success-muted: oklch(0.9573 0.0380 155);
 
-  --info: oklch(0.55 0.18 255);
-  --info-foreground: oklch(0.99 0 0);
-  --info-muted: oklch(0.95 0.04 255);
+  --warning: oklch(0.5400 0.1140 75); /* lifted off 0.55/0.12 — see above */
+  --warning-foreground: var(--background);
+  --warning-muted: oklch(0.9573 0.0380 85);
 
-  --border: oklch(0.90 0.008 285);
-  --input: oklch(0.90 0.008 285);
-  --ring: oklch(0.52 0.24 292);
+  --caution: oklch(0.5450 0.1560 45);
+  --caution-foreground: var(--background);
+  --caution-muted: oklch(0.9483 0.0290 50);
+
+  --info: oklch(0.5400 0.1780 255);
+  --info-foreground: var(--background);
+  --info-muted: oklch(0.9553 0.0216 255);
 
   /* The ruling in an unfilled meter track. */
-  --meter-rule: oklch(0.18 0.02 285 / 0.16);
+  --meter-rule: oklch(0.1834 0.0068 78.14 / 0.16);
 
   /* ── Charts ───────────────────────────────────────────────────────────── */
-  --chart-1: oklch(0.52 0.24 292);
+  --chart-1: var(--brand);
   --chart-2: oklch(0.58 0.18 255);
   --chart-3: oklch(0.62 0.16 155);
   --chart-4: oklch(0.70 0.16 65);
   --chart-5: oklch(0.60 0.22 350);
 
-  /* ── Aurora ───────────────────────────────────────────────────────────── */
-  /* Light mode runs blue, and is a different gradient from dark rather than a
-     faded copy of it.
-
-     The earlier version took the dark violet-magenta-orange mesh and washed it
-     out, which is how you get a background that looks slightly dirty: those
-     hues are built to glow against near-black, and pale versions of them read
-     as stains on white. A blue family is its own thing — cool, quiet, and it
-     stays out of the way of every status colour in the app, none of which are
-     blue except `info`.
-
-     Kept deliberately calm. This sits behind everything on every screen, so it
-     is atmosphere, not decoration you should notice twice. */
-  --aurora-1: oklch(0.88 0.06 235);
-  --aurora-2: oklch(0.92 0.05 205);
-  --aurora-3: oklch(0.87 0.06 258);
-  --aurora-4: oklch(0.84 0.08 245);
-  --aurora-opacity: 0.55;
-  --aurora-edge: transparent;
-
-  /* ── Glass ────────────────────────────────────────────────────────────── */
-  /* Far more opaque than the 15% a style guide suggests for overlays. On a
-     data screen the look has to come from blur, saturation and the light
-     border — not from actually being see-through, which is where text
-     contrast dies. */
-  /* Three weights, because material weight is how hierarchy is expressed.
-     Chrome (header, nav) is the heaviest and sits above everything; cards are
-     the working surface; chips are the lightest and sit ON a card.
-
-     The rule that matters: never stack two translucent surfaces of the same
-     weight. A glass chip on a glass card blurs an already-blurred backdrop
-     and legibility collapses — so the chip weight is nearly opaque. */
-  --glass-chrome: oklch(1 0 0 / 0.86);
-  --glass-bg: oklch(1 0 0 / 0.78);
-  --glass-bg-strong: oklch(1 0 0 / 0.90);
-  --glass-chip: oklch(1 0 0 / 0.96);
-  --glass-border: oklch(1 0 0 / 0.65);
-  /* Bigger surfaces read as thicker glass. A small chip with a 20px blur
-     looks like a mistake; a full-width toolbar with a 6px blur looks thin. */
-  --glass-blur-sm: 8px;
-  --glass-blur: 20px;
-  --glass-blur-lg: 32px;
-  --glass-saturate: 165%;
-
-  /* ── Depth ────────────────────────────────────────────────────────────── */
-  --shadow-sm: 0 1px 2px oklch(0.2 0.03 285 / 0.05);
+  /* ── Depth ────────────────────────────────────────────────────────────── 
+     Cards are a real opaque surface now, not glass — see the removed .aurora
+     / .glass system below — so shadow is doing more of the separation work
+     than before. Ink-tinted rather than the previous violet tint. */
+  --shadow-sm: 0 1px 2px oklch(0.1834 0.0068 78.14 / 0.06);
   --shadow-md:
-    0 2px 4px oklch(0.2 0.03 285 / 0.05), 0 6px 16px oklch(0.2 0.03 285 / 0.07);
+    0 2px 4px oklch(0.1834 0.0068 78.14 / 0.05),
+    0 6px 16px oklch(0.1834 0.0068 78.14 / 0.06);
   --shadow-lg:
-    0 4px 8px oklch(0.2 0.03 285 / 0.06), 0 16px 40px oklch(0.2 0.03 285 / 0.10);
+    0 4px 8px oklch(0.1834 0.0068 78.14 / 0.06),
+    0 16px 40px oklch(0.1834 0.0068 78.14 / 0.09);
   --shadow-lift:
-    0 8px 16px oklch(0.2 0.03 285 / 0.08), 0 24px 56px oklch(0.2 0.03 285 / 0.14);
+    0 8px 16px oklch(0.1834 0.0068 78.14 / 0.07),
+    0 24px 56px oklch(0.1834 0.0068 78.14 / 0.12);
 
   /* ── Motion ───────────────────────────────────────────────────────────── */
   --ease-out-token: cubic-bezier(0.22, 1, 0.36, 1);
@@ -235,34 +225,62 @@
   --duration: 200ms;
   --duration-slow: 300ms;
 
-  --radius: 0.875rem;
+  /* 0.625rem (10px), down from 0.875rem (14px) — a deliberate tightening for
+     a more architectural, less pillowy feel. Still soft, never sharp: the
+     brief's "not modern but simplistic" reference (Wise / Ragged Edge) sits
+     closer to this than to the previous radius. */
+  --radius: 0.625rem;
 }
 
 .dark {
-  --background: oklch(0.145 0.012 285);
-  --foreground: oklch(0.97 0.004 285);
-  --card: oklch(0.21 0.016 285);
-  --card-foreground: oklch(0.97 0.004 285);
-  --popover: oklch(0.21 0.016 285);
-  --popover-foreground: oklch(0.97 0.004 285);
+  /* Same warm hue as light mode, inverted — not a separate cool-dark palette.
+     A blue-black dark mode next to a warm-white light mode reads as two
+     different products; this keeps them the same material at two
+     lightnesses, which is the point of a *theme* rather than a second brand. */
+  --background: oklch(0.1450 0.0060 83.46); /* #0B0A07 */
+  --foreground: oklch(0.9550 0.0060 83.46); /* #F2F0EC */
+  --card: oklch(0.2100 0.0060 83.46);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
 
-  /* Lifted so it holds contrast against a dark surface. */
-  --brand: oklch(0.68 0.19 292);
-  --primary: oklch(0.68 0.19 292);
-  --primary-foreground: oklch(0.16 0.03 292);
+  /* oklch(0.68 0.227 282.34) — the naive "just lighten it" lift — sits
+     outside sRGB and silently clips to 93% of its intended chroma. Authored
+     explicitly instead, at the lowest lightness that clears AA against BOTH
+     the ground (5.06:1) and the card (4.53:1); L0.70 buys AAA on the ground
+     (7.11:1) at the cost of more chroma than the minimum, which reads better
+     against near-black than a lightness-only-legal violet does. */
+  --brand: oklch(0.7000 0.1618 282.34); /* #918EFF */
+  --primary: var(--brand);
+  /* NOT --foreground: dark-fg on the lifted accent is 2.44:1, a hard fail.
+     The dark ground itself is the only colour in this system that reads on
+     the accent at every lightness step tested. */
+  --primary-foreground: var(--background);
 
-  --secondary: oklch(0.27 0.018 285);
-  --secondary-foreground: oklch(0.97 0.004 285);
-  --muted: oklch(0.27 0.018 285);
-  /* 0.78, not 0.72 — same reason as light mode. A tinted card in dark mode
-     lifts the surface toward the grey rather than away from it, which took
-     secondary text down to 3.57:1. Solved against the worst of the six. */
-  --muted-foreground: oklch(0.78 0.015 285);
-  --accent: oklch(0.30 0.04 292);
-  --accent-foreground: oklch(0.92 0.04 292);
+  --secondary: oklch(0.2700 0.0060 83.46);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--secondary);
+  --muted-foreground: oklch(0.6850 0.0060 83.46); /* floor: clears 4.5 everywhere */
+  --accent: oklch(0.30 0.05 282.34);
+  --accent-foreground: oklch(0.90 0.05 282.34);
 
-  /* Every status tone lifted for dark surfaces; the muted variants become
-     low-lightness tints rather than pale washes. */
+  --n-1: oklch(0.2350 0.0060 83.46);
+  --n-2: oklch(0.3250 0.0060 83.46);
+  --n-3: oklch(0.4150 0.0060 83.46);
+  --n-4: oklch(0.5050 0.0060 83.46);
+  --n-6: oklch(0.6850 0.0060 83.46);
+  --n-7: oklch(0.7750 0.0060 83.46);
+  --n-8: oklch(0.8650 0.0060 83.46);
+
+  /* A light rim rather than a dark line — a pure-black border is invisible
+     on a near-black card, so depth comes from the top edge catching light. */
+  --border: oklch(1 0 0 / 0.10);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: var(--brand);
+
+  /* Every status tone lifted for dark surfaces; hues match light mode, the
+     muted variants become low-lightness tints rather than pale washes.
+     Unchanged by the rebrand — already validated independently as correct. */
   --destructive: oklch(0.70 0.19 25);
   --destructive-foreground: oklch(0.16 0.03 25);
   --destructive-muted: oklch(0.30 0.09 25);
@@ -283,11 +301,7 @@
   --info-foreground: oklch(0.16 0.03 255);
   --info-muted: oklch(0.29 0.07 255);
 
-  --border: oklch(1 0 0 / 0.10);
-  --input: oklch(1 0 0 / 0.14);
-  --ring: oklch(0.68 0.19 292);
-
-  --chart-1: oklch(0.68 0.19 292);
+  --chart-1: var(--brand);
   --chart-2: oklch(0.70 0.16 255);
   --chart-3: oklch(0.74 0.16 158);
   --chart-4: oklch(0.80 0.15 70);
@@ -295,26 +309,7 @@
 
   --meter-rule: oklch(1 0 0 / 0.16);
 
-  /* The reference gradient, at full saturation. It only works over near-black. */
-  --aurora-1: oklch(0.60 0.20 258);
-  --aurora-2: oklch(0.72 0.19 55);
-  --aurora-3: oklch(0.60 0.29 340);
-  --aurora-4: oklch(0.48 0.27 292);
-  --aurora-opacity: 0.30;
-  --aurora-edge: oklch(0.09 0.01 285);
-
-  --glass-chrome: oklch(0.18 0.015 285 / 0.82);
-  --glass-bg: oklch(0.24 0.018 285 / 0.66);
-  --glass-bg-strong: oklch(0.24 0.018 285 / 0.86);
-  --glass-chip: oklch(0.28 0.02 285 / 0.94);
-  --glass-border: oklch(1 0 0 / 0.12);
-  --glass-blur-sm: 8px;
-  --glass-blur: 22px;
-  --glass-blur-lg: 34px;
-  --glass-saturate: 150%;
-
-  /* Dark surfaces need a light rim as well as a shadow — a pure black shadow
-     on a dark background is invisible, so depth comes from the top edge. */
+  /* Pure black, not hue-tinted — a dark shadow only needs to be dark. */
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.35);
   --shadow-md: 0 2px 4px oklch(0 0 0 / 0.35), 0 6px 16px oklch(0 0 0 / 0.40);
   --shadow-lg: 0 4px 8px oklch(0 0 0 / 0.40), 0 16px 40px oklch(0 0 0 / 0.50);
@@ -322,112 +317,8 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   The aurora
-
-   One fixed layer beneath everything. Built from overlapping radial blobs
-   rather than a linear gradient, which is what gives the soft mesh look of
-   the reference.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.aurora {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      42% 30% at 16% 2%,
-      color-mix(in oklch, var(--aurora-1), transparent 25%),
-      transparent 72%
-    ),
-    radial-gradient(
-      42% 30% at 84% 2%,
-      color-mix(in oklch, var(--aurora-1), transparent 25%),
-      transparent 72%
-    ),
-    radial-gradient(
-      50% 32% at 50% 10%,
-      color-mix(in oklch, var(--aurora-2), transparent 20%),
-      transparent 70%
-    ),
-    radial-gradient(
-      58% 36% at 50% 42%,
-      color-mix(in oklch, var(--aurora-3), transparent 18%),
-      transparent 72%
-    ),
-    radial-gradient(
-      72% 46% at 50% 82%,
-      color-mix(in oklch, var(--aurora-4), transparent 15%),
-      transparent 74%
-    ),
-    var(--aurora-edge);
-  opacity: var(--aurora-opacity);
-}
-
-/* Film grain.
-
-   Not decoration: a soft gradient this large will band into visible stripes on
-   an 8-bit display, and noise is what breaks the bands up. It is also most of
-   why the reference images look photographic rather than like a default CSS
-   gradient. One layer over the whole page, never per-card. */
-.aurora::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.42;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-}
-
-/* Full strength where there is almost nothing to read — the login screen. */
-.aurora-hero {
-  --aurora-opacity: 1;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
    Utilities
    ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Longhands throughout, not `background:` and `border:`.
-
-   The shorthands look tidier and quietly break anything layered on top:
-   `background` resets `background-image` to none, and `border` resets
-   `border-color`, so a tint applied alongside glass was being wiped out no
-   matter which rule won the cascade. Glass owns the surface *colour*; it has
-   no business clearing an image or an edge it never set. */
-@utility glass {
-  background-color: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--glass-border);
-}
-
-@utility glass-chrome {
-  background-color: var(--glass-chrome);
-  backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-saturate));
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--glass-border);
-}
-
-/* Sits on a card, so it is nearly opaque — see the stacking note above. */
-@utility glass-chip {
-  background-color: var(--glass-chip);
-  backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate));
-}
-
-@utility glass-strong {
-  background-color: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--glass-border);
-}
 
 /* Hatched meter track.
 
@@ -442,7 +333,6 @@
     transparent 1px 5px
   );
 }
-
 
 /* Entrance: fade and a short rise. Applied to groups of tiles, never to every
    element on a page — "animate everything" is a documented high-severity
@@ -466,63 +356,59 @@
   /* Figures.
 
      Numbers are set apart from the text around them — same face, but tabular
-     digits, tighter tracking and a size of their own. That separation is most
-     of what was missing: every figure on the page used to be the same size and
-     weight as its label, so nothing looked more important than anything else.
+     digits, tighter tracking and a size of their own.
 
      Tracking goes negative as size goes up: at display sizes letters drift
      apart, and a large number set at 0 tracking reads as loose.
 
      ── Why these are not called `text-figure`, `text-stat` and so on ──
 
-     They were, and it silently broke them. `cn()` runs every class list
-     through tailwind-merge, which resolves conflicts by dropping all but the
-     last class in a group — and it decides the group by prefix. It has no idea
-     which project-specific `text-*` names are sizes and which are colours, so
-     it treated `text-stat` (a size) and `text-destructive` (a colour) as
-     rivals and kept only one. The result: every toned figure on the dashboard
-     rendered at body size, while the untoned ones were correct, which is
-     exactly the kind of bug that looks like a styling opinion rather than a
-     fault.
-
-     Moving them out of the `text-*` namespace removes the collision at the
-     source. Nothing in `cn()` can confuse `figure-lg` with a colour. */
+     `cn()` runs every class list through tailwind-merge, which resolves
+     conflicts by dropping all but the last class in a group, decided by
+     prefix — it cannot tell a project-specific `text-*` size from a `text-*`
+     colour, so `text-stat` and `text-destructive` were treated as rivals and
+     only one survived. Moving them out of the `text-*` namespace removes the
+     collision at the source. */
   .figure {
-    /* Sans, not mono. Mono was the obvious choice and the wrong one: it gives
-       the comma its own full-width cell, so "£2,378" renders as "£2 , 378" —
-       visibly broken at display size. `tabular-nums` gets the column alignment
-       that mattered while leaving punctuation its natural width.
-
-       Geist Mono still loads, because `font-mono` is used for the calendar
-       feed URL and the build hash, and its token was broken until now. */
+    /* Sans, not mono. Mono gives the comma its own full-width cell, so
+       "£2,378" renders as "£2 , 378" — visibly broken at display size.
+       `tabular-nums` gets column alignment while leaving punctuation its
+       natural width. Verified against the actual Instrument Sans binary:
+       comma stays at its own advance under `tnum`, never a digit's. */
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
   }
 
-  /* Display figures — the big bento numbers.
-
-     Weight comes *down* as size goes up, which looks backwards written out and
-     is right on screen. At 68px a 700 weight is a slab; the reference
-     dashboards all set their headline figures around 600 and let the size do
-     the shouting. Bigger beats bolder. */
+  /* Display figures — the big bento numbers. Archivo, not the UI face: this
+     is the one moment per screen allowed to be a headline rather than a
+     label. A single weight throughout (800) rather than the previous
+     size-dependent taper — Archivo's tabular figures drift 568→598 units
+     between weight 400 and 700 (confirmed against the variable font), so a
+     bold total and a regular row would NOT share a digit grid if two weights
+     were mixed here. One weight sidesteps that entirely. */
   .figure-display {
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 100;
     font-size: clamp(2.75rem, 1.9rem + 3.2vw, 4.25rem);
     line-height: 0.95;
-    letter-spacing: -0.04em;
-    font-weight: 620;
+    letter-spacing: -0.03em;
+    font-weight: 800;
   }
-  /* One step down from display: the figure on a half-width bento tile. */
   .figure-lg {
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 100;
     font-size: clamp(2rem, 1.5rem + 1.8vw, 2.875rem);
     line-height: 1;
-    letter-spacing: -0.032em;
-    font-weight: 640;
+    letter-spacing: -0.028em;
+    font-weight: 800;
   }
   .figure-stat {
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 100;
     font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem);
     line-height: 1.05;
-    letter-spacing: -0.025em;
-    font-weight: 700;
+    letter-spacing: -0.022em;
+    font-weight: 800;
   }
 
   /* The label above a figure. Small, quiet, and spaced out — it is there to
@@ -534,10 +420,17 @@
     text-transform: uppercase;
     color: var(--muted-foreground);
   }
+
+  /* The one other display moment: a page's own title ("Rent", "Properties").
+     Everything under it — CardTitle, section headers — stays on the UI face
+     via --font-heading, so there is exactly one loud voice per screen. */
   h1,
   .text-title {
-    letter-spacing: -0.02em;
-    line-height: 1.15;
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 100;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
   }
   h2,
   h3 {
@@ -559,37 +452,11 @@
     @apply font-sans;
   }
 
-  /* Over a translucent surface the backdrop shifts as you scroll, so thin
-     grey text loses its footing. Apple's answer is weight rather than more
-     grey — a slightly heavier stroke holds up over a moving backdrop. */
-  .glass .text-muted-foreground,
-  [data-slot="card"] .text-muted-foreground {
-    font-weight: 450;
-  }
-
   /* Tabular figures everywhere numbers are compared down a column — rent,
      occupancy, costs. Without this, digits have different widths and columns
      visibly wobble between rows. */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
-  }
-}
-
-/* Accessibility fallbacks.
-
-   Both of these are real user settings, not hypotheticals. Someone who has
-   asked their OS to reduce transparency or motion has usually done so because
-   the alternative makes the interface unusable for them. */
-@media (prefers-reduced-transparency: reduce) {
-  :root,
-  .dark {
-    --glass-bg: var(--card);
-    --glass-bg-strong: var(--card);
-    --glass-blur: 0px;
-    --glass-saturate: 100%;
-  }
-  .aurora {
-    display: none;
   }
 }
 
