@@ -5,6 +5,8 @@ import { useTranslations, useFormatter } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { getPhotoUrls, recordPdfExport } from "@/lib/actions/inventory";
+import { createClient } from "@/lib/supabase/client";
+import { PDF_BUCKET } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -28,6 +30,29 @@ import type {
   ChecklistPhoto,
   ChecklistSection,
 } from "@/lib/types";
+
+/**
+ * Hands a generated file to the browser.
+ *
+ * Two things here are not optional, and both were wrong before. The anchor
+ * has to be in the document — Firefox ignores a click on one that is not —
+ * and the object URL must outlive the click, because revoking it on the very
+ * next line can pull the blob away before the browser has finished reading
+ * it, which cancels the download it just started.
+ */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename.replace(/\s+/g, "-");
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // A minute is far longer than any download needs to start, and costs one
+  // unreferenced blob until then.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
 
 export function ExportPdfButton({
   checklistId,
@@ -165,25 +190,48 @@ export function ExportPdfButton({
 
       const blob = await pdf(<ReportPdf data={data} />).toBlob();
 
-      // Save a copy server-side — this is what later makes it safe to purge
-      // the original photos, and it keeps the report if the tenancy ends.
-      const fd = new FormData();
-      fd.set("file", blob, `${meta.roomName}-${meta.type}.pdf`);
-      const stored = await recordPdfExport(checklistId, fd);
-      if (!stored.ok) toast.error(stored.error);
+      /* The download comes first, before anything that can fail.
+         Archiving used to run ahead of it, so a storage problem meant the
+         admin lost a report that had already been built — the expensive part
+         done, and nothing to show for it. */
+      downloadBlob(blob, `${meta.roomName} - ${meta.type}.pdf`);
 
-      // Hand the file to the admin as well.
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${meta.roomName} - ${meta.type}.pdf`.replace(/\s+/g, "-");
-      a.click();
-      URL.revokeObjectURL(url);
+      /* Uploaded straight from the browser rather than through a Server
+         Action. An action is a POST to the app, and Next caps that body at
+         1MB by default while Vercel caps it at 4.5MB regardless — and a full
+         report with a few hundred photos is several megabytes. Storage has no
+         such ceiling, and the bucket's policy already requires an
+         authenticated admin, so this is the same permission either way. */
+      const supabase = createClient();
+      const path = `${checklistId}/${Date.now()}-report.pdf`;
+      const { error: uploadError } = await supabase.storage
+        .from(PDF_BUCKET)
+        .upload(path, blob, { contentType: "application/pdf", upsert: true });
+
+      if (uploadError) {
+        // They have their PDF; only the archived copy failed. Say which.
+        console.error("Report upload failed", uploadError);
+        toast.error(t("inventory.exportNotArchived"));
+        return;
+      }
+
+      const stored = await recordPdfExport(checklistId, path, blob.size);
+      if (!stored.ok) {
+        console.error("Report record failed", stored.error);
+        toast.error(stored.error);
+        return;
+      }
 
       toast.success(t("common.saved"));
       router.refresh();
-    } catch {
-      toast.error(t("common.error"));
+    } catch (error) {
+      /* Logged as well as shown. This was a bare catch with a generic
+         message, which meant a failure here left nothing behind to work out
+         why — the one thing you need when a report will not generate. */
+      console.error("PDF export failed", error);
+      toast.error(
+        error instanceof Error ? error.message : t("common.error"),
+      );
     } finally {
       setBusy(false);
     }

@@ -398,7 +398,8 @@
     "repairBooked": "Repair booked",
     "notStarted": "Not started",
     "notStartedCount": "{count, plural, one {# not started} other {# not started}}",
-    "completeOf": "{done} of {total} complete"
+    "completeOf": "{done} of {total} complete",
+    "exportNotArchived": "Your PDF has downloaded, but the archived copy could not be saved. The original photos will not be removed until it is."
   },
   "analytics": {
     "title": "Analytics",

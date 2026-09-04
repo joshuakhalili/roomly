@@ -7,6 +7,7 @@ import {
   optionalText,
   type ActionResult,
 } from "./helpers";
+import { PDF_BUCKET } from "@/lib/types";
 import type { ChecklistType, ConditionRating } from "@/lib/types";
 
 const PHOTO_BUCKET = "inventory-photos";
@@ -440,32 +441,40 @@ export async function deleteReportRecord(
  * compact PDF has to exist as the permanent record before the source images
  * can safely go.
  */
+/**
+ * Records a report that the browser has already uploaded.
+ *
+ * The PDF deliberately does not travel through here. A Server Action is a
+ * POST to the app, and Next caps that body at 1MB by default — Vercel caps it
+ * at 4.5MB whatever the config says. A full report with a few hundred photos
+ * is several megabytes, so sending the file this way failed on exactly the
+ * reports that matter most, and failed *before* the code that handed the
+ * admin their download. The browser uploads straight to storage, which has no
+ * such ceiling, and this records where it went.
+ */
 export async function recordPdfExport(
   checklistId: string,
-  formData: FormData,
+  path: string,
+  fileSize: number,
 ): Promise<ActionResult<{ path: string }>> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
 
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0)
-    return { ok: false, error: "No PDF provided." };
-
-  const path = `${checklistId}/${Date.now()}-report.pdf`;
-  const { error: uploadError } = await auth.supabase.storage
-    .from("checklist-pdfs")
-    .upload(path, file, { contentType: "application/pdf", upsert: true });
-
-  if (uploadError) return { ok: false, error: uploadError.message };
+  /* The path comes from the client, so it is checked rather than trusted:
+     a report may only ever be filed under the checklist it belongs to. */
+  if (!path.startsWith(`${checklistId}/`))
+    return { ok: false, error: "That report does not belong to this checklist." };
 
   const { error } = await auth.supabase.from("checklist_pdf_exports").insert({
     checklist_id: checklistId,
-    storage_path: `checklist-pdfs/${path}`,
-    file_size: file.size,
+    storage_path: `${PDF_BUCKET}/${path}`,
+    file_size: fileSize,
   });
 
   if (error) {
-    await auth.supabase.storage.from("checklist-pdfs").remove([path]);
+    // The object is already in the bucket; with no row pointing at it, no
+    // retention rule could ever find it again.
+    await auth.supabase.storage.from(PDF_BUCKET).remove([path]);
     return { ok: false, error: friendlyError(error) };
   }
 

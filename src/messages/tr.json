@@ -398,7 +398,8 @@
     "repairBooked": "Onarım planlandı",
     "notStarted": "Başlanmadı",
     "notStartedCount": "{count, plural, other {# tanesine başlanmadı}}",
-    "completeOf": "{total} odanın {done} tanesi tamam"
+    "completeOf": "{total} odanın {done} tanesi tamam",
+    "exportNotArchived": "PDF indirildi, ancak arşiv kopyası kaydedilemedi. Kaydedilene kadar orijinal fotoğraflar silinmeyecek."
   },
   "analytics": {
     "title": "Analiz",

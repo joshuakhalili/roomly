@@ -398,7 +398,8 @@
     "repairBooked": "维修已安排",
     "notStarted": "尚未开始",
     "notStartedCount": "{count, plural, other {# 间未开始}}",
-    "completeOf": "{total} 间中已完成 {done} 间"
+    "completeOf": "{total} 间中已完成 {done} 间",
+    "exportNotArchived": "PDF 已下载，但存档副本保存失败。在保存成功之前，原始照片不会被删除。"
   },
   "analytics": {
     "title": "数据分析",

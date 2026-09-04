@@ -113,6 +113,16 @@ export type LeavingReason =
   | "given_notice_by_admin"
   | "other";
 
+/**
+ * Where generated condition reports are stored.
+ *
+ * Named here rather than inside the actions file because both sides need it:
+ * the browser uploads the PDF straight to this bucket, and the server records
+ * where it landed. A `"use server"` module can only export async functions,
+ * so it cannot be the home for a shared constant.
+ */
+export const PDF_BUCKET = "checklist-pdfs";
+
 /** Ordered worst→best so ratings can be compared numerically. */
 export const CONDITION_ORDER: ConditionRating[] = [
   "unacceptable",
