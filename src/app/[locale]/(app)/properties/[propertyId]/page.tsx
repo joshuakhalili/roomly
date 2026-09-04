@@ -9,6 +9,8 @@ import { PropertyDialog } from "@/components/properties/property-dialog";
 import { RoomDialog } from "@/components/rooms/room-dialog";
 import { DeletePropertyButton } from "@/components/properties/delete-property-button";
 import { PropertyDocuments } from "@/components/documents/property-documents";
+import { UtilityBillsPanel } from "@/components/properties/utility-bills-panel";
+import { getSignedUrls } from "@/lib/actions/storage";
 import { ArrowLeft, ChevronRight, DoorOpen, Pencil, User } from "lucide-react";
 import type {
   DocumentRecord,
@@ -16,6 +18,7 @@ import type {
   Room,
   Tenancy,
   TenantOnTenancy,
+  UtilityBill,
 } from "@/lib/types";
 
 export default async function PropertyPage({
@@ -41,6 +44,8 @@ export default async function PropertyPage({
     { data: tenancies },
     { data: tenancyTenants },
     { data: certificates },
+    { data: bills },
+    { data: billedTenancies },
   ] = await Promise.all([
     supabase.from("rooms").select("*").eq("property_id", propertyId).order("name"),
     supabase.from("tenancies").select("*").in("status", ["upcoming", "active"]),
@@ -52,6 +57,18 @@ export default async function PropertyPage({
       .select("*")
       .eq("property_id", propertyId)
       .order("expires_at", { nullsFirst: false }),
+    supabase
+      .from("utility_bills")
+      .select("*")
+      .eq("property_id", propertyId)
+      .order("period_end", { ascending: false }),
+    /* Ended lettings too, not just current ones: the comparison looks back a
+       year, and a room that was let for eight of those months collected rent
+       that has to count against the bills for the same period. */
+    supabase
+      .from("tenancies")
+      .select("*")
+      .in("status", ["active", "ended"]),
   ]);
 
   const tenantsByTenancy = new Map<string, TenantOnTenancy[]>();
@@ -77,6 +94,12 @@ export default async function PropertyPage({
   const prop = property as Property;
   const roomList = (rooms ?? []) as Room[];
 
+  const signed = prop.banner_path
+    ? await getSignedUrls([prop.banner_path])
+    : null;
+  const bannerUrl =
+    signed?.ok && prop.banner_path ? signed.data[prop.banner_path] : null;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -87,6 +110,18 @@ export default async function PropertyPage({
           <ArrowLeft className="size-4" aria-hidden />
           {t("properties.title")}
         </Link>
+
+        {/* Shallower than the card crop: a hero this wide at 3:1 would push
+            the actual page below the fold on a laptop. */}
+        {bannerUrl && (
+          /* eslint-disable-next-line @next/next/no-img-element -- signed URLs
+             expire, so the optimiser cannot cache them */
+          <img
+            src={bannerUrl}
+            alt=""
+            className="mb-4 aspect-[5/1] w-full rounded-xl border border-border object-cover"
+          />
+        )}
 
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
@@ -122,6 +157,17 @@ export default async function PropertyPage({
       <PropertyDocuments
         property={prop}
         documents={(certificates ?? []) as DocumentRecord[]}
+      />
+
+      <UtilityBillsPanel
+        propertyId={prop.id}
+        bills={(bills ?? []) as UtilityBill[]}
+        /* Narrowed to this building's rooms here rather than in the query:
+           the tenancies table has no property_id, so the join has to happen
+           through rooms either way. */
+        tenancies={((billedTenancies ?? []) as Tenancy[]).filter((tn) =>
+          roomList.some((r) => r.id === tn.room_id),
+        )}
       />
 
       <section>

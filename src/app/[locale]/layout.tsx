@@ -39,6 +39,19 @@ const archivo = Archivo({
 /** Numerals face for the calendar feed URL and the build hash only. */
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
+/**
+ * The BCP 47 tag for each locale, which is not always the locale itself.
+ *
+ * "zh" alone does not say which script, and a screen reader or a font picker
+ * needs to know — hence zh-Hans. A lookup rather than a ternary because a
+ * ternary silently answers "en" for every language added after the second.
+ */
+const HTML_LANG = {
+  en: "en",
+  zh: "zh-Hans",
+  tr: "tr",
+} as const;
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -95,7 +108,7 @@ export default async function LocaleLayout({
     // theme class onto <html> before React hydrates, so the server's markup
     // and the client's first render legitimately differ on this one element.
     <html
-      lang={locale === "zh" ? "zh-Hans" : "en"}
+      lang={HTML_LANG[locale as keyof typeof HTML_LANG] ?? "en"}
       className={`${instrumentSans.variable} ${archivo.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >

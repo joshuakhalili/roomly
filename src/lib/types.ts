@@ -10,7 +10,30 @@ export type TenancyStatus = "upcoming" | "active" | "ended" | "archived";
  * never let on its own, it's only a space inside one of these.
  */
 export type UnitType = "studio" | "flat";
-export type RentFrequency = "weekly" | "fortnightly" | "four_weekly" | "monthly";
+
+/**
+ * How a letting is shaped, which is not the same question as what is let.
+ *
+ * A long-term tenancy recurs: one amount, repeating on a cadence, until it
+ * ends. A short stay does not — it is a fixed number of nights with one total
+ * price. Everything downstream that has to behave differently (rent rows,
+ * which documents are required) branches on this rather than guessing from
+ * the dates.
+ */
+export type LettingType = "long_term" | "short_stay";
+
+/**
+ * "total" is the short-stay case: one price for the whole booking rather than
+ * a repeating charge. It lives in the same field as the recurring cadences so
+ * that every existing "sum rent_amount for active tenancies" query keeps
+ * working without learning about a second price column.
+ */
+export type RentFrequency =
+  | "weekly"
+  | "fortnightly"
+  | "four_weekly"
+  | "monthly"
+  | "total";
 export type RentPaymentStatus = "due" | "paid" | "late" | "waived";
 export type ConditionRating =
   | "excellent"
@@ -54,7 +77,36 @@ export type DocumentType =
   | "warranty"
   | "receipt"
   | "other";
-export type AppLanguage = "en" | "zh";
+/**
+ * The language a tenant is written to in, which is not the language the admin
+ * is reading the app in — a Turkish-speaking landlord may have a Chinese
+ * tenant. Kept separate from the UI locale for exactly that reason.
+ */
+export type AppLanguage = "en" | "zh" | "tr";
+
+/** Every language a message can be sent in, for building pickers. */
+export const APP_LANGUAGES: AppLanguage[] = ["en", "zh", "tr"];
+
+/** Named in itself, so someone finds their own language by recognising it. */
+export const LANGUAGE_LABELS: Record<AppLanguage, string> = {
+  en: "English",
+  zh: "简体中文",
+  tr: "Türkçe",
+};
+
+/**
+ * Reads a language off a form, falling back to English.
+ *
+ * Both places that did this checked for one language and assumed English
+ * otherwise, which quietly turns every language added afterwards into
+ * English. Checking against the list means adding a fourth needs no edits
+ * here at all.
+ */
+export function toAppLanguage(value: unknown): AppLanguage {
+  return APP_LANGUAGES.includes(value as AppLanguage)
+    ? (value as AppLanguage)
+    : "en";
+}
 export type LeavingReason =
   | "end_of_term"
   | "tenant_gave_notice"
@@ -125,22 +177,28 @@ export const INVOICE_TYPES: DocumentType[] = [
   "receipt",
 ];
 
+/* What a live letting must have on file used to be a constant here. It is now
+   the document_requirements table — see @/lib/queries/document-requirements —
+   because the answer depends on whether the letting is a tenancy or a short
+   stay, and a constant cannot express that. Leaving a copy behind would be a
+   second answer to the same question, one table away from the real one. */
+
 /**
- * What a live tenancy must have on file, driving the dashboard's
- * "missing documents" count.
+ * One document a letting of a given type must have on file.
  *
- * Right-to-rent is required under the Immigration Act 2014. Deposit
- * protection must be evidenced, with the prescribed information served,
- * within 30 days of taking a deposit. Since 1 May 2026 the Renters' Rights
- * Act Information Sheet replaced the withdrawn "How to Rent" guide.
+ * Lives in the database rather than in this file because the answer differs
+ * by what kind of letting it is, and because the list moves by statute — a
+ * requirement should be addable without a deploy. See migration 0017.
  */
-export const REQUIRED_DOCUMENT_TYPES: DocumentType[] = [
-  "right_to_rent",
-  "tenancy_agreement",
-  "deposit_certificate",
-  "deposit_prescribed_info",
-  "renters_rights_info",
-];
+export interface DocumentRequirement {
+  id: string;
+  letting_type: LettingType;
+  doc_type: DocumentType;
+  /** Identity documents follow the person; agreements belong to the letting. */
+  owner_scope: "tenant" | "tenancy";
+  legal_basis: string | null;
+  sort_order: number;
+}
 
 /**
  * Certificates the property must hold, with how long each lasts.
@@ -170,6 +228,13 @@ export interface Property {
   name: string;
   address: string | null;
   notes: string | null;
+  /**
+   * A photograph of the building, stored as "<bucket>/<path>".
+   *
+   * On a list of houses the picture is what someone recognises — they have it
+   * before they have finished reading the name.
+   */
+  banner_path: string | null;
   created_at: string;
 }
 
@@ -206,11 +271,22 @@ export interface Tenancy {
   room_id: string;
   bank_account_id: string | null;
   status: TenancyStatus;
+  letting_type: LettingType;
   start_date: string;
   end_date: string | null;
   rent_amount: number;
   rent_frequency: RentFrequency;
   rent_due_day: number | null;
+  /**
+   * When a short stay's balance falls due. Null on a long tenancy, where
+   * rent_due_day governs instead, and null on a stay paid in full up front.
+   */
+  balance_due_date: string | null;
+  /**
+   * Utilities are covered by the rent rather than billed to the tenant.
+   * What makes the utility-spend comparison worth drawing at all.
+   */
+  bills_included: boolean;
   deposit_amount: number | null;
   deposit_scheme_name: string | null;
   deposit_scheme_ref: string | null;
@@ -387,6 +463,85 @@ export interface ChecklistPdfExport {
 export interface RoomWithTenancy extends Room {
   property_name?: string;
   tenancy: (Tenancy & { tenants: TenantOnTenancy[] }) | null;
+}
+
+// ── Money out ──────────────────────────────────────────────────────────────
+
+export type MeterType = "electricity" | "gas" | "water";
+
+/**
+ * One utility bill, covering a period.
+ *
+ * Period-based rather than dated because it exists to be set against the rent
+ * collected over the same weeks — a bill has a span, and so does the income
+ * it is being compared with.
+ */
+export interface UtilityBill {
+  id: string;
+  property_id: string;
+  meter_type: MeterType;
+  period_start: string;
+  period_end: string;
+  amount: number;
+  supplier_name: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+/** An editable category, seeded but extendable. Mirrors ServiceType. */
+export interface ExpenseCategory {
+  id: string;
+  name: string;
+  slug: string | null;
+  sort_order: number;
+  is_archived: boolean;
+  created_at: string;
+}
+
+/**
+ * Spend that has nowhere else to live.
+ *
+ * Deliberately not everything that costs money: work is a maintenance job,
+ * equipment is an asset, utilities are a bill. This is the lamp, the light
+ * bulbs, the accountant. Allocations nest rather than exclude — a room
+ * implies its property — and all of them are optional, because a software
+ * subscription belongs to the business rather than to any one building.
+ */
+export interface Expense {
+  id: string;
+  property_id: string | null;
+  room_id: string | null;
+  tenancy_id: string | null;
+  category_id: string | null;
+  description: string;
+  amount: number;
+  spent_on: string;
+  supplier_name: string | null;
+  /** Bought because a tenant broke it, and intended to go on their bill. */
+  is_recharged: boolean;
+  notes: string | null;
+  created_at: string;
+}
+
+/** Where a line in the ledger came from. */
+export type ExpenseSource = "expense" | "maintenance" | "asset" | "utility";
+
+/**
+ * A row of the `expense_ledger` view: the four sources of outgoing money,
+ * unioned. Read-only — each row is owned by the table it came from.
+ */
+export interface ExpenseLedgerRow {
+  id: string;
+  source: ExpenseSource;
+  spent_on: string;
+  amount: number;
+  description: string | null;
+  supplier_name: string | null;
+  property_id: string | null;
+  room_id: string | null;
+  category_id: string | null;
+  category_name: string | null;
+  category_slug: string | null;
 }
 
 // ── Maintenance ────────────────────────────────────────────────────────────

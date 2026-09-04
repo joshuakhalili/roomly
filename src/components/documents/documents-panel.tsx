@@ -26,10 +26,10 @@ import {
 } from "@/components/ui/dialog";
 import { FileText, Upload, Trash2, ExternalLink, TriangleAlert } from "lucide-react";
 import {
-  REQUIRED_DOCUMENT_TYPES,
   TENANT_DOCUMENT_TYPES,
   TENANCY_DOCUMENT_TYPES,
   type DocumentRecord,
+  type DocumentType,
   type TenantOnTenancy,
 } from "@/lib/types";
 import { DOC_TYPE_KEYS } from "./doc-type-labels";
@@ -39,12 +39,20 @@ export function DocumentsPanel({
   tenantId,
   tenants,
   documents,
+  requiredTypes = [],
   scope = "tenancy",
 }: {
   tenancyId?: string;
   tenantId?: string;
   tenants: TenantOnTenancy[];
   documents: DocumentRecord[];
+  /**
+   * What this letting must have on file, read from document_requirements by
+   * whichever page mounted this. Passed in rather than imported because the
+   * answer depends on the kind of letting, and this is a client component —
+   * it cannot go and ask the database itself.
+   */
+  requiredTypes?: DocumentType[];
   /**
    * A tenant profile shows only identity documents; a tenancy shows the
    * agreement and deposit certificate. Same component, different slice.
@@ -65,7 +73,7 @@ export function DocumentsPanel({
 
   const present = new Set(documents.map((d) => d.doc_type));
   // Only chase the documents this panel is actually responsible for.
-  const missing = REQUIRED_DOCUMENT_TYPES.filter(
+  const missing = requiredTypes.filter(
     (d) => offered.includes(d) && !present.has(d),
   );
 

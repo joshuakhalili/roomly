@@ -10,9 +10,19 @@ const handleI18n = createIntlMiddleware(routing);
 /** The only pages reachable without being signed in. */
 const PUBLIC_PATHS = ["/login", "/auth/callback"];
 
+/**
+ * Built from routing.locales rather than written out again.
+ *
+ * This was a hardcoded `(en|zh)`, which is the kind of second copy that only
+ * announces itself once a third language exists: an unlisted locale stops
+ * matching as a public path, so /tr/login is treated as protected, redirects
+ * to /tr/login, and loops.
+ */
+const LOCALE_PREFIX = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
+
 function isPublicPath(pathname: string) {
   // Strip the locale prefix ("/en/login" → "/login") before matching.
-  const withoutLocale = pathname.replace(/^\/(en|zh)(?=\/|$)/, "") || "/";
+  const withoutLocale = pathname.replace(LOCALE_PREFIX, "") || "/";
   return PUBLIC_PATHS.some(
     (p) => withoutLocale === p || withoutLocale.startsWith(`${p}/`),
   );

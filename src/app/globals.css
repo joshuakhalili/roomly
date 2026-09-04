@@ -352,6 +352,43 @@
   animation: rise-in var(--duration-slow) var(--ease-out-token) both;
 }
 
+/* Collapsible sections.
+
+   A height transition to `auto` does not animate — the browser has no end
+   value to interpolate towards. Radix measures the panel and publishes the
+   result as --radix-collapsible-content-height, which is the only reason
+   these can move at all. Opening eases out, closing eases in: a panel should
+   arrive gently and leave decisively, not the same speed in both directions. */
+@keyframes collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@utility collapsible-down {
+  animation: collapsible-down var(--duration) var(--ease-out-token);
+}
+
+@utility collapsible-up {
+  animation: collapsible-up var(--duration) var(--ease-in-token);
+}
+
 @layer base {
   /* Figures.
 

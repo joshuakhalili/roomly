@@ -7,7 +7,7 @@ import {
   optionalText,
   type ActionResult,
 } from "./helpers";
-import type { AppLanguage } from "@/lib/types";
+import { toAppLanguage } from "@/lib/types";
 
 /** Your own name and how you want the app to talk to you. */
 export async function updateOwnProfile(
@@ -16,13 +16,11 @@ export async function updateOwnProfile(
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
 
-  const language = formData.get("preferred_language");
-
   const { error } = await auth.supabase
     .from("profiles")
     .update({
       display_name: optionalText(formData.get("display_name")),
-      preferred_language: (language === "zh" ? "zh" : "en") as AppLanguage,
+      preferred_language: toAppLanguage(formData.get("preferred_language")),
       email_digest_opt_in: formData.get("email_digest_opt_in") === "on",
     })
     .eq("id", auth.userId);

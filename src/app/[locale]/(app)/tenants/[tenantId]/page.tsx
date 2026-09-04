@@ -7,8 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TenantDialog } from "@/components/tenants/tenant-dialog";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
+import {
+  getDocumentRequirements,
+  tenantScopedTypes,
+} from "@/lib/queries/document-requirements";
 import { DeleteTenantButton } from "@/components/tenants/delete-tenant-button";
 import { ArrowLeft, Pencil, Mail, Phone, MessageCircle, Globe } from "lucide-react";
+import { LANGUAGE_LABELS } from "@/lib/types";
 import type { DocumentRecord, Tenant } from "@/lib/types";
 
 interface HistoryRow {
@@ -40,7 +45,7 @@ export default async function TenantPage({
   const format = await getFormatter();
 
   const supabase = await createClient();
-  const [{ data: tenant }, { data: history }, { data: documents }] =
+  const [{ data: tenant }, { data: history }, { data: documents }, requirements] =
     await Promise.all([
       supabase.from("tenants").select("*").eq("id", tenantId).single(),
       supabase
@@ -50,6 +55,7 @@ export default async function TenantPage({
         )
         .eq("tenant_id", tenantId),
       supabase.from("documents").select("*").eq("tenant_id", tenantId),
+      getDocumentRequirements(supabase),
     ]);
 
   if (!tenant) notFound();
@@ -103,7 +109,7 @@ export default async function TenantPage({
           {detail(Globe, person.country_of_origin)}
           <p className="flex items-center gap-2 text-sm">
             <Globe className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            {person.preferred_language === "zh" ? "简体中文" : "English"}
+            {LANGUAGE_LABELS[person.preferred_language]}
           </p>
           {person.notes && (
             <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
@@ -118,6 +124,10 @@ export default async function TenantPage({
         tenantId={person.id}
         tenants={[{ ...person, is_lead_tenant: false }]}
         documents={(documents ?? []) as DocumentRecord[]}
+        /* A profile outlives any one letting, so what it must hold is
+           everything that follows the person under any letting type, not
+           whatever their current tenancy happens to be. */
+        requiredTypes={[...tenantScopedTypes(requirements)]}
         scope="tenant"
       />
 

@@ -22,7 +22,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MessageCircle, Copy, Send, CircleAlert } from "lucide-react";
+import { APP_LANGUAGES, LANGUAGE_LABELS } from "@/lib/types";
 import type { AppLanguage, TenantOnTenancy } from "@/lib/types";
+
+/**
+ * The regional tag each language's dates are written with.
+ *
+ * Not the same as the language code: a date for a British tenant is en-GB
+ * (25 March 2026), and en alone gives the American order.
+ */
+const DATE_LOCALE: Record<AppLanguage, string> = {
+  en: "en-GB",
+  zh: "zh-CN",
+  tr: "tr-TR",
+};
 
 /** WhatsApp and WeChat brand colours, so the buttons read at a glance. */
 const WHATSAPP_GREEN = "#25D366";
@@ -60,7 +73,7 @@ export function ReminderDialog({
   const localisedDates = Object.fromEntries(
     Object.entries(isoDates ?? {}).map(([key, iso]) => [
       key,
-      new Intl.DateTimeFormat(language === "zh" ? "zh-CN" : "en-GB", {
+      new Intl.DateTimeFormat(DATE_LOCALE[language], {
         dateStyle: "long",
       }).format(new Date(iso)),
     ]),
@@ -117,8 +130,8 @@ export function ReminderDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <div className="flex gap-2">
-            {(["en", "zh"] as const).map((lang) => (
+          <div className="flex flex-wrap gap-2">
+            {APP_LANGUAGES.map((lang) => (
               <Button
                 key={lang}
                 size="sm"
@@ -128,10 +141,12 @@ export function ReminderDialog({
                   setMessage("");
                 }}
               >
-                {lang === "en" ? "English" : "简体中文"}
+                {LANGUAGE_LABELS[lang]}
               </Button>
             ))}
-            {tenant.preferred_language === "zh" && language === "zh" && (
+            {/* Shown whenever the selected language is the one they asked for,
+                whichever that is — it used to say so only for Chinese. */}
+            {language === tenant.preferred_language && (
               <span className="self-center text-xs text-muted-foreground">
                 {t("reminder.preferred")}
               </span>

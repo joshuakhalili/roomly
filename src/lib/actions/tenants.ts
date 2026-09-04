@@ -8,6 +8,7 @@ import {
   normalisePhone,
   type ActionResult,
 } from "./helpers";
+import { toAppLanguage } from "@/lib/types";
 
 function tenantFields(formData: FormData) {
   return {
@@ -17,8 +18,7 @@ function tenantFields(formData: FormData) {
     phone: normalisePhone(optionalText(formData.get("phone"))),
     wechat_id: optionalText(formData.get("wechat_id")),
     country_of_origin: optionalText(formData.get("country_of_origin")),
-    preferred_language:
-      formData.get("preferred_language") === "zh" ? "zh" : "en",
+    preferred_language: toAppLanguage(formData.get("preferred_language")),
     notes: optionalText(formData.get("notes")),
   };
 }

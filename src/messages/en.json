@@ -20,7 +20,8 @@
     "groupLettings": "Lettings",
     "groupRecords": "Records",
     "groupSystem": "System",
-    "maintenance": "Maintenance"
+    "maintenance": "Maintenance",
+    "expenses": "Expenses"
   },
   "auth": {
     "signIn": "Sign in",
@@ -76,7 +77,9 @@
     "search": "Search by name or room",
     "property": "Property",
     "allProperties": "All properties",
-    "noResults": "Nothing matches these filters."
+    "noResults": "Nothing matches these filters.",
+    "title": "Filters",
+    "clear": "Clear filters"
   },
   "properties": {
     "title": "Properties",
@@ -94,7 +97,25 @@
     "one": "Property",
     "rentRoll": "Rent roll",
     "perMonth": "Per month, active lettings",
-    "acrossBuildings": "{count, plural, one {Across # building} other {Across # buildings}}"
+    "acrossBuildings": "{count, plural, one {Across # building} other {Across # buildings}}",
+    "banner": "Photo",
+    "bannerHint": "A picture of the building, so you can pick it out at a glance",
+    "bannerFailed": "That image could not be processed. Try another one.",
+    "removeBanner": "Remove the current photo",
+    "utilities": "Utilities",
+    "utilitiesHelp": "What the gas, electric and water actually cost, against the rent you charge with bills included.",
+    "addBill": "Add bill",
+    "editBill": "Edit bill",
+    "billPeriod": "Period",
+    "billAmount": "Amount",
+    "billSupplier": "Supplier",
+    "deleteBill": "Delete this bill?",
+    "deleteBillWarning": "The bill is removed from the utilities comparison. This cannot be undone.",
+    "noBills": "No bills logged yet. Add one when it arrives and this starts telling you whether bills-included rent is covering itself.",
+    "billsMargin": "Bills margin",
+    "billsMarginHint": "Rent collected with bills included, less what the utilities cost",
+    "billsMarginNegative": "Utilities cost more than the bills-included rent collected",
+    "noBillsIncluded": "No lettings here include bills"
   },
   "rooms": {
     "title": "Rooms",
@@ -136,6 +157,17 @@
     "frequencyFortnightly": "Fortnightly",
     "frequencyFourWeekly": "Every 4 weeks",
     "frequencyMonthly": "Monthly",
+    "frequencyTotal": "Total for the stay",
+    "lettingType": "Type of letting",
+    "lettingLongTerm": "Tenancy",
+    "lettingShortStay": "Short stay",
+    "lettingLongTermHint": "Rent that repeats until the tenancy ends",
+    "lettingShortStayHint": "A fixed number of nights, one total price",
+    "balanceDue": "Balance due",
+    "balanceDueHint": "Leave blank if it is all paid on arrival",
+    "stayTotal": "Total for the stay",
+    "depositHolds": "Taken to hold the booking",
+    "billsIncluded": "Bills included in the rent",
     "rentDueDay": "Rent due on day",
     "depositAmount": "Deposit amount",
     "depositScheme": "Deposit scheme",
@@ -363,7 +395,10 @@
     "exportConfirmTitle": "Generate the report?",
     "exportConfirmBody": "The PDF is saved as the permanent record for this checklist. The {count} original photos are then deleted automatically once the report has been kept for the retention period — after that the report is the only copy, at the resolution it was flattened to.",
     "bookRepair": "Book a repair",
-    "repairBooked": "Repair booked"
+    "repairBooked": "Repair booked",
+    "notStarted": "Not started",
+    "notStartedCount": "{count, plural, one {# not started} other {# not started}}",
+    "completeOf": "{done} of {total} complete"
   },
   "analytics": {
     "title": "Analytics",
@@ -455,7 +490,13 @@
     "inARoom": "In a room",
     "ofActive": "of {total} people",
     "betweenLettings": "Between lettings",
-    "keptForRecords": "Kept for records"
+    "keptForRecords": "Kept for records",
+    "searchPlaceholder": "Search by name, email, phone or WeChat",
+    "anyLanguage": "Any language",
+    "anyCountry": "Any country",
+    "hasContact": "Has a way to contact them",
+    "missingDocsOnly": "Missing documents",
+    "missingDocs": "{count, plural, one {# missing} other {# missing}}"
   },
   "retention": {
     "subtitle": "How long each kind of record is kept, why, and what has been erased.",
@@ -625,5 +666,36 @@
     "until": "Until {date}",
     "stop": "Stop",
     "attach": "Attach invoice or receipt"
+  },
+  "expenses": {
+    "title": "Expenses",
+    "subtitle": "Everything going out, from wherever you entered it",
+    "add": "Add expense",
+    "edit": "Edit expense",
+    "description": "What was it",
+    "descriptionPlaceholder": "Bedside lamp, replacement kettle…",
+    "amount": "Amount",
+    "spentOn": "Date",
+    "category": "Category",
+    "supplier": "Supplier",
+    "isRecharged": "Recharging this to a tenant",
+    "allocationHint": "Leave as a business cost if it does not belong to one building",
+    "wholeBusiness": "The business",
+    "wholeProperty": "The whole property",
+    "taxYear": "Tax year {label}",
+    "totalFor": "Total for {label}",
+    "searchPlaceholder": "Search by what or who",
+    "allSources": "Everything",
+    "allCategories": "All categories",
+    "allProperties": "All properties",
+    "sourceExpense": "Expense",
+    "sourceMaintenance": "Maintenance",
+    "sourceAsset": "Purchase",
+    "sourceUtility": "Utilities",
+    "openSource": "Open",
+    "none": "Nothing recorded yet. Add things as you buy them — maintenance jobs and equipment you have already logged show up here too.",
+    "noneMatch": "Nothing matches these filters.",
+    "deleteExpense": "Delete this expense?",
+    "deleteWarning": "The expense and any receipt filed against it are removed. This cannot be undone."
   }
 }

@@ -47,6 +47,12 @@ export function generateDueDates({
   rentDueDay?: number | null;
   horizon: Date;
 }): string[] {
+  /* A one-off total has no cadence to walk, and the interval fallback below
+     would quietly treat it as four-weekly. buildRentRows handles this case
+     properly; refusing it here stops a direct caller inventing a series of
+     charges nobody agreed to. */
+  if (frequency === "total") return [];
+
   const start = startOfDay(parseISO(startDate));
   const end = endDate ? startOfDay(parseISO(endDate)) : null;
   const limit = end && isAfter(horizon, end) ? end : horizon;
@@ -84,6 +90,91 @@ export function generateDueDates({
     cursor = addDays(cursor, intervalDays);
   }
   return dates;
+}
+
+/** What a tenancy needs to expose for its rent rows to be worked out. */
+export interface RentSchedulable {
+  id: string;
+  start_date: string;
+  end_date: string | null;
+  rent_frequency: RentFrequency;
+  rent_due_day: number | null;
+  rent_amount: number;
+  deposit_amount?: number | null;
+  balance_due_date?: string | null;
+}
+
+/** A row as `rent_payments` stores it. */
+export interface RentRow {
+  tenancy_id: string;
+  due_date: string;
+  amount_due: number;
+  status: "due";
+}
+
+/**
+ * The rent rows a tenancy should have, up to `horizon`.
+ *
+ * This exists because the same schedule was being built independently in two
+ * places — the tenancy action and the nightly cron — which is one copy too
+ * many for logic that decides what someone gets charged. Pure, so it can be
+ * tested without a database; both callers do their own upsert.
+ *
+ * Idempotent by construction: the (tenancy_id, due_date) unique constraint
+ * means re-running turns into a no-op for periods that already exist.
+ */
+export function buildRentRows(
+  tenancy: RentSchedulable,
+  horizon: Date,
+): RentRow[] {
+  /* A short stay is not a recurrence, so it does not go through the date
+     generator at all. It is at most two charges: whatever is taken to hold
+     the booking, and the balance. Running it through generateDueDates would
+     invent a series of monthly charges for a four-night stay. */
+  if (tenancy.rent_frequency === "total") {
+    const rows: RentRow[] = [];
+
+    if (tenancy.deposit_amount) {
+      rows.push({
+        tenancy_id: tenancy.id,
+        due_date: tenancy.start_date,
+        amount_due: tenancy.deposit_amount,
+        status: "due",
+      });
+    }
+
+    const balanceDue = tenancy.balance_due_date ?? tenancy.start_date;
+
+    /* Both charges landing on the same day is one charge, not two rows the
+       unique constraint would silently collapse into whichever arrived
+       first. Fold them together so the amount is right either way. */
+    const sameDay = rows.length > 0 && rows[0].due_date === balanceDue;
+    if (sameDay) {
+      rows[0].amount_due += tenancy.rent_amount;
+    } else {
+      rows.push({
+        tenancy_id: tenancy.id,
+        due_date: balanceDue,
+        amount_due: tenancy.rent_amount,
+        status: "due",
+      });
+    }
+
+    return rows;
+  }
+
+  return generateDueDates({
+    startDate: tenancy.start_date,
+    endDate: tenancy.end_date,
+    frequency: tenancy.rent_frequency,
+    rentDueDay: tenancy.rent_due_day,
+    horizon,
+  }).map((due_date) => ({
+    tenancy_id: tenancy.id,
+    due_date,
+    amount_due: tenancy.rent_amount,
+    status: "due" as const,
+  }));
 }
 
 /** Most recent payment actually marked paid. */

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Plus, Search, X } from "lucide-react";
+import { LANGUAGE_LABELS } from "@/lib/types";
 import type { Tenant } from "@/lib/types";
 
 /**
@@ -161,9 +162,11 @@ export function TenantPicker({
                   <span className="min-w-0 flex-1 truncate">
                     {person.first_name} {person.surname}
                   </span>
-                  {person.preferred_language === "zh" && (
+                  {/* Flagged whenever they read something other than the
+                      default, so whoever picks them knows to write in it. */}
+                  {person.preferred_language !== "en" && (
                     <Badge variant="outline" className="shrink-0 text-xs">
-                      中文
+                      {LANGUAGE_LABELS[person.preferred_language]}
                     </Badge>
                   )}
                 </button>

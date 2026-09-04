@@ -20,7 +20,8 @@
     "groupLettings": "租赁",
     "groupRecords": "记录",
     "groupSystem": "系统",
-    "maintenance": "维护"
+    "maintenance": "维护",
+    "expenses": "支出"
   },
   "auth": {
     "signIn": "登录",
@@ -76,7 +77,9 @@
     "search": "按姓名或房间搜索",
     "property": "房产",
     "allProperties": "所有房产",
-    "noResults": "没有符合条件的结果。"
+    "noResults": "没有符合条件的结果。",
+    "title": "筛选",
+    "clear": "清除筛选"
   },
   "properties": {
     "title": "房产",
@@ -94,7 +97,25 @@
     "one": "房产",
     "rentRoll": "租金总额",
     "perMonth": "每月，按在租租约计",
-    "acrossBuildings": "{count, plural, other {共 # 处房产}}"
+    "acrossBuildings": "{count, plural, other {共 # 处房产}}",
+    "banner": "照片",
+    "bannerHint": "房产外观照片，方便一眼认出",
+    "bannerFailed": "无法处理该图片，请换一张。",
+    "removeBanner": "移除当前照片",
+    "utilities": "水电燃气",
+    "utilitiesHelp": "水、电、燃气的实际支出，与包含账单的租金对比。",
+    "addBill": "添加账单",
+    "editBill": "编辑账单",
+    "billPeriod": "账期",
+    "billAmount": "金额",
+    "billSupplier": "供应商",
+    "deleteBill": "删除这张账单？",
+    "deleteBillWarning": "该账单将从水电燃气对比中移除，且无法撤销。",
+    "noBills": "尚未记录账单。收到账单后录入，即可看出包含账单的租金是否覆盖成本。",
+    "billsMargin": "账单结余",
+    "billsMarginHint": "包含账单的租金收入，减去水电燃气支出",
+    "billsMarginNegative": "水电燃气支出高于所收取的包含账单租金",
+    "noBillsIncluded": "此处没有包含账单的租约"
   },
   "rooms": {
     "title": "房间",
@@ -136,6 +157,17 @@
     "frequencyFortnightly": "每两周",
     "frequencyFourWeekly": "每四周",
     "frequencyMonthly": "每月",
+    "frequencyTotal": "整段入住总价",
+    "lettingType": "租赁类型",
+    "lettingLongTerm": "长租",
+    "lettingShortStay": "短租",
+    "lettingLongTermHint": "按周期重复收取，直至租约结束",
+    "lettingShortStayHint": "固定入住天数，一次性总价",
+    "balanceDue": "尾款到期日",
+    "balanceDueHint": "若入住当天一次付清，请留空",
+    "stayTotal": "整段入住总价",
+    "depositHolds": "预订定金",
+    "billsIncluded": "租金已含水电燃气",
     "rentDueDay": "每月缴租日",
     "depositAmount": "押金金额",
     "depositScheme": "押金保护方案",
@@ -363,7 +395,10 @@
     "exportConfirmTitle": "确定生成报告？",
     "exportConfirmBody": "此 PDF 将作为该清单的永久记录保存。{count} 张原始照片会在报告保存满保留期后自动删除 — 此后仅剩报告，且分辨率为生成时的版本。",
     "bookRepair": "安排维修",
-    "repairBooked": "维修已安排"
+    "repairBooked": "维修已安排",
+    "notStarted": "尚未开始",
+    "notStartedCount": "{count, plural, other {# 间未开始}}",
+    "completeOf": "{total} 间中已完成 {done} 间"
   },
   "analytics": {
     "title": "数据分析",
@@ -455,7 +490,13 @@
     "inARoom": "已入住",
     "ofActive": "共 {total} 人",
     "betweenLettings": "待安排房间",
-    "keptForRecords": "保留存档"
+    "keptForRecords": "保留存档",
+    "searchPlaceholder": "按姓名、邮箱、电话或微信搜索",
+    "anyLanguage": "任何语言",
+    "anyCountry": "任何国籍",
+    "hasContact": "有可用的联系方式",
+    "missingDocsOnly": "缺少文件",
+    "missingDocs": "{count, plural, other {缺 # 项}}"
   },
   "retention": {
     "subtitle": "各类记录的保存期限、依据，以及已删除的内容。",
@@ -625,5 +666,36 @@
     "until": "至 {date}",
     "stop": "停止",
     "attach": "附加发票或收据"
+  },
+  "expenses": {
+    "title": "支出",
+    "subtitle": "所有支出，无论从哪里录入",
+    "add": "添加支出",
+    "edit": "编辑支出",
+    "description": "支出内容",
+    "descriptionPlaceholder": "床头灯、更换水壶……",
+    "amount": "金额",
+    "spentOn": "日期",
+    "category": "类别",
+    "supplier": "供应商",
+    "isRecharged": "向租客转收此项费用",
+    "allocationHint": "若不属于某一处房产，可保留为公司支出",
+    "wholeBusiness": "公司支出",
+    "wholeProperty": "整处房产",
+    "taxYear": "{label} 纳税年度",
+    "totalFor": "{label} 合计",
+    "searchPlaceholder": "按内容或供应商搜索",
+    "allSources": "全部来源",
+    "allCategories": "全部类别",
+    "allProperties": "全部房产",
+    "sourceExpense": "支出",
+    "sourceMaintenance": "维护",
+    "sourceAsset": "采购",
+    "sourceUtility": "水电燃气",
+    "openSource": "打开",
+    "none": "尚无记录。购置时随手录入即可——已登记的维护工单和设备采购也会显示在这里。",
+    "noneMatch": "没有符合筛选条件的记录。",
+    "deleteExpense": "删除这笔支出？",
+    "deleteWarning": "该支出及其收据将一并删除，且无法撤销。"
   }
 }

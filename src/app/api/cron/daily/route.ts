@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
-import { generateDueDates, toDateString } from "@/lib/rent";
+import { buildRentRows, toDateString, type RentRow } from "@/lib/rent";
 import { generateJobDates } from "@/lib/jobs";
 import { addDays, differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
-import type { JobRecurrence, RentFrequency, Tenancy } from "@/lib/types";
+import type { JobRecurrence, Tenancy } from "@/lib/types";
 
 /**
  * The once-a-day job.
@@ -76,29 +76,14 @@ export async function GET(request: Request) {
   const horizon = new Date(today);
   horizon.setMonth(horizon.getMonth() + RENT_HORIZON_MONTHS);
 
-  const newRows: {
-    tenancy_id: string;
-    due_date: string;
-    amount_due: number;
-    status: string;
-  }[] = [];
+  const newRows: RentRow[] = [];
 
   for (const t of (tenancies ?? []) as Tenancy[]) {
-    const dates = generateDueDates({
-      startDate: t.start_date,
-      endDate: t.end_date,
-      frequency: t.rent_frequency as RentFrequency,
-      rentDueDay: t.rent_due_day,
-      horizon,
-    });
-    for (const due_date of dates) {
-      newRows.push({
-        tenancy_id: t.id,
-        due_date,
-        amount_due: t.rent_amount,
-        status: "due",
-      });
-    }
+    /* A short stay's charges are written once, when the booking is made.
+       There is no rolling horizon to extend — re-running it nightly would
+       upsert the same two rows forever for no benefit. */
+    if (t.rent_frequency === "total") continue;
+    newRows.push(...buildRentRows(t, horizon));
   }
 
   if (newRows.length) {

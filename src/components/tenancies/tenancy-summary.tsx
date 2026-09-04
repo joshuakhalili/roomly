@@ -8,6 +8,7 @@ const FREQUENCY_KEY = {
   fortnightly: "tenancy.frequencyFortnightly",
   four_weekly: "tenancy.frequencyFourWeekly",
   monthly: "tenancy.frequencyMonthly",
+  total: "tenancy.frequencyTotal",
 } as const;
 
 function Item({ label, value }: { label: string; value: string }) {
@@ -58,11 +59,20 @@ export async function TenancySummary({
             value={date(tenancy.end_date) ?? t("tenancy.noEndDate")}
           />
           <Item
-            label={t("tenancy.rentDueOn")}
+            /* A short stay has a date the balance is owed by, not a cadence —
+               "one total" is true but useless when what you want to know is
+               when the money arrives. */
+            label={
+              tenancy.letting_type === "short_stay"
+                ? t("tenancy.balanceDue")
+                : t("tenancy.rentDueOn")
+            }
             value={
-              tenancy.rent_frequency === "monthly" && tenancy.rent_due_day
-                ? t("tenancy.dayOfMonth", { day: tenancy.rent_due_day })
-                : t(FREQUENCY_KEY[tenancy.rent_frequency])
+              tenancy.letting_type === "short_stay"
+                ? (date(tenancy.balance_due_date ?? tenancy.start_date) ?? "—")
+                : tenancy.rent_frequency === "monthly" && tenancy.rent_due_day
+                  ? t("tenancy.dayOfMonth", { day: tenancy.rent_due_day })
+                  : t(FREQUENCY_KEY[tenancy.rent_frequency])
             }
           />
           <Item

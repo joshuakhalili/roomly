@@ -10,8 +10,13 @@ import {
   optionalNumber,
   type ActionResult,
 } from "./helpers";
-import { generateDueDates } from "@/lib/rent";
-import type { RentFrequency, TenancyStatus, LeavingReason } from "@/lib/types";
+import { buildRentRows, type RentSchedulable } from "@/lib/rent";
+import type {
+  RentFrequency,
+  TenancyStatus,
+  LeavingReason,
+  LettingType,
+} from "@/lib/types";
 
 /** How far ahead rent rows are created up front. The daily job extends this. */
 const INITIAL_RENT_HORIZON_MONTHS = 3;
@@ -34,8 +39,17 @@ function parseTenantIds(formData: FormData): {
 
 function tenancyFields(formData: FormData) {
   const startDate = optionalText(formData.get("start_date"));
-  const frequency = (optionalText(formData.get("rent_frequency")) ??
-    "monthly") as RentFrequency;
+  const lettingType = (optionalText(formData.get("letting_type")) ??
+    "long_term") as LettingType;
+
+  /* A short stay is priced as one total, whatever the form last had selected
+     in the frequency dropdown. Deriving it here rather than trusting the
+     submitted value means the two fields can never disagree in the database. */
+  const frequency: RentFrequency =
+    lettingType === "short_stay"
+      ? "total"
+      : ((optionalText(formData.get("rent_frequency")) ??
+          "monthly") as RentFrequency);
 
   // Default the rent day to the move-in day — the common case, and it means
   // one less field for the admin to fill in correctly.
@@ -44,12 +58,20 @@ function tenancyFields(formData: FormData) {
     explicitDueDay ?? (startDate ? parseISO(startDate).getDate() : null);
 
   return {
+    letting_type: lettingType,
     start_date: startDate,
     end_date: optionalText(formData.get("end_date")),
     status: (optionalText(formData.get("status")) ?? "upcoming") as TenancyStatus,
     rent_amount: optionalNumber(formData.get("rent_amount")),
     rent_frequency: frequency,
     rent_due_day: frequency === "monthly" ? rentDueDay : null,
+    // Only a short stay has a balance to fall due; on a long tenancy the
+    // field would sit there contradicting rent_due_day.
+    balance_due_date:
+      lettingType === "short_stay"
+        ? optionalText(formData.get("balance_due_date"))
+        : null,
+    bills_included: formData.get("bills_included") === "on",
     deposit_amount: optionalNumber(formData.get("deposit_amount")),
     deposit_scheme_name: optionalText(formData.get("deposit_scheme_name")),
     deposit_scheme_ref: optionalText(formData.get("deposit_scheme_ref")),
@@ -59,43 +81,49 @@ function tenancyFields(formData: FormData) {
 }
 
 /**
- * Creates the rent rows for a tenancy up to the horizon.
- * Idempotent: the (tenancy_id, due_date) unique constraint means re-running
- * this after an edit tops up missing periods instead of duplicating them.
+ * What both create and update insist on.
+ *
+ * A checkout date is optional on a tenancy that runs until someone gives
+ * notice, but a booking without one is not a booking — and the status job
+ * would never end it, so the room would stay occupied forever.
+ */
+function validateTenancy(
+  fields: ReturnType<typeof tenancyFields>,
+): string | null {
+  if (!fields.start_date) return "A move-in date is required.";
+  if (fields.rent_amount === null) return "A rent amount is required.";
+  if (fields.letting_type === "short_stay" && !fields.end_date)
+    return "A checkout date is required for a short stay.";
+  if (
+    fields.end_date &&
+    fields.start_date &&
+    fields.end_date < fields.start_date
+  )
+    return "The end date cannot be before the start date.";
+  return null;
+}
+
+/**
+ * Writes a tenancy's rent rows up to the horizon.
+ *
+ * The schedule itself is worked out by buildRentRows, which the nightly cron
+ * also uses — this is only the part that touches the database. Idempotent:
+ * the (tenancy_id, due_date) unique constraint means re-running after an edit
+ * tops up missing periods instead of duplicating them.
  */
 async function generateRentRows(
   supabase: SupabaseClient,
-  tenancy: {
-    id: string;
-    start_date: string;
-    end_date: string | null;
-    rent_frequency: RentFrequency;
-    rent_due_day: number | null;
-    rent_amount: number;
-  },
+  tenancy: RentSchedulable,
 ) {
   const horizon = new Date();
   horizon.setMonth(horizon.getMonth() + INITIAL_RENT_HORIZON_MONTHS);
 
-  const dueDates = generateDueDates({
-    startDate: tenancy.start_date,
-    endDate: tenancy.end_date,
-    frequency: tenancy.rent_frequency,
-    rentDueDay: tenancy.rent_due_day,
-    horizon,
-  });
+  const rows = buildRentRows(tenancy, horizon);
+  if (rows.length === 0) return;
 
-  if (dueDates.length === 0) return;
-
-  await supabase.from("rent_payments").upsert(
-    dueDates.map((due_date) => ({
-      tenancy_id: tenancy.id,
-      due_date,
-      amount_due: tenancy.rent_amount,
-      status: "due",
-    })),
-    { onConflict: "tenancy_id,due_date", ignoreDuplicates: true },
-  );
+  await supabase
+    .from("rent_payments")
+    .upsert(rows, { onConflict: "tenancy_id,due_date", ignoreDuplicates: true });
 }
 
 export async function createTenancy(
@@ -106,10 +134,8 @@ export async function createTenancy(
   if (!auth.ok) return auth;
 
   const fields = tenancyFields(formData);
-  if (!fields.start_date)
-    return { ok: false, error: "A move-in date is required." };
-  if (fields.rent_amount === null)
-    return { ok: false, error: "A rent amount is required." };
+  const invalid = validateTenancy(fields);
+  if (invalid) return { ok: false, error: invalid };
 
   const { ids, leadId } = parseTenantIds(formData);
   if (ids.length === 0)
@@ -152,10 +178,8 @@ export async function updateTenancy(
   if (!auth.ok) return auth;
 
   const fields = tenancyFields(formData);
-  if (!fields.start_date)
-    return { ok: false, error: "A move-in date is required." };
-  if (fields.rent_amount === null)
-    return { ok: false, error: "A rent amount is required." };
+  const invalid = validateTenancy(fields);
+  if (invalid) return { ok: false, error: invalid };
 
   const { data: tenancy, error } = await auth.supabase
     .from("tenancies")
