@@ -25,7 +25,8 @@ if (!url || !key) {
 const db = createClient(url, key, { auth: { persistSession: false } });
 
 const TABLES = [
-  "profiles", "properties", "rooms", "room_types", "bank_accounts",
+  "profiles", "properties", "rooms", "area_types", "unit_area_defaults",
+  "checklist_section_templates", "bank_accounts",
   "tenants", "tenancies", "tenancy_tenants", "occupants",
   "rent_payments", "documents",
   "inventory_checklists", "checklist_room_sections", "checklist_photos",
@@ -33,6 +34,7 @@ const TABLES = [
   "checklist_declarations", "checklist_pdf_exports",
   "checklist_areas", "checklist_sections",
   "service_types", "contacts", "assets", "job_recurrences", "maintenance_jobs",
+  "document_requirements", "utility_bills", "expense_categories", "expenses",
   "message_templates", "notifications_log", "metrics_snapshots",
   "archive_log", "app_settings", "retention_rules", "data_erasures",
 ] as const;

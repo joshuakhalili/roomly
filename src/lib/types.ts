@@ -225,6 +225,8 @@ export const PROPERTY_CERTIFICATES: {
 
 export interface Profile {
   id: string;
+  organization_id: string;
+  role: import("@/lib/organization").OrganizationRole;
   email: string;
   display_name: string | null;
   preferred_language: AppLanguage;

@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import {
   requireAdmin,
+  requireMember,
   friendlyError,
   optionalText,
   optionalNumber,
   type ActionResult,
 } from "./helpers";
 import { TENANT_DOCUMENT_TYPES, type DocumentType } from "@/lib/types";
+import { organizationStoragePath } from "@/lib/organization";
 
 /** Which private bucket each document type lives in. */
 const BUCKETS: Record<DocumentType, string> = {
@@ -116,7 +118,11 @@ export async function uploadDocument(
       : belongsToTenant
         ? `tenant/${tenantId}`
         : `tenancy/${tenancyId}`;
-  const path = `${prefix}/${Date.now()}-${safeFileName(file.name)}`;
+  const path = organizationStoragePath(
+    auth.organizationId,
+    prefix,
+    `${Date.now()}-${safeFileName(file.name)}`,
+  );
 
   const { error: uploadError } = await auth.supabase.storage
     .from(bucket)
@@ -162,7 +168,7 @@ export async function uploadDocument(
 export async function getDocumentUrl(
   documentId: string,
 ): Promise<ActionResult<{ url: string }>> {
-  const auth = await requireAdmin();
+  const auth = await requireMember();
   if (!auth.ok) return auth;
 
   const { data: doc, error } = await auth.supabase

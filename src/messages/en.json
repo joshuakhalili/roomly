@@ -424,13 +424,20 @@
   },
   "admins": {
     "title": "Admins",
-    "subtitle": "Everyone here has full access to everything",
-    "add": "Add admin",
+    "subtitle": "People with access to this organisation",
+    "add": "Add person",
     "email": "Email",
     "displayName": "Name",
     "temporaryPassword": "Temporary password",
     "passwordHint": "They can change this after signing in.",
-    "created": "Admin account created.",
+    "created": "Account created.",
+    "role": "Access level",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "staff": "Staff",
+      "viewer": "Viewer"
+    },
     "emailDigest": "Email me a daily summary",
     "calendarFeed": "Calendar reminders",
     "calendarFeedHelp": "Subscribe to this in your phone's calendar app to get move-in, move-out and rent reminders as alerts.",

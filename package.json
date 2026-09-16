@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test src/lib/__tests__/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "create-trial": "tsx scripts/create-trial-organization.ts",
+    "verify-tenancy": "tsx scripts/verify-multi-tenancy.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.8.1",

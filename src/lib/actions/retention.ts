@@ -57,7 +57,10 @@ export async function refreshRetentionPreview(): Promise<ActionResult> {
   // The service-role client, because the job it is previewing runs as that.
   // A preview taken under different permissions could quietly miss rows the
   // real run would delete, which is exactly the assurance gap to avoid.
-  await runRetention(createAdminClient(), { dryRun: true });
+  await runRetention(createAdminClient(), {
+    dryRun: true,
+    organizationId: auth.organizationId,
+  });
 
   revalidatePath("/", "layout");
   return { ok: true, data: undefined };
@@ -96,5 +99,5 @@ export async function setRetentionEnabled(
 export async function getRetentionPlan() {
   const auth = await requireAdmin();
   if (!auth.ok) return null;
-  return planRetention(createAdminClient());
+  return planRetention(createAdminClient(), new Date(), auth.organizationId);
 }

@@ -23,6 +23,8 @@ const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DEMO_EMAIL = process.env.DEMO_EMAIL ?? "demo@roomly.app";
 const DEMO_PASSWORD = process.env.DEMO_PASSWORD;
 const REMOVE_EMAIL = process.env.REMOVE_EMAIL;
+const ORGANIZATION_ID =
+  process.env.DEMO_ORGANIZATION_ID ?? "00000000-0000-4000-8000-000000000001";
 
 if (!url || !key) {
   console.error("Missing Supabase env vars — run with node --env-file=.env.local");
@@ -55,6 +57,11 @@ async function main() {
     const { error } = await admin.auth.admin.updateUserById(demo.id, {
       password: DEMO_PASSWORD,
       email_confirm: true,
+      user_metadata: {
+        display_name: "Demo",
+        organization_id: ORGANIZATION_ID,
+        organization_role: "owner",
+      },
     });
     if (error) throw new Error(error.message);
     console.log(`Updated existing demo account: ${DEMO_EMAIL}`);
@@ -65,6 +72,11 @@ async function main() {
       // No inbox exists for this address, so there is no confirmation mail to
       // click. Without this the account is created and cannot sign in.
       email_confirm: true,
+      user_metadata: {
+        display_name: "Demo",
+        organization_id: ORGANIZATION_ID,
+        organization_role: "owner",
+      },
     });
     if (error) throw new Error(error.message);
     demo = data.user;
@@ -86,6 +98,8 @@ async function main() {
       id: demo!.id,
       email: DEMO_EMAIL,
       display_name: "Demo",
+      organization_id: ORGANIZATION_ID,
+      role: "owner",
     });
     if (error) throw new Error(`profile: ${error.message}`);
     console.log("  created its profile row (the trigger had not)");

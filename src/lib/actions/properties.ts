@@ -9,6 +9,7 @@ import {
   type ActionResult,
 } from "./helpers";
 import { splitStoragePath } from "@/lib/retention";
+import { organizationStoragePath } from "@/lib/organization";
 
 const BANNER_BUCKET = "property-banners";
 
@@ -37,6 +38,7 @@ function safeFileName(name: string): string {
  */
 async function uploadBanner(
   supabase: SupabaseClient,
+  organizationId: string,
   propertyId: string,
   file: File,
 ): Promise<{ path: string } | { error: string }> {
@@ -45,7 +47,11 @@ async function uploadBanner(
   if (file.type && !ALLOWED_BANNER_MIME.includes(file.type))
     return { error: "Only images can be used as a banner." };
 
-  const path = `${propertyId}/${Date.now()}-${safeFileName(file.name)}`;
+  const path = organizationStoragePath(
+    organizationId,
+    propertyId,
+    `${Date.now()}-${safeFileName(file.name)}`,
+  );
   const { error } = await supabase.storage
     .from(BANNER_BUCKET)
     .upload(path, file, { contentType: file.type || undefined, upsert: false });
@@ -94,7 +100,12 @@ export async function createProperty(
      property at all, which is the better of the two. */
   const file = bannerFile(formData);
   if (file) {
-    const result = await uploadBanner(auth.supabase, data.id, file);
+    const result = await uploadBanner(
+      auth.supabase,
+      auth.organizationId,
+      data.id,
+      file,
+    );
     if ("error" in result) return { ok: false, error: result.error };
 
     const { error: bannerError } = await auth.supabase
@@ -140,7 +151,12 @@ export async function updateProperty(
   let uploadedPath: string | null = null;
 
   if (file) {
-    const result = await uploadBanner(auth.supabase, id, file);
+    const result = await uploadBanner(
+      auth.supabase,
+      auth.organizationId,
+      id,
+      file,
+    );
     if ("error" in result) return { ok: false, error: result.error };
     uploadedPath = result.path;
     fields.banner_path = result.path;

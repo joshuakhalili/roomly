@@ -55,17 +55,14 @@ export async function GET(request: Request) {
   // output is a success message cannot be trusted to have done anything.
   const errors: string[] = [];
 
-  const setting = async (key: string, fallback: string) => {
-    const { data } = await supabase
-      .from("app_settings")
-      .select("value")
-      .eq("key", key)
-      .maybeSingle();
-    return data?.value ?? fallback;
-  };
-
-  const moveAlertDays =
-    Number(await setting("move_alert_days", "")) || DEFAULT_MOVE_ALERT_DAYS;
+  const [{ data: organizations }, { data: settingsRows }] = await Promise.all([
+    supabase.from("organizations").select("id"),
+    supabase.from("app_settings").select("organization_id, key, value"),
+  ]);
+  const setting = (organizationId: string, key: string, fallback: string) =>
+    settingsRows?.find(
+      (row) => row.organization_id === organizationId && row.key === key,
+    )?.value ?? fallback;
 
   // ── 1. Extend rent schedules ─────────────────────────────────────────────
   const { data: tenancies } = await supabase
@@ -83,7 +80,13 @@ export async function GET(request: Request) {
        There is no rolling horizon to extend — re-running it nightly would
        upsert the same two rows forever for no benefit. */
     if (t.rent_frequency === "total") continue;
-    newRows.push(...buildRentRows(t, horizon));
+    newRows.push(
+      ...buildRentRows(t, horizon).map((row) => ({
+        ...row,
+        organization_id: (t as Tenancy & { organization_id: string })
+          .organization_id,
+      })),
+    );
   }
 
   if (newRows.length) {
@@ -119,6 +122,7 @@ export async function GET(request: Request) {
   // Written once per (type, date, subject) so reloading the dashboard does
   // not re-raise the same thing; the unique index enforces it.
   const alerts: {
+    organization_id: string;
     tenancy_id: string | null;
     rent_payment_id: string | null;
     notification_type: string;
@@ -126,10 +130,16 @@ export async function GET(request: Request) {
   }[] = [];
 
   for (const t of (tenancies ?? []) as Tenancy[]) {
+    const organizationId = (t as Tenancy & { organization_id: string })
+      .organization_id;
+    const moveAlertDays =
+      Number(setting(organizationId, "move_alert_days", "")) ||
+      DEFAULT_MOVE_ALERT_DAYS;
     if (t.status === "upcoming") {
       const days = differenceInCalendarDays(parseISO(t.start_date), today);
       if (days >= 0 && days <= moveAlertDays)
         alerts.push({
+          organization_id: organizationId,
           tenancy_id: t.id,
           rent_payment_id: null,
           notification_type: "move_in",
@@ -140,6 +150,7 @@ export async function GET(request: Request) {
       const days = differenceInCalendarDays(parseISO(t.end_date), today);
       if (days >= 0 && days <= moveAlertDays)
         alerts.push({
+          organization_id: organizationId,
           tenancy_id: t.id,
           rent_payment_id: null,
           notification_type: "move_out",
@@ -151,13 +162,14 @@ export async function GET(request: Request) {
   // Cleaning is prompted after the tenancy has actually ended.
   const { data: recentlyEnded } = await supabase
     .from("tenancies")
-    .select("id, end_date")
+    .select("id, end_date, organization_id")
     .eq("status", "ended")
     .gte("end_date", toDateString(addDays(today, -CLEANING_WINDOW_DAYS)))
     .lte("end_date", todayStr);
 
   for (const t of recentlyEnded ?? []) {
     alerts.push({
+      organization_id: t.organization_id,
       tenancy_id: t.id,
       rent_payment_id: null,
       notification_type: "cleaning",
@@ -169,12 +181,13 @@ export async function GET(request: Request) {
   // whole due day to pay before anyone is prompted to chase.
   const { data: overdue } = await supabase
     .from("rent_payments")
-    .select("id, tenancy_id, amount_due, due_date")
+    .select("id, tenancy_id, amount_due, due_date, organization_id")
     .in("status", ["due", "late"])
     .lt("due_date", todayStr);
 
   for (const p of overdue ?? []) {
     alerts.push({
+      organization_id: p.organization_id,
       tenancy_id: p.tenancy_id,
       rent_payment_id: p.id,
       notification_type: "rent_overdue",
@@ -197,18 +210,20 @@ export async function GET(request: Request) {
   // is, and for the same reason: a job you can see on a calendar, assign, and
   // mark paid has to exist as a row. Computing it live would leave nothing to
   // edit and no way to record what it cost.
-  const jobHorizon = new Date(today);
-  jobHorizon.setMonth(
-    jobHorizon.getMonth() + Number(await setting("job_horizon_months", "3")),
-  );
-
   const { data: recurrences } = await supabase
     .from("job_recurrences")
     .select("*")
     .eq("is_active", true);
 
   const newJobs: Record<string, unknown>[] = [];
-  for (const r of (recurrences ?? []) as JobRecurrence[]) {
+  for (const r of (recurrences ?? []) as (JobRecurrence & {
+    organization_id: string;
+  })[]) {
+    const jobHorizon = new Date(today);
+    jobHorizon.setMonth(
+      jobHorizon.getMonth() +
+        Number(setting(r.organization_id, "job_horizon_months", "3")),
+    );
     const dates = generateJobDates({
       startsOn: r.starts_on,
       endsOn: r.ends_on,
@@ -220,6 +235,7 @@ export async function GET(request: Request) {
     });
     for (const scheduled_for of dates) {
       newJobs.push({
+        organization_id: r.organization_id,
         property_id: r.property_id,
         room_id: r.room_id,
         service_type_id: r.service_type_id,
@@ -249,14 +265,7 @@ export async function GET(request: Request) {
   // and never delivered: in practice cleans are not scheduled, they are
   // caused by somebody moving out. A partial unique index keeps it to one per
   // tenancy however many times this runs.
-  const turnaroundDays = Number(await setting("turnaround_clean_days", "2"));
-  if (turnaroundDays > 0 && recentlyEnded?.length) {
-    const { data: cleaning } = await supabase
-      .from("service_types")
-      .select("id")
-      .eq("slug", "cleaning")
-      .maybeSingle();
-
+  if (recentlyEnded?.length) {
     // Checked rather than upserted: the one-per-tenancy index has to stay
     // partial (a plain unique on tenancy_id would stop a manual job ever
     // referencing a tenancy), and ON CONFLICT cannot arbitrate on a partial
@@ -272,7 +281,18 @@ export async function GET(request: Request) {
 
     const turnarounds: Record<string, unknown>[] = [];
     for (const t of recentlyEnded) {
+      const turnaroundDays = Number(
+        setting(t.organization_id, "turnaround_clean_days", "2"),
+      );
+      if (turnaroundDays <= 0) continue;
       if (!t.end_date || alreadyBooked.has(t.id)) continue;
+
+      const { data: cleaning } = await supabase
+        .from("service_types")
+        .select("id")
+        .eq("organization_id", t.organization_id)
+        .eq("slug", "cleaning")
+        .maybeSingle();
 
       const { data: tenancy } = await supabase
         .from("tenancies")
@@ -297,6 +317,7 @@ export async function GET(request: Request) {
         .maybeSingle();
 
       turnarounds.push({
+        organization_id: t.organization_id,
         property_id: room.property_id,
         room_id: tenancy?.room_id ?? null,
         service_type_id: cleaning?.id ?? null,
@@ -323,33 +344,41 @@ export async function GET(request: Request) {
   // A live query can only ever answer "now". Without this row there is no
   // history to draw a trend from.
   const [{ data: rooms }, { data: activeTenancies }] = await Promise.all([
-    supabase.from("rooms").select("id, is_lettable, is_common_area"),
-    supabase.from("tenancies").select("room_id, rent_amount").eq("status", "active"),
+    supabase.from("rooms").select("id, is_lettable, is_common_area, organization_id"),
+    supabase.from("tenancies").select("room_id, rent_amount, organization_id").eq("status", "active"),
   ]);
 
-  const lettable = (rooms ?? []).filter(
-    (r) => r.is_lettable && !r.is_common_area,
-  ).length;
-  const occupied = new Set((activeTenancies ?? []).map((t) => t.room_id)).size;
-  const totalRent = (activeTenancies ?? []).reduce(
-    (sum, t) => sum + Number(t.rent_amount),
-    0,
-  );
-  const overdueTotal = (overdue ?? []).reduce(
-    (sum, p) => sum + Number(p.amount_due),
-    0,
-  );
+  for (const organization of organizations ?? []) {
+    const orgRooms = (rooms ?? []).filter(
+      (room) => room.organization_id === organization.id,
+    );
+    const orgTenancies = (activeTenancies ?? []).filter(
+      (tenancy) => tenancy.organization_id === organization.id,
+    );
+    const lettable = orgRooms.filter(
+      (room) => room.is_lettable && !room.is_common_area,
+    ).length;
+    const occupied = new Set(orgTenancies.map((tenancy) => tenancy.room_id)).size;
+    const totalRent = orgTenancies.reduce(
+      (sum, tenancy) => sum + Number(tenancy.rent_amount),
+      0,
+    );
+    const overdueTotal = (overdue ?? [])
+      .filter((payment) => payment.organization_id === organization.id)
+      .reduce((sum, payment) => sum + Number(payment.amount_due), 0);
 
-  await supabase.from("metrics_snapshots").upsert(
-    {
-      snapshot_date: todayStr,
-      occupied_rooms: occupied,
-      vacant_rooms: Math.max(0, lettable - occupied),
-      total_active_rent: totalRent,
-      overdue_rent_total: overdueTotal,
-    },
-    { onConflict: "snapshot_date" },
-  );
+    await supabase.from("metrics_snapshots").upsert(
+      {
+        organization_id: organization.id,
+        snapshot_date: todayStr,
+        occupied_rooms: occupied,
+        vacant_rooms: Math.max(0, lettable - occupied),
+        total_active_rent: totalRent,
+        overdue_rent_total: overdueTotal,
+      },
+      { onConflict: "organization_id,snapshot_date" },
+    );
+  }
 
   return NextResponse.json({
     ok: errors.length === 0,

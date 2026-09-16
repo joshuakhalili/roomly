@@ -424,13 +424,20 @@
   },
   "admins": {
     "title": "Yöneticiler",
-    "subtitle": "Buradaki herkesin her şeye tam erişimi vardır",
-    "add": "Yönetici ekle",
+    "subtitle": "Bu kuruluşa erişimi olan kişiler",
+    "add": "Kişi ekle",
     "email": "E-posta",
     "displayName": "Ad",
     "temporaryPassword": "Geçici parola",
     "passwordHint": "Giriş yaptıktan sonra bunu değiştirebilirler.",
-    "created": "Yönetici hesabı oluşturuldu.",
+    "created": "Hesap oluşturuldu.",
+    "role": "Erişim düzeyi",
+    "roles": {
+      "owner": "Sahip",
+      "admin": "Yönetici",
+      "staff": "Personel",
+      "viewer": "Görüntüleyici"
+    },
     "emailDigest": "Bana günlük özet e-postası gönder",
     "calendarFeed": "Takvim hatırlatmaları",
     "calendarFeedHelp": "Giriş, çıkış ve kira hatırlatmalarını uyarı olarak almak için buna telefonunuzun takvim uygulamasından abone olun.",

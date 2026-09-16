@@ -424,13 +424,20 @@
   },
   "admins": {
     "title": "管理员",
-    "subtitle": "所有管理员均拥有完整权限",
-    "add": "添加管理员",
+    "subtitle": "有权访问此组织的人员",
+    "add": "添加成员",
     "email": "邮箱",
     "displayName": "姓名",
     "temporaryPassword": "临时密码",
     "passwordHint": "登录后可自行修改。",
-    "created": "管理员账户已创建。",
+    "created": "账户已创建。",
+    "role": "访问级别",
+    "roles": {
+      "owner": "所有者",
+      "admin": "管理员",
+      "staff": "员工",
+      "viewer": "查看者"
+    },
     "emailDigest": "每日发送邮件摘要给我",
     "calendarFeed": "日历提醒",
     "calendarFeedHelp": "在手机日历应用中订阅此链接，即可接收入住、退租和租金提醒。",

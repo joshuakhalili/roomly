@@ -28,6 +28,8 @@ export default async function AdminsPage({
     .order("created_at");
 
   const all = (profiles ?? []) as Profile[];
+  const current = all.find((profile) => profile.id === user?.id);
+  const canManage = current?.role === "owner" || current?.role === "admin";
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,7 +38,7 @@ export default async function AdminsPage({
           <h1 className="text-2xl font-semibold">{t("admins.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("admins.subtitle")}</p>
         </div>
-        <AddAdminDialog />
+        {canManage && <AddAdminDialog />}
       </header>
 
       {/* The calendar feed moved to Settings → Notifications: it is a
@@ -62,6 +64,9 @@ export default async function AdminsPage({
                           {t("admins.you")}
                         </Badge>
                       )}
+                      <Badge variant="outline" className="text-xs">
+                        {t(`admins.roles.${p.role}`)}
+                      </Badge>
                     </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {p.email} ·{" "}

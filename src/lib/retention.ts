@@ -121,12 +121,14 @@ async function setting(
   db: SupabaseClient,
   key: string,
   fallback: string,
+  organizationId?: string,
 ): Promise<string> {
-  const { data } = await db
+  let query = db
     .from("app_settings")
     .select("value")
-    .eq("key", key)
-    .maybeSingle();
+    .eq("key", key);
+  if (organizationId) query = query.eq("organization_id", organizationId);
+  const { data } = await query.maybeSingle();
   return data?.value ?? fallback;
 }
 
@@ -139,6 +141,7 @@ async function setting(
 export async function planRetention(
   db: SupabaseClient,
   now = new Date(),
+  organizationId?: string,
 ): Promise<RetentionPlan> {
   const today = isoDate(now);
   const items: ErasureItem[] = [];
@@ -162,10 +165,12 @@ export async function planRetention(
   const scheduled = new Set<string>();
 
   // ── Identity paperwork: one year after the tenancy ends ──────────────────
-  const { data: idDocs } = await db
+  let idDocsQuery = db
     .from("identity_documents_due")
     .select("*")
     .lte("due_date", today);
+  if (organizationId) idDocsQuery = idDocsQuery.eq("organization_id", organizationId);
+  const { data: idDocs } = await idDocsQuery;
 
   for (const d of idDocs ?? []) {
     const ref = splitStoragePath(d.storage_path);
@@ -183,10 +188,12 @@ export async function planRetention(
   }
 
   // ── Tenancy records: six years after the tenancy ends ────────────────────
-  const { data: tenancies } = await db
+  let tenanciesQuery = db
     .from("tenancies_due_for_erasure")
     .select("*")
     .lte("due_date", today);
+  if (organizationId) tenanciesQuery = tenanciesQuery.eq("organization_id", organizationId);
+  const { data: tenancies } = await tenanciesQuery;
 
   for (const t of tenancies ?? []) {
     const files: StorageRef[] = [];
@@ -258,10 +265,12 @@ export async function planRetention(
   // Erased on the same six-year clock, but computed from the latest of ALL
   // their tenancies. A tenant profile is reused across rooms, so reading the
   // clock off a single tenancy would delete someone still living here.
-  const { data: tenants } = await db
+  let tenantsQuery = db
     .from("tenants_due_for_erasure")
     .select("*")
     .lte("due_date", today);
+  if (organizationId) tenantsQuery = tenantsQuery.eq("organization_id", organizationId);
+  const { data: tenants } = await tenantsQuery;
 
   for (const t of tenants ?? []) {
     const files: StorageRef[] = [];
@@ -294,13 +303,15 @@ export async function planRetention(
   }
 
   // ── Checklist photos whose report already exists ─────────────────────────
-  const purgeDays = Number(await setting(db, "photo_purge_days", "30"));
+  const purgeDays = Number(await setting(db, "photo_purge_days", "30", organizationId));
   const purgeOnEnd =
-    (await setting(db, "purge_photos_on_tenancy_end", "true")) === "true";
+    (await setting(db, "purge_photos_on_tenancy_end", "true", organizationId)) === "true";
 
-  const { data: exports } = await db
+  let exportsQuery = db
     .from("checklist_photos_purgeable")
     .select("*");
+  if (organizationId) exportsQuery = exportsQuery.eq("organization_id", organizationId);
+  const { data: exports } = await exportsQuery;
 
   for (const e of exports ?? []) {
     const generated = new Date(e.generated_at);
@@ -330,16 +341,20 @@ export async function planRetention(
   }
 
   // ── What is being deliberately kept ──────────────────────────────────────
-  const { count: heldCount } = await db
+  let heldQuery = db
     .from("tenancies")
     .select("id", { count: "exact", head: true })
     .eq("legal_hold", true);
+  if (organizationId) heldQuery = heldQuery.eq("organization_id", organizationId);
+  const { count: heldCount } = await heldQuery;
   if (heldCount) blocked.push({ reason: "legal_hold", count: heldCount });
 
-  const { data: undated } = await db
+  let undatedQuery = db
     .from("tenant_retention_clock")
     .select("tenant_id")
     .eq("has_undated_end", true);
+  if (organizationId) undatedQuery = undatedQuery.eq("organization_id", organizationId);
+  const { data: undated } = await undatedQuery;
   if (undated?.length)
     blocked.push({ reason: "no_end_date", count: undated.length });
 
@@ -357,10 +372,15 @@ export async function planRetention(
  */
 export async function runRetention(
   db: SupabaseClient,
-  opts: { dryRun: boolean; now?: Date; actor?: string | null },
+  opts: {
+    dryRun: boolean;
+    now?: Date;
+    actor?: string | null;
+    organizationId?: string;
+  },
 ): Promise<RetentionResult> {
   const now = opts.now ?? new Date();
-  const plan = await planRetention(db, now);
+  const plan = await planRetention(db, now, opts.organizationId);
   const errors: string[] = [];
   const done: ErasureItem[] = [];
 
@@ -368,7 +388,12 @@ export async function runRetention(
   // worth anything. Keeping every night's would bury the handful of rows
   // that record real deletions under thousands that record none — and the
   // erasure log's whole job is being readable years later.
-  if (opts.dryRun) await db.from("data_erasures").delete().eq("dry_run", true);
+  if (opts.dryRun) {
+    let clearQuery = db.from("data_erasures").delete().eq("dry_run", true);
+    if (opts.organizationId)
+      clearQuery = clearQuery.eq("organization_id", opts.organizationId);
+    await clearQuery;
+  }
 
   for (const item of plan.items) {
     if (!opts.dryRun) {
@@ -390,6 +415,7 @@ export async function runRetention(
     }
 
     await db.from("data_erasures").insert({
+      organization_id: opts.organizationId,
       category: item.category,
       subject_type: item.subjectType,
       subject_id: item.subjectId,

@@ -39,24 +39,28 @@ export async function GET(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, display_name")
+    .select("id, display_name, organization_id")
     .eq("calendar_feed_token", token)
     .maybeSingle();
 
   if (!profile) return new NextResponse("Not found", { status: 404 });
+  const organizationId = profile.organization_id;
 
   const [{ data: tenancies }, { data: links }, { data: payments }, { data: jobs }] =
     await Promise.all([
       supabase
         .from("tenancies")
         .select("*, rooms(name, properties(name))")
+        .eq("organization_id", organizationId)
         .in("status", ["upcoming", "active"]),
       supabase
         .from("tenancy_tenants")
-        .select("tenancy_id, is_lead_tenant, tenants(first_name, surname)"),
+        .select("tenancy_id, is_lead_tenant, tenants(first_name, surname)")
+        .eq("organization_id", organizationId),
       supabase
         .from("rent_payments")
         .select("*")
+        .eq("organization_id", organizationId)
         .in("status", ["due", "late"]),
       // Booked work only. A job already done is a record, not something to
       // be reminded about, and a cancelled one should disappear from the
@@ -66,6 +70,7 @@ export async function GET(
         .select(
           "*, properties(name), rooms(name), service_types(name), contacts(name)",
         )
+        .eq("organization_id", organizationId)
         .eq("status", "booked"),
     ]);
 

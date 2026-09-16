@@ -28,31 +28,40 @@ export async function GET(request: Request) {
 
   const db = createAdminClient();
 
-  const { data: enabledRow } = await db
-    .from("app_settings")
-    .select("value")
-    .eq("key", "retention_enabled")
-    .maybeSingle();
-
   const forced = new URL(request.url).searchParams.get("dry_run") === "1";
-  const dryRun = forced || enabledRow?.value !== "true";
+  const { data: organizations } = await db.from("organizations").select("id, slug");
+  const results = [];
 
-  const result = await runRetention(db, { dryRun });
+  for (const organization of organizations ?? []) {
+    const { data: enabledRow } = await db
+      .from("app_settings")
+      .select("value")
+      .eq("organization_id", organization.id)
+      .eq("key", "retention_enabled")
+      .maybeSingle();
+    const dryRun = forced || enabledRow?.value !== "true";
+    const result = await runRetention(db, {
+      dryRun,
+      organizationId: organization.id,
+    });
+    results.push({ organization: organization.slug, ...result });
+  }
 
   return NextResponse.json({
     ok: true,
-    mode: dryRun ? "preview" : "live",
-    ...result,
-    // The full item list can be long and every label is deliberately
-    // non-identifying, so it is safe to return — but the summary is what
-    // anyone reading a cron log actually wants.
-    items: result.items.map((i) => ({
-      category: i.category,
-      subject: i.subjectType,
-      label: i.subjectLabel,
-      dueDate: i.dueDate,
-      records: i.records,
-      files: i.files.length,
+    organizations: results.map((result) => ({
+      organization: result.organization,
+      mode: result.dryRun ? "preview" : "live",
+      totals: result.totals,
+      errors: result.errors,
+      items: result.items.map((item) => ({
+        category: item.category,
+        subject: item.subjectType,
+        label: item.subjectLabel,
+        dueDate: item.dueDate,
+        records: item.records,
+        files: item.files.length,
+      })),
     })),
   });
 }

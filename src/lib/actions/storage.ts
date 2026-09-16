@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAdmin, type ActionResult } from "./helpers";
+import { requireMember, type ActionResult } from "./helpers";
 import { splitStoragePath } from "@/lib/retention";
 
 /**
@@ -27,7 +27,7 @@ const SIGNED_URL_TTL_SECONDS = 600;
 export async function getSignedUrls(
   paths: string[],
 ): Promise<ActionResult<Record<string, string>>> {
-  const auth = await requireAdmin();
+  const auth = await requireMember();
   if (!auth.ok) return auth;
   if (paths.length === 0) return { ok: true, data: {} };
 

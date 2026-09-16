@@ -38,6 +38,8 @@ if (!url || !key) {
 
 const FORCE = process.argv.includes("--force");
 const db = createClient(url, key, { auth: { persistSession: false } });
+const ORGANIZATION_ID =
+  process.env.SEED_ORGANIZATION_ID ?? "00000000-0000-4000-8000-000000000001";
 
 type Row = Record<string, unknown>;
 
@@ -64,14 +66,20 @@ const addMonths = (d: Date, n: number) => {
 };
 
 async function one(table: string, row: Row): Promise<Row> {
-  const { data, error } = await db.from(table).insert(row as never).select().single();
+  const { data, error } = await db.from(table).insert({
+    ...row,
+    organization_id: ORGANIZATION_ID,
+  } as never).select().single();
   if (error) throw new Error(`${table}: ${error.message}`);
   return data as Row;
 }
 
 async function many(table: string, rows: Row[]): Promise<Row[]> {
   if (!rows.length) return [];
-  const { data, error } = await db.from(table).insert(rows as never).select();
+  const { data, error } = await db.from(table).insert(rows.map((row) => ({
+    ...row,
+    organization_id: ORGANIZATION_ID,
+  })) as never).select();
   if (error) throw new Error(`${table}: ${error.message}`);
   return (data ?? []) as Row[];
 }
@@ -80,7 +88,8 @@ async function main() {
   // ── Refuse to touch a database that is already in use ──────────────────
   const { count: propertyCount } = await db
     .from("properties")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", ORGANIZATION_ID);
   if ((propertyCount ?? 0) > 0 && !FORCE) {
     console.error(
       `This database already has ${propertyCount} propert${propertyCount === 1 ? "y" : "ies"}.\n` +
@@ -175,7 +184,7 @@ async function main() {
       "cmFpbGVyCjw8L1Jvb3QgMSAwIFI+Pg==",
     "base64",
   );
-  const path = "starter/example-tenancy-agreement.pdf";
+  const path = `${ORGANIZATION_ID}/starter/example-tenancy-agreement.pdf`;
   const up = await db.storage
     .from("tenancy-agreements")
     .upload(path, PLACEHOLDER, { contentType: "application/pdf", upsert: true });
@@ -194,7 +203,8 @@ async function main() {
   // ── Maintenance: a contact, a thing you own, and work in both states ───
   const { data: serviceTypes } = await db
     .from("service_types")
-    .select("id, slug");
+    .select("id, slug")
+    .eq("organization_id", ORGANIZATION_ID);
   const service = (slug: string) =>
     serviceTypes?.find((s) => s.slug === slug)?.id as string | undefined;
 

@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { OrganizationRole } from "@/lib/organization";
 
 export type ActionResult<T = void> =
   | { ok: true; data: T }
@@ -14,8 +15,16 @@ export type ActionResult<T = void> =
  * message instead of a confusing Postgres policy error — defence in depth,
  * not a replacement for it.
  */
-export async function requireAdmin(): Promise<
-  { ok: true; supabase: SupabaseClient; userId: string } | { ok: false; error: string }
+export type OrganizationSession = {
+  ok: true;
+  supabase: SupabaseClient;
+  userId: string;
+  organizationId: string;
+  role: OrganizationRole;
+};
+
+export async function requireMember(): Promise<
+  OrganizationSession | { ok: false; error: string }
 > {
   const supabase = await createClient();
   const {
@@ -23,7 +32,44 @@ export async function requireAdmin(): Promise<
   } = await supabase.auth.getUser();
 
   if (!user) return { ok: false, error: "Not signed in." };
-  return { ok: true, supabase, userId: user.id };
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("organization_id, role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile?.organization_id || !profile.role)
+    return { ok: false, error: "This account has no Roomly organisation." };
+
+  return {
+    ok: true,
+    supabase,
+    userId: user.id,
+    organizationId: profile.organization_id as string,
+    role: profile.role as OrganizationRole,
+  };
+}
+
+/** All operational mutations require at least staff access. */
+export async function requireAdmin(): Promise<
+  OrganizationSession | { ok: false; error: string }
+> {
+  const auth = await requireMember();
+  if (!auth.ok) return auth;
+  if (auth.role === "viewer")
+    return { ok: false, error: "This account has read-only access." };
+  return auth;
+}
+
+/** Account creation and organisation administration are more restricted. */
+export async function requireOrganizationManager(): Promise<
+  OrganizationSession | { ok: false; error: string }
+> {
+  const auth = await requireMember();
+  if (!auth.ok) return auth;
+  if (auth.role !== "owner" && auth.role !== "admin")
+    return { ok: false, error: "Only an owner or admin can manage access." };
+  return auth;
 }
 
 /**

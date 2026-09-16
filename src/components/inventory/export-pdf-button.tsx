@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { getPhotoUrls, recordPdfExport } from "@/lib/actions/inventory";
 import { createClient } from "@/lib/supabase/client";
 import { PDF_BUCKET } from "@/lib/types";
+import { organizationStoragePath } from "@/lib/organization";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -56,6 +57,7 @@ function downloadBlob(blob: Blob, filename: string) {
 
 export function ExportPdfButton({
   checklistId,
+  organizationId,
   meta,
   areas,
   sections,
@@ -66,6 +68,7 @@ export function ExportPdfButton({
   declarations,
 }: {
   checklistId: string;
+  organizationId: string;
   meta: {
     propertyName: string;
     roomName: string;
@@ -203,7 +206,11 @@ export function ExportPdfButton({
          such ceiling, and the bucket's policy already requires an
          authenticated admin, so this is the same permission either way. */
       const supabase = createClient();
-      const path = `${checklistId}/${Date.now()}-report.pdf`;
+      const path = organizationStoragePath(
+        organizationId,
+        checklistId,
+        `${Date.now()}-report.pdf`,
+      );
       const { error: uploadError } = await supabase.storage
         .from(PDF_BUCKET)
         .upload(path, blob, { contentType: "application/pdf", upsert: true });

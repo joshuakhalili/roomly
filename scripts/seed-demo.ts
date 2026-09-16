@@ -31,6 +31,8 @@ if (!url || !key) {
 
 const DRY = process.argv.includes("--dry-run");
 const db = createClient(url, key, { auth: { persistSession: false } });
+const ORGANIZATION_ID =
+  process.env.SEED_ORGANIZATION_ID ?? "00000000-0000-4000-8000-000000000001";
 
 /* ── Determinism ──────────────────────────────────────────────────────────
    A seeded generator, not Math.random. Re-running the script has to produce
@@ -104,13 +106,13 @@ const WIPE_ORDER = [
 async function wipe() {
   for (const table of WIPE_ORDER) {
     if (DRY) {
-      const { count } = await db.from(table).select("*", { count: "exact", head: true });
+      const { count } = await db.from(table).select("*", { count: "exact", head: true }).eq("organization_id", ORGANIZATION_ID);
       console.log(`  would clear ${table} (${count ?? 0} rows)`);
       continue;
     }
     // A filter is required by PostgREST for a bulk delete; this matches every
     // row without naming a column that might not exist on the table.
-    const { error } = await db.from(table).delete().not("id", "is", null);
+    const { error } = await db.from(table).delete().eq("organization_id", ORGANIZATION_ID);
     if (error) {
       /* Tables come and go across migrations — `checklist_room_sections` was
          replaced by `checklist_sections` in 0004. A name that no longer exists
@@ -120,9 +122,7 @@ async function wipe() {
         console.log(`  skipped ${table} (not in this schema)`);
         continue;
       }
-      // Composite-key tables have no `id`; fall back to a full delete.
-      const retry = await db.from(table).delete().gte("created_at", "1970-01-01");
-      if (retry.error) throw new Error(`${table}: ${retry.error.message}`);
+      throw new Error(`${table}: ${error.message}`);
     }
     console.log(`  cleared ${table}`);
   }
@@ -136,7 +136,10 @@ async function insert(table: string, rows: Row[]): Promise<Row[]> {
   const out: Row[] = [];
   // Chunked: PostgREST will accept a very large body and then time out on it.
   for (let i = 0; i < rows.length; i += 500) {
-    const chunk = rows.slice(i, i + 500);
+    const chunk = rows.slice(i, i + 500).map((row) => ({
+      ...row,
+      organization_id: ORGANIZATION_ID,
+    }));
     // The generated table types are not available to a standalone script, so
     // the row shape is checked against the database at run time instead.
     const { data, error } = await db
@@ -366,7 +369,7 @@ async function main() {
   };
   const paths: Record<string, string> = {};
   for (const [docType, bucket] of Object.entries(DOC_BUCKET)) {
-    const path = `demo/${docType}.pdf`;
+    const path = `${ORGANIZATION_ID}/demo/${docType}.pdf`;
     const { error } = await db.storage
       .from(bucket)
       .upload(path, PLACEHOLDER, { contentType: "application/pdf", upsert: true });

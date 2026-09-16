@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import {
   requireAdmin,
+  requireMember,
   friendlyError,
   optionalText,
   type ActionResult,
 } from "./helpers";
 import { PDF_BUCKET } from "@/lib/types";
 import type { ChecklistType, ConditionRating } from "@/lib/types";
+import { organizationStoragePath } from "@/lib/organization";
 
 const PHOTO_BUCKET = "inventory-photos";
 const MAX_PHOTO_BYTES = 12 * 1024 * 1024;
@@ -220,7 +222,11 @@ export async function uploadPhoto(
     return { ok: false, error: "That photo is larger than 12MB." };
 
   const safeName = file.name.replace(/[^\w.\-]/g, "_").slice(-100);
-  const path = `${sectionId}/${Date.now()}-${safeName}`;
+  const path = organizationStoragePath(
+    auth.organizationId,
+    sectionId,
+    `${Date.now()}-${safeName}`,
+  );
 
   const { error: uploadError } = await auth.supabase.storage
     .from(PHOTO_BUCKET)
@@ -283,7 +289,7 @@ export async function deletePhoto(photoId: string): Promise<ActionResult> {
 export async function getPhotoUrls(
   paths: string[],
 ): Promise<ActionResult<Record<string, string>>> {
-  const auth = await requireAdmin();
+  const auth = await requireMember();
   if (!auth.ok) return auth;
   if (paths.length === 0) return { ok: true, data: {} };
 
@@ -462,7 +468,8 @@ export async function recordPdfExport(
 
   /* The path comes from the client, so it is checked rather than trusted:
      a report may only ever be filed under the checklist it belongs to. */
-  if (!path.startsWith(`${checklistId}/`))
+  const expectedPrefix = organizationStoragePath(auth.organizationId, checklistId);
+  if (!path.startsWith(`${expectedPrefix}/`))
     return { ok: false, error: "That report does not belong to this checklist." };
 
   const { error } = await auth.supabase.from("checklist_pdf_exports").insert({

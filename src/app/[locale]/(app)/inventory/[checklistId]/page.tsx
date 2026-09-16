@@ -35,6 +35,16 @@ export default async function ChecklistPage({
   const t = await getTranslations();
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", user?.id ?? "")
+    .single();
+
+  if (!profile?.organization_id) notFound();
   const { data: checklist } = await supabase
     .from("inventory_checklists")
     .select(
@@ -205,6 +215,7 @@ export default async function ChecklistPage({
             )}
             <ExportPdfButton
               checklistId={cl.id}
+              organizationId={profile.organization_id}
               meta={{
                 propertyName: room?.properties?.name ?? "",
                 roomName: room?.name ?? "",

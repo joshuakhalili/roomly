@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
 import {
-  requireAdmin,
+  requireMember,
+  requireOrganizationManager,
   friendlyError,
   optionalText,
   type ActionResult,
@@ -12,34 +13,55 @@ import {
 /**
  * Creates another admin.
  *
- * Every admin has identical full access by design — there are no role
- * tiers — so this deliberately has no permission options. Requires the
- * service role, which is why it runs server-side only.
+ * Account creation uses the service role, but the caller's organisation and
+ * permission level are established first with the normal RLS client.
  */
 export async function createAdmin(
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
-  const auth = await requireAdmin();
+  const auth = await requireOrganizationManager();
   if (!auth.ok) return auth;
 
   const email = optionalText(formData.get("email"));
   const password = optionalText(formData.get("password"));
   const displayName = optionalText(formData.get("display_name"));
+  const requestedRole = optionalText(formData.get("role"));
+  const role = requestedRole === "admin" || requestedRole === "viewer"
+    ? requestedRole
+    : "staff";
 
   if (!email) return { ok: false, error: "An email is required." };
   if (!password || password.length < 8)
     return { ok: false, error: "A password of at least 8 characters is required." };
+  if (auth.role === "admin" && role === "admin")
+    return { ok: false, error: "Only an owner can create another admin." };
 
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    user_metadata: { display_name: displayName ?? email },
+    user_metadata: {
+      display_name: displayName ?? email,
+      organization_id: auth.organizationId,
+      organization_role: role,
+    },
   });
 
   if (error) return { ok: false, error: error.message };
   if (!data.user) return { ok: false, error: "Could not create that account." };
+
+  const { error: profileError } = await admin.from("profiles").insert({
+    id: data.user.id,
+    email,
+    display_name: displayName ?? email,
+    organization_id: auth.organizationId,
+    role,
+  });
+  if (profileError) {
+    await admin.auth.admin.deleteUser(data.user.id);
+    return { ok: false, error: profileError.message };
+  }
 
   revalidatePath("/", "layout");
   return { ok: true, data: { id: data.user.id } };
@@ -54,7 +76,7 @@ export async function createAdmin(
 export async function regenerateCalendarToken(): Promise<
   ActionResult<{ token: string }>
 > {
-  const auth = await requireAdmin();
+  const auth = await requireMember();
   if (!auth.ok) return auth;
 
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -75,7 +97,7 @@ export async function regenerateCalendarToken(): Promise<
 export async function setEmailDigest(
   optIn: boolean,
 ): Promise<ActionResult> {
-  const auth = await requireAdmin();
+  const auth = await requireMember();
   if (!auth.ok) return auth;
 
   const { error } = await auth.supabase

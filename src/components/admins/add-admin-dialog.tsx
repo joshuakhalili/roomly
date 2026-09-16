@@ -8,6 +8,7 @@ import { createAdmin } from "@/lib/actions/admins";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FormError } from "@/components/ui/field";
+import { OptionSelect } from "@/components/ui/option-select";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +63,18 @@ export function AddAdminDialog() {
           </Field>
           <Field label={t("admins.email")} required>
             <Input type="email" name="email" required disabled={isPending} />
+          </Field>
+          <Field label={t("admins.role")} required>
+            <OptionSelect
+              name="role"
+              defaultValue="staff"
+              disabled={isPending}
+              options={[
+                { value: "admin", label: t("admins.roles.admin") },
+                { value: "staff", label: t("admins.roles.staff") },
+                { value: "viewer", label: t("admins.roles.viewer") },
+              ]}
+            />
           </Field>
           <Field
             label={t("admins.temporaryPassword")}
