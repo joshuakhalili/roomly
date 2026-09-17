@@ -5,9 +5,12 @@ import {
   requireAdmin,
   friendlyError,
   optionalText,
+  cleanText,
   type ActionResult,
 } from "./helpers";
 import type { RentPaymentStatus } from "@/lib/types";
+
+const RENT_STATUSES = ["due", "paid", "late", "waived"] as const;
 
 /**
  * Marks a rent payment paid, late, waived, or back to due.
@@ -21,6 +24,8 @@ export async function setRentStatus(
 ): Promise<ActionResult> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
+  if (!RENT_STATUSES.includes(status))
+    return { ok: false, error: "Choose a valid payment status." };
 
   const { error } = await auth.supabase
     .from("rent_payments")
@@ -45,7 +50,7 @@ export async function setRentNote(
 
   const { error } = await auth.supabase
     .from("rent_payments")
-    .update({ notes: note })
+    .update({ notes: cleanText(note) })
     .eq("id", paymentId);
 
   if (error) return { ok: false, error: friendlyError(error) };

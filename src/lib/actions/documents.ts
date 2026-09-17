@@ -11,6 +11,10 @@ import {
 } from "./helpers";
 import { TENANT_DOCUMENT_TYPES, type DocumentType } from "@/lib/types";
 import { organizationStoragePath } from "@/lib/organization";
+import {
+  DOCUMENT_MIME_TYPES,
+  inspectUpload,
+} from "@/lib/security/files";
 
 /** Which private bucket each document type lives in. */
 const BUCKETS: Record<DocumentType, string> = {
@@ -41,25 +45,11 @@ const BUCKETS: Record<DocumentType, string> = {
 
 const MAX_BYTES = 15 * 1024 * 1024; // 15MB — generous for a scan or a PDF
 
-const ALLOWED_MIME = [
-  "image/jpeg",
-  "image/png",
-  "image/heic",
-  "image/heif",
-  "image/webp",
-  "application/pdf",
-];
-
 /** How long a document view link stays valid. */
 const SIGNED_URL_TTL_SECONDS = 300; // 5 minutes
 
 function isDocumentType(v: string | null): v is DocumentType {
   return v !== null && v in BUCKETS;
-}
-
-/** Strips anything that could escape the intended storage folder. */
-function safeFileName(name: string): string {
-  return name.replace(/[^\w.\-]/g, "_").slice(-120);
 }
 
 export async function uploadDocument(
@@ -89,8 +79,8 @@ export async function uploadDocument(
     return { ok: false, error: "Choose a file to upload." };
   if (file.size > MAX_BYTES)
     return { ok: false, error: "That file is larger than 15MB." };
-  if (file.type && !ALLOWED_MIME.includes(file.type))
-    return { ok: false, error: "Only images and PDFs can be uploaded." };
+  const inspected = await inspectUpload(file, DOCUMENT_MIME_TYPES);
+  if (!inspected.ok) return inspected;
 
   const bucket = BUCKETS[docTypeRaw];
 
@@ -121,14 +111,14 @@ export async function uploadDocument(
   const path = organizationStoragePath(
     auth.organizationId,
     prefix,
-    `${Date.now()}-${safeFileName(file.name)}`,
+    `${Date.now()}-${inspected.safeName}`,
   );
 
   const { error: uploadError } = await auth.supabase.storage
     .from(bucket)
-    .upload(path, file, { contentType: file.type || undefined, upsert: false });
+    .upload(path, file, { contentType: inspected.contentType, upsert: false });
 
-  if (uploadError) return { ok: false, error: uploadError.message };
+  if (uploadError) return { ok: false, error: "The file could not be uploaded." };
 
   const { data, error } = await auth.supabase
     .from("documents")
@@ -137,7 +127,7 @@ export async function uploadDocument(
       maintenance_job_id: jobId,
       asset_id: assetId,
       doc_type: docTypeRaw,
-      file_name: file.name,
+      file_name: inspected.safeName,
       storage_path: `${bucket}/${path}`,
       file_size: file.size,
       issued_at: optionalText(formData.get("issued_at")),
@@ -185,7 +175,7 @@ export async function getDocumentUrl(
     .createSignedUrl(rest.join("/"), SIGNED_URL_TTL_SECONDS);
 
   if (signError || !signed)
-    return { ok: false, error: signError?.message ?? "Could not open file." };
+    return { ok: false, error: "Could not open file." };
 
   return { ok: true, data: { url: signed.signedUrl } };
 }

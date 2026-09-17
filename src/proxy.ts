@@ -31,6 +31,17 @@ function isPublicPath(pathname: string) {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Vercel redirects HTTP at the edge; this is a second, explicit guard for
+  // any future proxy or self-hosted deployment that forwards plain HTTP.
+  if (
+    process.env.NODE_ENV === "production" &&
+    request.headers.get("x-forwarded-proto") === "http"
+  ) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    return NextResponse.redirect(url, 308);
+  }
+
   // The calendar feed is authenticated by its own secret token in the URL,
   // not by a session — calendar apps can't log in. It handles its own auth.
   if (pathname.startsWith("/api/calendar/")) return NextResponse.next();
@@ -50,7 +61,12 @@ export async function proxy(request: NextRequest) {
         getAll: () => request.cookies.getAll(),
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
+            response.cookies.set(name, value, {
+              ...options,
+              path: "/",
+              sameSite: "lax",
+              secure: process.env.NODE_ENV === "production",
+            }),
           );
         },
       },

@@ -26,7 +26,13 @@ export default async function LoginPage({
         {/* LoginForm reads ?next= from the URL, which needs a Suspense
             boundary so the rest of the page can still prerender. */}
         <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
-          <LoginForm />
+          <LoginForm
+            turnstileSiteKey={
+              process.env.TURNSTILE_SECRET_KEY
+                ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+                : undefined
+            }
+          />
         </Suspense>
       </div>
     </main>

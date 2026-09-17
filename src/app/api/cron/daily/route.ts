@@ -257,7 +257,7 @@ export async function GET(request: Request) {
       onConflict: "recurrence_id,scheduled_for",
       ignoreDuplicates: true,
     });
-    if (error) errors.push(`recurring jobs: ${error.message}`);
+    if (error) errors.push("recurring jobs: database operation failed");
     log.jobs_considered = newJobs.length;
   }
 
@@ -335,7 +335,7 @@ export async function GET(request: Request) {
       const { error } = await supabase
         .from("maintenance_jobs")
         .insert(turnarounds);
-      if (error) errors.push(`turnaround cleans: ${error.message}`);
+      if (error) errors.push("turnaround cleans: database operation failed");
       else log.turnaround_cleans = turnarounds.length;
     }
   }

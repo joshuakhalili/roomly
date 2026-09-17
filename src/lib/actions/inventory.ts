@@ -11,10 +11,12 @@ import {
 import { PDF_BUCKET } from "@/lib/types";
 import type { ChecklistType, ConditionRating } from "@/lib/types";
 import { organizationStoragePath } from "@/lib/organization";
+import { IMAGE_MIME_TYPES, inspectUpload } from "@/lib/security/files";
 
 const PHOTO_BUCKET = "inventory-photos";
 const MAX_PHOTO_BYTES = 12 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 600; // long enough to work through a whole area
+const CHECKLIST_TYPES: ChecklistType[] = ["baseline", "check_in", "check_out"];
 
 /**
  * Creates a tenancy's check-in or check-out.
@@ -34,6 +36,8 @@ export async function createChecklist(
 ): Promise<ActionResult<{ id: string }>> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
+  if (!CHECKLIST_TYPES.includes(type))
+    return { ok: false, error: "Choose a valid checklist type." };
 
   const { data: tenancy } = await auth.supabase
     .from("tenancies")
@@ -83,9 +87,32 @@ export async function updateSection(
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
 
+  const validRatings = new Set<ConditionRating>([
+    "excellent",
+    "good",
+    "fair",
+    "poor",
+    "unacceptable",
+  ]);
+  if (
+    (values.condition_rating && !validRatings.has(values.condition_rating)) ||
+    (values.cleanliness_rating && !validRatings.has(values.cleanliness_rating))
+  )
+    return { ok: false, error: "Choose a valid condition rating." };
+
+  // Pick the writable fields explicitly. A Server Action's TypeScript type is
+  // not a runtime boundary, so passing `values` straight through would let a
+  // forged request add fields the UI never offered.
+  const fields = {
+    condition_rating: values.condition_rating ?? null,
+    cleanliness_rating: values.cleanliness_rating ?? null,
+    description: values.description?.trim().slice(0, 5000) || null,
+    flagged_for_maintenance: values.flagged_for_maintenance === true,
+  };
+
   const { error } = await auth.supabase
     .from("checklist_sections")
-    .update(values)
+    .update(fields)
     .eq("id", sectionId);
 
   if (error) return { ok: false, error: friendlyError(error) };
@@ -221,18 +248,20 @@ export async function uploadPhoto(
   if (file.size > MAX_PHOTO_BYTES)
     return { ok: false, error: "That photo is larger than 12MB." };
 
-  const safeName = file.name.replace(/[^\w.\-]/g, "_").slice(-100);
+  const inspected = await inspectUpload(file, IMAGE_MIME_TYPES);
+  if (!inspected.ok) return inspected;
+
   const path = organizationStoragePath(
     auth.organizationId,
     sectionId,
-    `${Date.now()}-${safeName}`,
+    `${Date.now()}-${inspected.safeName}`,
   );
 
   const { error: uploadError } = await auth.supabase.storage
     .from(PHOTO_BUCKET)
-    .upload(path, file, { contentType: file.type || undefined });
+    .upload(path, file, { contentType: inspected.contentType });
 
-  if (uploadError) return { ok: false, error: uploadError.message };
+  if (uploadError) return { ok: false, error: "The photo could not be uploaded." };
 
   const { count } = await auth.supabase
     .from("checklist_photos")
@@ -292,13 +321,27 @@ export async function getPhotoUrls(
   const auth = await requireMember();
   if (!auth.ok) return auth;
   if (paths.length === 0) return { ok: true, data: {} };
+  if (paths.length > 200)
+    return { ok: false, error: "Too many photos were requested at once." };
+  const allowedPrefix = `${PHOTO_BUCKET}/${auth.organizationId}/`;
+  const legacyPrefix = "00000000-0000-4000-8000-000000000001";
+  if (
+    paths.some(
+      (path) =>
+        path.length > 600 ||
+        path.includes("..") ||
+        (!path.startsWith(allowedPrefix) &&
+          !(auth.organizationId === legacyPrefix && path.startsWith(`${PHOTO_BUCKET}/`))),
+    )
+  )
+    return { ok: false, error: "Invalid photo path." };
 
   const keys = paths.map((p) => p.split("/").slice(1).join("/"));
   const { data, error } = await auth.supabase.storage
     .from(PHOTO_BUCKET)
     .createSignedUrls(keys, SIGNED_URL_TTL_SECONDS);
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: "The photos could not be opened." };
 
   const map: Record<string, string> = {};
   data?.forEach((entry, i) => {
@@ -316,6 +359,8 @@ export async function signChecklist(
 ): Promise<ActionResult> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
+  if (role !== "assessor" && role !== "tenant")
+    return { ok: false, error: "Choose a valid signer role." };
   if (!typedName.trim()) return { ok: false, error: "A name is required." };
 
   const { error } = await auth.supabase.from("checklist_declarations").insert({
@@ -432,6 +477,13 @@ export async function deleteReportRecord(
 ): Promise<ActionResult> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
+  const allowedTables = [
+    "checklist_meters",
+    "checklist_keys",
+    "checklist_detectors",
+  ] as const;
+  if (!allowedTables.includes(table))
+    return { ok: false, error: "Invalid report record type." };
 
   const { error } = await auth.supabase.from(table).delete().eq("id", id);
   if (error) return { ok: false, error: friendlyError(error) };
@@ -465,6 +517,8 @@ export async function recordPdfExport(
 ): Promise<ActionResult<{ path: string }>> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
+  if (!Number.isInteger(fileSize) || fileSize <= 0 || fileSize > 100 * 1024 * 1024)
+    return { ok: false, error: "Invalid report size." };
 
   /* The path comes from the client, so it is checked rather than trusted:
      a report may only ever be filed under the checklist it belongs to. */

@@ -86,14 +86,35 @@ export function friendlyError(error: { code?: string; message: string }): string
     case "42501":
       return "You do not have permission to do that.";
     default:
-      return error.message;
+      // Database messages can include constraint names, table structure or
+      // values. Keep those details server-side rather than serialising them
+      // back through a Server Action response.
+      return "That change could not be saved.";
   }
 }
 
-/** Reads an optional text field, converting blanks to null for the database. */
-export function optionalText(value: FormDataEntryValue | null): string | null {
-  const text = typeof value === "string" ? value.trim() : "";
+/**
+ * Normalises untrusted text and applies a hard ceiling before it reaches the
+ * database or a React Server Component payload.
+ */
+export function cleanText(value: unknown, maxLength = 5000): string | null {
+  const text =
+    typeof value === "string"
+      ? value
+          .normalize("NFKC")
+          .replace(/[\u0000\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
+          .trim()
+          .slice(0, maxLength)
+      : "";
   return text === "" ? null : text;
+}
+
+/** Reads an optional text field, converting blanks to null for the database. */
+export function optionalText(
+  value: FormDataEntryValue | null,
+  maxLength = 5000,
+): string | null {
+  return cleanText(value, maxLength);
 }
 
 /** Reads an optional number field, returning null when blank or invalid. */
@@ -101,7 +122,16 @@ export function optionalNumber(value: FormDataEntryValue | null): number | null 
   const text = typeof value === "string" ? value.trim() : "";
   if (text === "") return null;
   const n = Number(text);
-  return Number.isFinite(n) ? n : null;
+  return Number.isFinite(n) && Math.abs(n) <= 1_000_000_000_000 ? n : null;
+}
+
+export function oneOf<T extends string>(
+  value: string | null,
+  allowed: readonly T[],
+): T | null {
+  return value !== null && (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : null;
 }
 
 /**
@@ -117,9 +147,12 @@ export function normalisePhone(input: string | null): string | null {
   if (trimmed === "") return null;
 
   const digits = trimmed.replace(/[^\d+]/g, "");
-  if (digits.startsWith("+")) return digits;
+  let normalised: string;
+  if (digits.startsWith("+")) normalised = digits;
   // A leading 0 is a national trunk prefix; assume UK and swap it for +44.
-  if (digits.startsWith("0")) return `+44${digits.slice(1)}`;
-  if (digits.startsWith("44")) return `+${digits}`;
-  return `+${digits}`;
+  else if (digits.startsWith("0")) normalised = `+44${digits.slice(1)}`;
+  else if (digits.startsWith("44")) normalised = `+${digits}`;
+  else normalised = `+${digits}`;
+
+  return /^\+[1-9]\d{7,14}$/.test(normalised) ? normalised : null;
 }

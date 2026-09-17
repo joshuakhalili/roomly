@@ -112,6 +112,7 @@ export async function setTenancyTenants(
   if (!auth.ok) return auth;
   if (tenantIds.length === 0)
     return { ok: false, error: "Choose at least one tenant." };
+  const uniqueTenantIds = [...new Set(tenantIds)].slice(0, 20);
 
   const { error: clearError } = await auth.supabase
     .from("tenancy_tenants")
@@ -120,12 +121,12 @@ export async function setTenancyTenants(
   if (clearError) return { ok: false, error: friendlyError(clearError) };
 
   // Always exactly one lead, so "who do I contact" is never ambiguous.
-  const lead = leadTenantId && tenantIds.includes(leadTenantId)
+  const lead = leadTenantId && uniqueTenantIds.includes(leadTenantId)
     ? leadTenantId
-    : tenantIds[0];
+    : uniqueTenantIds[0];
 
   const { error } = await auth.supabase.from("tenancy_tenants").insert(
-    tenantIds.map((tenant_id) => ({
+    uniqueTenantIds.map((tenant_id) => ({
       tenancy_id: tenancyId,
       tenant_id,
       is_lead_tenant: tenant_id === lead,

@@ -22,17 +22,19 @@ export async function createAdmin(
   const auth = await requireOrganizationManager();
   if (!auth.ok) return auth;
 
-  const email = optionalText(formData.get("email"));
-  const password = optionalText(formData.get("password"));
-  const displayName = optionalText(formData.get("display_name"));
+  const email = optionalText(formData.get("email"), 254)?.toLowerCase() ?? null;
+  const passwordValue = formData.get("password");
+  const password = typeof passwordValue === "string" ? passwordValue : null;
+  const displayName = optionalText(formData.get("display_name"), 200);
   const requestedRole = optionalText(formData.get("role"));
   const role = requestedRole === "admin" || requestedRole === "viewer"
     ? requestedRole
     : "staff";
 
-  if (!email) return { ok: false, error: "An email is required." };
-  if (!password || password.length < 8)
-    return { ok: false, error: "A password of at least 8 characters is required." };
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return { ok: false, error: "A valid email is required." };
+  if (!password || password.length < 12 || password.length > 128)
+    return { ok: false, error: "Use a password between 12 and 128 characters." };
   if (auth.role === "admin" && role === "admin")
     return { ok: false, error: "Only an owner can create another admin." };
 
@@ -48,7 +50,7 @@ export async function createAdmin(
     },
   });
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: "Could not create that account." };
   if (!data.user) return { ok: false, error: "Could not create that account." };
 
   const { error: profileError } = await admin.from("profiles").insert({
@@ -60,7 +62,7 @@ export async function createAdmin(
   });
   if (profileError) {
     await admin.auth.admin.deleteUser(data.user.id);
-    return { ok: false, error: profileError.message };
+    return { ok: false, error: "Could not create that account." };
   }
 
   revalidatePath("/", "layout");

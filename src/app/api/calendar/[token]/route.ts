@@ -50,7 +50,7 @@ export async function GET(
     await Promise.all([
       supabase
         .from("tenancies")
-        .select("*, rooms(name, properties(name))")
+        .select("id, status, start_date, end_date, rooms(name, properties(name))")
         .eq("organization_id", organizationId)
         .in("status", ["upcoming", "active"]),
       supabase
@@ -59,7 +59,7 @@ export async function GET(
         .eq("organization_id", organizationId),
       supabase
         .from("rent_payments")
-        .select("*")
+        .select("id, tenancy_id, due_date, amount_due")
         .eq("organization_id", organizationId)
         .in("status", ["due", "late"]),
       // Booked work only. A job already done is a record, not something to
@@ -68,7 +68,7 @@ export async function GET(
       supabase
         .from("maintenance_jobs")
         .select(
-          "*, properties(name), rooms(name), service_types(name), contacts(name)",
+          "id, title, scheduled_for, scheduled_time, description, properties(name), rooms(name), service_types(name), contacts(name)",
         )
         .eq("organization_id", organizationId)
         .eq("status", "booked"),

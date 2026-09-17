@@ -8,6 +8,7 @@ import {
   friendlyError,
   optionalText,
   optionalNumber,
+  oneOf,
   type ActionResult,
 } from "./helpers";
 import { buildRentRows, type RentSchedulable } from "@/lib/rent";
@@ -20,6 +21,21 @@ import type {
 
 /** How far ahead rent rows are created up front. The daily job extends this. */
 const INITIAL_RENT_HORIZON_MONTHS = 3;
+const LETTING_TYPES = ["long_term", "short_stay"] as const;
+const RENT_FREQUENCIES = [
+  "weekly",
+  "fortnightly",
+  "four_weekly",
+  "monthly",
+  "total",
+] as const;
+const TENANCY_STATUSES = ["upcoming", "active", "ended", "archived"] as const;
+const LEAVING_REASONS = [
+  "end_of_term",
+  "tenant_gave_notice",
+  "given_notice_by_admin",
+  "other",
+] as const;
 
 /**
  * Tenants are chosen from existing profiles rather than typed in again.
@@ -29,18 +45,19 @@ function parseTenantIds(formData: FormData): {
   ids: string[];
   leadId: string | null;
 } {
-  const ids = formData
+  const ids = [...new Set(formData
     .getAll("tenant_ids")
     .map((v) => String(v))
-    .filter(Boolean);
+    .filter(Boolean))].slice(0, 20);
   const leadId = optionalText(formData.get("lead_tenant_id"));
   return { ids, leadId };
 }
 
 function tenancyFields(formData: FormData) {
   const startDate = optionalText(formData.get("start_date"));
-  const lettingType = (optionalText(formData.get("letting_type")) ??
-    "long_term") as LettingType;
+  const lettingType: LettingType =
+    oneOf(optionalText(formData.get("letting_type")), LETTING_TYPES) ??
+    "long_term";
 
   /* A short stay is priced as one total, whatever the form last had selected
      in the frequency dropdown. Deriving it here rather than trusting the
@@ -48,8 +65,10 @@ function tenancyFields(formData: FormData) {
   const frequency: RentFrequency =
     lettingType === "short_stay"
       ? "total"
-      : ((optionalText(formData.get("rent_frequency")) ??
-          "monthly") as RentFrequency);
+      : (oneOf(
+          optionalText(formData.get("rent_frequency")),
+          RENT_FREQUENCIES,
+        ) ?? "monthly");
 
   // Default the rent day to the move-in day — the common case, and it means
   // one less field for the admin to fill in correctly.
@@ -61,7 +80,9 @@ function tenancyFields(formData: FormData) {
     letting_type: lettingType,
     start_date: startDate,
     end_date: optionalText(formData.get("end_date")),
-    status: (optionalText(formData.get("status")) ?? "upcoming") as TenancyStatus,
+    status:
+      oneOf(optionalText(formData.get("status")), TENANCY_STATUSES) ??
+      "upcoming",
     rent_amount: optionalNumber(formData.get("rent_amount")),
     rent_frequency: frequency,
     rent_due_day: frequency === "monthly" ? rentDueDay : null,
@@ -208,9 +229,10 @@ export async function archiveTenancy(
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
 
-  const reason = optionalText(formData.get("reason_for_leaving")) as
-    | LeavingReason
-    | null;
+  const reason: LeavingReason | null = oneOf(
+    optionalText(formData.get("reason_for_leaving")),
+    LEAVING_REASONS,
+  );
 
   const { error } = await auth.supabase
     .from("tenancies")
@@ -243,6 +265,8 @@ export async function setTenancyStatus(
 ): Promise<ActionResult> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
+  if (!TENANCY_STATUSES.includes(status))
+    return { ok: false, error: "Choose a valid tenancy status." };
 
   const { error } = await auth.supabase
     .from("tenancies")

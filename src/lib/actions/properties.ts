@@ -10,24 +10,12 @@ import {
 } from "./helpers";
 import { splitStoragePath } from "@/lib/retention";
 import { organizationStoragePath } from "@/lib/organization";
+import { IMAGE_MIME_TYPES, inspectUpload } from "@/lib/security/files";
 
 const BANNER_BUCKET = "property-banners";
 
 /** Matches the ceiling on every other bucket. */
 const MAX_BANNER_BYTES = 15 * 1024 * 1024;
-
-const ALLOWED_BANNER_MIME = [
-  "image/jpeg",
-  "image/png",
-  "image/heic",
-  "image/heif",
-  "image/webp",
-];
-
-/** Strips anything that could escape the intended storage folder. */
-function safeFileName(name: string): string {
-  return name.replace(/[^\w.\-]/g, "_").slice(-120);
-}
 
 /**
  * Uploads a new banner and returns its stored path.
@@ -44,19 +32,19 @@ async function uploadBanner(
 ): Promise<{ path: string } | { error: string }> {
   if (file.size > MAX_BANNER_BYTES)
     return { error: "That image is larger than 15MB." };
-  if (file.type && !ALLOWED_BANNER_MIME.includes(file.type))
-    return { error: "Only images can be used as a banner." };
+  const inspected = await inspectUpload(file, IMAGE_MIME_TYPES);
+  if (!inspected.ok) return { error: inspected.error };
 
   const path = organizationStoragePath(
     organizationId,
     propertyId,
-    `${Date.now()}-${safeFileName(file.name)}`,
+    `${Date.now()}-${inspected.safeName}`,
   );
   const { error } = await supabase.storage
     .from(BANNER_BUCKET)
-    .upload(path, file, { contentType: file.type || undefined, upsert: false });
+    .upload(path, file, { contentType: inspected.contentType, upsert: false });
 
-  if (error) return { error: error.message };
+  if (error) return { error: "The image could not be uploaded." };
   return { path: `${BANNER_BUCKET}/${path}` };
 }
 
@@ -248,7 +236,7 @@ export async function deleteProperty(id: string): Promise<ActionResult> {
     if (error)
       return {
         ok: false,
-        error: `Could not delete the property's files, so nothing was deleted: ${error.message}`,
+        error: "Could not delete the property's files, so nothing was deleted.",
       };
   }
 

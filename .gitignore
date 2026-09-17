@@ -50,3 +50,6 @@ supabase/.temp/
 
 # Database dumps taken before destructive scripts — live data, never commit.
 .backups/
+
+# Local security audit output (contains implementation detail, never app data).
+.gstack/

@@ -4,14 +4,35 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { createClient } from "@/lib/supabase/client";
+import Script from "next/script";
+import { login } from "@/lib/actions/auth";
+import { routing } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { CircleAlert } from "lucide-react";
 
-export function LoginForm() {
+declare global {
+  interface Window {
+    turnstile?: { reset: () => void };
+  }
+}
+
+function safeDestination(value: string | null): string {
+  if (
+    !value ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\") ||
+    /[\u0000-\u001f\u007f]/.test(value)
+  )
+    return "/";
+  const localePattern = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
+  return value.replace(localePattern, "") || "/";
+}
+
+export function LoginForm({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,26 +41,15 @@ export function LoginForm() {
 
   async function onSubmit(formData: FormData) {
     setError(null);
-    const email = String(formData.get("email") ?? "");
-    const password = String(formData.get("password") ?? "");
+    const result = await login(formData);
 
-    const { error: signInError } = await createClient().auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      // Don't leak whether the email exists — same message either way.
-      setError(
-        signInError.message.toLowerCase().includes("invalid")
-          ? t("auth.invalidCredentials")
-          : t("auth.genericError"),
-      );
+    if (!result.ok) {
+      setError(result.error);
+      window.turnstile?.reset();
       return;
     }
 
-    // Strip the locale prefix: the localised router re-adds it.
-    const next = searchParams.get("next")?.replace(/^\/(en|zh)(?=\/|$)/, "") || "/";
+    const next = safeDestination(searchParams.get("next"));
     startTransition(() => {
       router.replace(next as "/");
       router.refresh();
@@ -49,6 +59,12 @@ export function LoginForm() {
   return (
     <Card>
       <CardContent className="pt-6">
+        {turnstileSiteKey && (
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+            strategy="afterInteractive"
+          />
+        )}
         <form
           action={(formData) => {
             startTransition(() => {
@@ -57,6 +73,16 @@ export function LoginForm() {
           }}
           className="flex flex-col gap-4"
         >
+          <div className="absolute -left-[10000px]" aria-hidden="true">
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">{t("auth.email")}</Label>
             <Input
@@ -69,6 +95,16 @@ export function LoginForm() {
               disabled={isPending}
             />
           </div>
+
+          {turnstileSiteKey && (
+            <div
+              className="cf-turnstile"
+              data-sitekey={turnstileSiteKey}
+              data-action="login"
+              data-theme="auto"
+              data-size="flexible"
+            />
+          )}
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="password">{t("auth.password")}</Label>

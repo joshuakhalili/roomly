@@ -7,9 +7,13 @@ import {
   optionalText,
   optionalNumber,
   normalisePhone,
+  oneOf,
   type ActionResult,
 } from "./helpers";
 import type { JobStatus, RecurrenceFrequency } from "@/lib/types";
+
+const JOB_STATUSES = ["booked", "done", "cancelled"] as const;
+const RECURRENCE_FREQUENCIES = ["weekly", "fortnightly", "monthly"] as const;
 
 // ── Jobs ───────────────────────────────────────────────────────────────────
 
@@ -70,6 +74,8 @@ export async function setJobStatus(
 ): Promise<ActionResult> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
+  if (!JOB_STATUSES.includes(status))
+    return { ok: false, error: "Choose a valid job status." };
 
   const { data: job } = await auth.supabase
     .from("maintenance_jobs")
@@ -148,9 +154,10 @@ export async function saveRecurrence(
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
 
-  const frequency = optionalText(formData.get("frequency")) as
-    | RecurrenceFrequency
-    | null;
+  const frequency: RecurrenceFrequency | null = oneOf(
+    optionalText(formData.get("frequency")),
+    RECURRENCE_FREQUENCIES,
+  );
   const propertyId = optionalText(formData.get("property_id"));
   const title = optionalText(formData.get("title"));
   const startsOn = optionalText(formData.get("starts_on"));

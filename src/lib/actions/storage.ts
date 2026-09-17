@@ -11,6 +11,17 @@ import { splitStoragePath } from "@/lib/retention";
  * anyone tries it.
  */
 const SIGNED_URL_TTL_SECONDS = 600;
+const LEGACY_ORGANIZATION_ID = "00000000-0000-4000-8000-000000000001";
+const PRIVATE_BUCKETS = new Set([
+  "passports",
+  "right-to-rent",
+  "tenancy-agreements",
+  "deposit-certs",
+  "handbooks",
+  "inventory-photos",
+  "checklist-pdfs",
+  "property-banners",
+]);
 
 /**
  * Signs a batch of stored files, whatever buckets they happen to live in.
@@ -30,13 +41,24 @@ export async function getSignedUrls(
   const auth = await requireMember();
   if (!auth.ok) return auth;
   if (paths.length === 0) return { ok: true, data: {} };
+  if (paths.length > 200)
+    return { ok: false, error: "Too many files were requested at once." };
 
   // Grouped per bucket: the storage API signs many paths in one call, but
   // only within a single bucket.
   const byBucket = new Map<string, string[]>();
-  for (const stored of paths) {
+  for (const stored of new Set(paths)) {
     const ref = splitStoragePath(stored);
-    if (!ref) continue;
+    if (
+      !ref ||
+      !PRIVATE_BUCKETS.has(ref.bucket) ||
+      stored.length > 600 ||
+      ref.path.includes("..") ||
+      (!ref.path.startsWith(`${auth.organizationId}/`) &&
+        !(auth.organizationId === LEGACY_ORGANIZATION_ID &&
+          !/^[0-9a-f-]{36}\//i.test(ref.path)))
+    )
+      return { ok: false, error: "Invalid file path." };
     const list = byBucket.get(ref.bucket) ?? [];
     list.push(ref.path);
     byBucket.set(ref.bucket, list);

@@ -44,16 +44,18 @@ export async function changeOwnPassword(
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
 
-  const password = optionalText(formData.get("password"));
-  const confirm = optionalText(formData.get("confirm_password"));
+  const passwordValue = formData.get("password");
+  const confirmValue = formData.get("confirm_password");
+  const password = typeof passwordValue === "string" ? passwordValue : null;
+  const confirm = typeof confirmValue === "string" ? confirmValue : null;
 
-  if (!password || password.length < 8)
-    return { ok: false, error: "Use at least 8 characters." };
+  if (!password || password.length < 12 || password.length > 128)
+    return { ok: false, error: "Use a password between 12 and 128 characters." };
   if (password !== confirm)
     return { ok: false, error: "The two passwords do not match." };
 
   const { error } = await auth.supabase.auth.updateUser({ password });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: "The password could not be changed." };
 
   return { ok: true, data: undefined };
 }
