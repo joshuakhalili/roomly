@@ -92,9 +92,10 @@ export function RoomDialog({
             <OptionSelect
               id="unit_type"
               name="unit_type"
-              defaultValue={room?.unit_type ?? "studio"}
+              defaultValue={room?.unit_type ?? "room"}
               disabled={isPending}
               options={[
+                { value: "room", label: t("rooms.unitRoom") },
                 { value: "studio", label: t("rooms.unitStudio") },
                 { value: "flat", label: t("rooms.unitFlat") },
               ]}

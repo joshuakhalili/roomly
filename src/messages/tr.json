@@ -133,6 +133,7 @@
     "noTenant": "Bu odada kiracı yok",
     "addTenancy": "Kira sözleşmesi ekle",
     "typeHint": "Kiracının kiraladığı birim. Mutfak ve banyo, birimin içindeki alanlardır ve envanter listesinde tanımlanır.",
+    "unitRoom": "Oda",
     "unitStudio": "Stüdyo",
     "unitFlat": "Daire",
     "one": "Oda"

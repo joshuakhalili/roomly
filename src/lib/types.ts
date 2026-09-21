@@ -9,7 +9,7 @@ export type TenancyStatus = "upcoming" | "active" | "ended" | "archived";
  * What a tenant actually rents. Distinct from an area type — a kitchen is
  * never let on its own, it's only a space inside one of these.
  */
-export type UnitType = "studio" | "flat";
+export type UnitType = "room" | "studio" | "flat";
 
 /**
  * How a letting is shaped, which is not the same question as what is let.

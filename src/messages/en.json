@@ -133,6 +133,7 @@
     "noTenant": "No tenant in this room",
     "addTenancy": "Add tenancy",
     "typeHint": "What the tenant rents. Kitchens and bathrooms are areas inside a unit, set up on the inventory checklist.",
+    "unitRoom": "Room",
     "unitStudio": "Studio",
     "unitFlat": "Flat",
     "one": "Room"

@@ -133,6 +133,7 @@
     "noTenant": "此房间暂无租客",
     "addTenancy": "添加租约",
     "typeHint": "租客租用的单位类型。厨房和浴室属于单位内的区域，在物品清点表中设置。",
+    "unitRoom": "房间",
     "unitStudio": "单间公寓",
     "unitFlat": "整套公寓",
     "one": "房间"

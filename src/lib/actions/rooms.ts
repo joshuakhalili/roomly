@@ -14,7 +14,12 @@ function roomFields(formData: FormData) {
     name: optionalText(formData.get("name")),
     // What a tenant rents. Kitchens and bathrooms are areas within a unit,
     // not units themselves, so they aren't options here.
-    unit_type: formData.get("unit_type") === "flat" ? "flat" : "studio",
+    unit_type:
+      formData.get("unit_type") === "flat"
+        ? "flat"
+        : formData.get("unit_type") === "studio"
+          ? "studio"
+          : "room",
     is_common_area: isCommonArea,
     // A shared kitchen can't be let on its own, so the two flags are linked
     // rather than independently settable — one less way to create a room
@@ -38,7 +43,11 @@ export async function createRoom(
 
   const { data, error } = await auth.supabase
     .from("rooms")
-    .insert({ ...fields, property_id: propertyId })
+    .insert({
+      ...fields,
+      property_id: propertyId,
+      organization_id: auth.organizationId,
+    })
     .select("id")
     .single();
 

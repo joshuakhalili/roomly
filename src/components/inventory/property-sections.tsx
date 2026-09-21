@@ -16,7 +16,7 @@ import { Building2, Camera, ChevronRight, MapPin } from "lucide-react";
 export interface InventoryRoom {
   id: string;
   name: string;
-  unitType: "studio" | "flat";
+  unitType: "room" | "studio" | "flat";
   /** Where the room's own inventory lives, once it exists. */
   checklistId: string | null;
   done: number;
@@ -193,7 +193,9 @@ export function PropertySections({
                               {t(
                                 room.unitType === "flat"
                                   ? "rooms.unitFlat"
-                                  : "rooms.unitStudio",
+                                  : room.unitType === "studio"
+                                    ? "rooms.unitStudio"
+                                    : "rooms.unitRoom",
                               )}
                             </Badge>
                           </div>

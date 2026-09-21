@@ -206,7 +206,9 @@ export default async function PropertyPage({
                               : t(
                                   room.unit_type === "flat"
                                     ? "rooms.unitFlat"
-                                    : "rooms.unitStudio",
+                                    : room.unit_type === "studio"
+                                      ? "rooms.unitStudio"
+                                      : "rooms.unitRoom",
                                 )}
                           </Badge>
                         </div>
