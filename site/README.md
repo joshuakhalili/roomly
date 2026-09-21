@@ -21,7 +21,7 @@ Node.js 24. No credentials, database or backend is required. `Request access` op
 
 All previous public page paths are preserved. The existing website's author-owned article content was migrated from commit `02a409f` in the local `roomly-site` repository. Its original checkout and history remain intact. This build does not copy the prior PipelinePro template runtime, layout or reset scripts. Changes to former demo-specific public copy follow the owner's September 2026 direction to keep that context in GitHub documentation.
 
-Pricing and plan allocations in the old presentation were invented, as recorded in its source notes. This site offers access by enquiry and does not assert subscription entitlements or accept payment. UK document categories describe record organisation, not Roomly accreditation or legal compliance certification. Reference: [GOV.UK landlord safety responsibilities](https://www.gov.uk/private-renting/your-landlords-safety-responsibilities).
+Pricing and plan allocations in the old presentation were invented, as recorded in its source notes. The existing Starter, Standard and Portfolio amounts (£29/£79/£149 monthly; £290/£790/£1,490 yearly) and working billing-period toggle are retained. Access is by enquiry; there is no checkout or implemented subscription entitlement system. These presentation prices are not evidence of a commercially launched service. UK document categories describe record organisation, not Roomly accreditation or legal compliance certification. Reference: [GOV.UK landlord safety responsibilities](https://www.gov.uk/private-renting/your-landlords-safety-responsibilities).
 
 ## Photography and screenshots
 

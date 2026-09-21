@@ -138,6 +138,11 @@ test("keyboard navigation, contact intent, FAQ and reduced motion", async ({
       /^mailto:.*subject=Roomly%20access$/,
     );
   }
+  await page.getByLabel('Yearly', {exact:true}).check();
+  await expect(page.locator('[data-monthly="29"]')).toHaveText('£290');
+  await expect(page.locator('[data-monthly="149"]')).toHaveText('£1,490');
+  await page.getByLabel('Monthly', {exact:true}).check();
+  await expect(page.locator('[data-monthly="29"]')).toHaveText('£29');
   await page.screenshot({
     path: "docs/images/website-mobile.png",
     fullPage: true,

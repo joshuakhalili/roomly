@@ -866,3 +866,87 @@ svg {
     margin: 18px 0 23px;
   }
 }
+
+.pricing {
+  border-top: 1px solid #d9d5ce;
+}
+.billing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.billing legend {
+  font-size: 12px;
+  color: #686560;
+  margin-bottom: 10px;
+}
+.billing label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 14px;
+  cursor: pointer;
+  border: 1px solid #d9d5ce;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.billing label:has(:checked) {
+  background: #ede9fa;
+  border-color: #5638d8;
+}
+.billing input {
+  accent-color: #5638d8;
+}
+.plan-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px;
+}
+.plan-list article {
+  border-top: 1px solid #d9d5ce;
+  padding-top: 28px;
+}
+.plan-list p {
+  color: #686560;
+  margin-top: 20px;
+  font-size: 16px;
+  min-height: 52px;
+  max-width: 28ch;
+}
+.plan-price {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+.plan-price > span {
+  font-size: 55px;
+  letter-spacing: -0.05em;
+  line-height: 1.2;
+}
+.plan-price small {
+  font-size: 14px;
+  color: #686560;
+}
+.pricing-note {
+  font-size: 14px;
+  color: #686560;
+  margin-top: 40px;
+}
+@media (max-width: 760px) {
+  .billing {
+    margin-top: 30px;
+  }
+  .plan-list {
+    grid-template-columns: 1fr;
+  }
+  .plan-list p {
+    min-height: 0;
+    max-width: 100%;
+  }
+}

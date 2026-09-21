@@ -22,7 +22,7 @@ The GitHub source has 26 migrations, operational organisation isolation, three U
 
 ## 2. Product structure: one product, three surfaces
 
-1. **Website:** explains Roomly, shows genuine product screens, offers demo access, and sends existing users to login.
+1. **Website:** explains Roomly, shows genuine product screens, offers access by enquiry, and sends existing users to login.
 2. **Manager workspace:** all existing portfolio operations, with clearer navigation and the new onboarding, handbook, invitations and resident-question tools.
 3. **Resident Home:** invitation-based access to essentials, guide, agreements, first-week tasks, Ask Roomly and the resident's repair reports.
 
@@ -157,12 +157,12 @@ The inspected website already describes property operations, rent, expenses, inv
 - Present the whole journey: manage the property, welcome residents, support everyday life.
 - Show two clear audiences: property managers and residents. Retain the original operations feature coverage and add onboarding, home guides, invitations, Ask and repair reporting.
 - Replace screenshots with the verified integrated application, including desktop and mobile. Do not imply the standalone local demo is already the live product.
-- Fix CTA semantics: the current hero control labelled “Log in” opens a demo-request email, while navigation login opens the app. Login, Request a demo and a future Get started action must have distinct, honest destinations.
+- Fix CTA semantics: the current hero control labelled “Log in” opens a demo-request email, while navigation login opens the app. Login, Request access and a future Get started action must have distinct, honest destinations.
 - Preserve blog URLs, build log, About, privacy and terms; create redirects for any deliberate URL change. Maintain metadata, sitemap, canonical URLs, social previews and accessible images/headings.
 - Make pricing, plan comparison and access terms consistent. Local site notes describe the displayed prices/tier allocations as presentation choices; the site displays pricing while describing a demo-access model. Do not silently turn those figures into billing rules. Preserve current amounts during the design pass and clearly distinguish actual availability; commercial packaging is a separate owner decision.
 - Explain the resident/AI data flow accurately in privacy copy. Do not repeat categorical legal-compliance claims without review. This is a content verification task, not a claim that the existing policies are legally sufficient.
 - Preserve or reimplement working FAQ/pricing interactions, navigation and reduced-motion behaviour. Check runtime counters rather than assuming initial zero values are final figures.
-- Keep demo access request-based until a real self-service onboarding flow is deployed. No non-functional signup buttons or newly introduced paid subscription flow.
+- Keep access request-based until a real self-service onboarding flow is deployed. No non-functional signup buttons or newly introduced paid subscription flow.
 - Keep the app and site as separate Vercel projects, both linked to the canonical repository with appropriate root/build settings. Existing URLs remain usable; custom domains are an optional later configuration.
 
 ## 8. GitHub sturdiness and release gates
@@ -200,4 +200,4 @@ The site inventory and content draft can proceed while app integration is develo
 
 Recommended direction: one canonical GitHub repository; two deployments; preserve all original operations; use the new UI/onboarding as the design and flow reference; separate resident permissions; stage the rollout.
 
-The two product decisions worth discussing are commercial availability (request-a-demo versus genuinely open signup) and how prominently the website should balance manager operations with resident experience. Neither requires changing or discarding existing features. Default for this plan: retain request-a-demo and give manager operations the lead, with resident experience presented as a connected benefit.
+The two product decisions worth discussing are commercial availability (request-a-demo versus genuinely open signup) and how prominently the website should balance manager operations with resident experience. Neither requires changing or discarding existing features. Default for this plan: retain request-based access and give manager operations the lead, with resident experience presented as a connected benefit.

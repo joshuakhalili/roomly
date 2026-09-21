@@ -237,6 +237,86 @@ const faqs = [
       </li>
     </ul>
   </section>
+  <section id="pricing" class="pricing section-pad" data-reveal>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">A plan for your place.</p>
+        <h2>
+          From one home
+          <br />
+          to the whole picture.
+        </h2>
+      </div>
+      <fieldset class="billing">
+        <legend>Billing period</legend>
+        <label>
+          <input type="radio" name="billing" value="monthly" checked />
+          Monthly
+        </label>
+        <label>
+          <input type="radio" name="billing" value="yearly" />
+          Yearly
+        </label>
+      </fieldset>
+    </div>
+    <div class="plan-list">
+      {[
+        [
+          "Starter",
+          "29",
+          "290",
+          "For a single house of rooms, run by the landlord.",
+        ],
+        [
+          "Standard",
+          "79",
+          "790",
+          "For a growing portfolio across several buildings.",
+        ],
+        [
+          "Portfolio",
+          "149",
+          "1,490",
+          "For managing agents and larger operations.",
+        ],
+      ].map(([name, monthly, yearly, description]) => (
+        <article>
+          <h3>{name}</h3>
+          <p>{description}</p>
+          <div class="plan-price">
+            <span data-monthly={monthly} data-yearly={yearly}>
+              £{monthly}
+            </span>
+            <small data-period>/month</small>
+          </div>
+          <a class="text-link" href={contact}>
+            Discuss {name}
+            <span aria-hidden="true">↗</span>
+          </a>
+        </article>
+      ))}
+    </div>
+    <p class="pricing-note">
+      Get in touch to find the right fit and confirm access and plan details.
+    </p>
+  </section>
+  <script>
+    document
+      .querySelectorAll<HTMLInputElement>('input[name="billing"]')
+      .forEach((input) =>
+        input.addEventListener("change", () => {
+          const yearly = input.value === "yearly";
+          document
+            .querySelectorAll<HTMLElement>("[data-monthly]")
+            .forEach((price) => {
+              price.textContent = `£${yearly ? price.dataset.yearly : price.dataset.monthly}`;
+            });
+          document.querySelectorAll("[data-period]").forEach((period) => {
+            period.textContent = yearly ? "/year" : "/month";
+          });
+        }),
+      );
+  </script>
   <section class="faq section-pad" data-reveal>
     <div>
       <p class="eyebrow">A few useful answers.</p>
