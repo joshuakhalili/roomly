@@ -1,0 +1,44 @@
+---
+import Base from "../layouts/Base.astro";
+import { contact } from "../data/links";
+---
+
+<Base title="Our approach — Roomly">
+  <header class="page-intro">
+    <p class="eyebrow">The thinking behind Roomly</p>
+    <h1>
+      Built around rooms.
+      <br />
+      Made for people.
+    </h1>
+    <p class="lede">
+      A property is a building. A home is everything that happens inside it.
+    </p>
+  </header>
+  <div class="prose">
+    <h2>Keep the connected things connected.</h2>
+    <p>
+      The room, the people living in it, the rent schedule and the condition
+      report belong together. Roomly keeps that context in one place, so a small
+      team can pick up where someone else left off.
+    </p>
+    <h2>Make the everyday feel lighter.</h2>
+    <p>
+      Clear records. Familiar words. A useful overview, followed by the detail
+      when you need it. Roomly gives the routine work of looking after a
+      property a calmer place to happen.
+    </p>
+    <h2>Come on in.</h2>
+    <p>
+      Tell us a little about the homes you manage and what you’d like to make
+      easier.
+    </p>
+    <a class="button" href={contact}>
+      Request access <span aria-hidden="true">↗</span>
+    </a>
+    <p>
+      Prefer email?{" "}
+      <a href="mailto:joshuakhalili20@gmail.com">joshuakhalili20@gmail.com</a>
+    </p>
+  </div>
+</Base>

@@ -1,0 +1,27 @@
+---
+import Base from "../layouts/Base.astro";
+import releases from "../data/releases.json";
+---
+
+<Base title="Product updates — Roomly">
+  <header class="page-intro">
+    <p class="eyebrow">Product updates</p>
+    <h1>
+      The little things.
+      <br />
+      Getting better.
+    </h1>
+  </header>
+  <div class="prose">
+    {releases.map((release) => (
+      <section>
+        <h2>{release.title}</h2>
+        <ul>
+          {release.items.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Base>

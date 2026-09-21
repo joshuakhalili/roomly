@@ -1,0 +1,254 @@
+[
+  {
+    "slug": "property-management-software-for-small-landlords",
+    "title": "Property management for small landlords",
+    "description": "Most landlords with a handful of properties assume dedicated software is something you graduate into — a tool for agencies managing hundreds of units, not for someone running two shared houses or a single HMO.",
+    "sections": [
+      {
+        "heading": "The “not worth it until you're bigger” assumption",
+        "paragraphs": [
+          "Most landlords with a handful of properties assume dedicated software is something you graduate into — a tool for agencies managing hundreds of units, not for someone running two shared houses or a single HMO. That assumption holds right up until the first missed rent date, the first inventory dispute, or the first time a right-to-rent check can't be found when it's actually needed.",
+          "The real trigger isn't portfolio size. It's the number of separate facts you're expected to hold in your head at once — who's in which room, what they pay and when, which documents are on file, what condition a room was in before someone moved in. That number climbs fast even with two properties, because it multiplies by rooms, not by buildings."
+        ]
+      },
+      {
+        "heading": "What a spreadsheet actually costs you",
+        "paragraphs": [
+          "A spreadsheet can hold names, dates and figures perfectly well. What it can't do is enforce anything — nothing stops two people editing the same cell at once, nothing flags a document that's about to expire, and nothing links a photo taken eighteen months ago to the room it was taken in. The spreadsheet is honest about what you typed into it; it has no opinion about whether what you typed is still true.",
+          "The failures this produces are quiet ones. A rent date that was never actually checked against the tenancy agreement. A gas safety certificate that expired three weeks ago and nobody noticed. A move-out inspection with no move-in photos to compare against, because the phone they were taken on was replaced. None of it shows up until it matters, which is usually the worst possible time for it to show up."
+        ]
+      },
+      {
+        "heading": "Where the actual risk sits",
+        "paragraphs": [
+          "For a small operation, the exposure isn't underperformance — it's a single bad outcome. A deposit dispute you lose because you can't prove a room's condition at check-in. A right-to-rent check you can't produce when asked. A tenant who was owed a rent receipt and never got one. Each of these is rare, but rare across enough rooms and enough years adds up to something you'll eventually hit.",
+          "Property management software doesn't remove that risk entirely — nothing does — but it changes what handling it looks like. Instead of reconstructing what happened from memory and a folder of old emails, the record already exists: dated, structured, and attached to the tenancy it belongs to."
+        ]
+      },
+      {
+        "heading": "What actually matters at a small scale",
+        "paragraphs": [
+          "The features that matter aren't the enterprise ones. A small operation doesn't need permission tiers for forty staff or custom reporting dashboards — it needs the basics done properly: a rent schedule that generates itself correctly, a document store that tells you what's expiring, and a condition report that's actually usable months later, not a folder of unsorted photos.",
+          "That's a narrower requirement than most software in this space is built for, which is exactly why a lot of it doesn't fit — it's priced and designed for agencies, with a small landlord's needs treated as a stripped-down afterthought rather than the actual target."
+        ]
+      },
+      {
+        "heading": "Software that fits before you grow into it",
+        "paragraphs": [
+          "The better order of operations is to put structure in place while it's still cheap to do — a handful of rooms, one or two properties — rather than waiting until the informal system has already produced a problem worth avoiding. Migrating two years of tenancy history into a proper system is a lot more work than starting inside one from the first tenant.",
+          "Roomly is built around that idea: the unit of the system is the room, not the building, so it works the same whether you're running one shared house or six. Rent, documents, condition reports and maintenance sit against the room and the tenancy from day one — not bolted on once the portfolio is big enough to justify it."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "hmo-management-software-guide",
+    "title": "A practical guide to managing an HMO",
+    "description": "A licensed HMO comes with a different compliance load to a standard tenancy — mandatory licensing in most areas, fire safety requirements, minimum room sizes, and a management standard a local authority can actually inspect against.",
+    "sections": [
+      {
+        "heading": "HMOs carry obligations that ordinary lets don't",
+        "paragraphs": [
+          "A licensed HMO comes with a different compliance load to a standard tenancy — mandatory licensing in most areas, fire safety requirements, minimum room sizes, and a management standard a local authority can actually inspect against. None of it is optional, and most of it renews on its own schedule whether or not anyone remembers to check.",
+          "The complexity isn't really that any one requirement is hard. It's that they're all live at once, across every room, and the consequence for missing one usually isn't a warning — it's a fine, or a licence review."
+        ]
+      },
+      {
+        "heading": "Licence conditions live in a folder, not in your head",
+        "paragraphs": [
+          "Most HMO licences carry specific conditions attached to the property — inspection frequencies, fire door specifications, waste arrangements — that vary by council and by building. These sit in a PDF somewhere, get read once at the start, and are rarely looked at again until an inspection is booked.",
+          "Software that's actually built for HMOs treats the licence as a live record: what it requires, when it's due for renewal, and what evidence exists that a condition has been met — rather than a document store that happens to hold licences alongside everything else."
+        ]
+      },
+      {
+        "heading": "Multiple tenancies, one legal entity",
+        "paragraphs": [
+          "An HMO usually means several individual tenancy agreements inside one building, sometimes one per room. Rent, deposits, move-in and move-out dates all run on separate clocks per tenancy, even though the tenants share a kitchen, a bathroom, or a hallway.",
+          "A system built for single-let landlords tends to model one tenancy per property, which breaks immediately in an HMO. The room, not the building, has to be the actual unit the software understands — occupants attached to rooms, rooms attached to a shared property, each on its own schedule."
+        ]
+      },
+      {
+        "heading": "Condition reporting matters more, not less",
+        "paragraphs": [
+          "Room turnover in an HMO is typically higher than in a single-family let, which means inventory reports get produced — and need to hold up — more often. A shared house that turns over four rooms a year needs four solid check-in and check-out comparisons, each one a potential deposit-dispute exhibit.",
+          "The shared spaces complicate this further: a kitchen or communal hallway used by everyone doesn't belong to any one tenancy, so its condition has to be tracked separately from the individual rooms, on its own schedule, against its own baseline."
+        ]
+      },
+      {
+        "heading": "What to actually check before choosing software",
+        "paragraphs": [
+          "The honest test for HMO software isn't the feature list — it's whether the underlying data model matches how an HMO actually works: rooms as the real unit, shared areas tracked independently, multiple simultaneous tenancies inside one licensed property, and documents tied to both the property's licence and each individual tenancy.",
+          "Roomly is built against exactly that shape. Properties hold rooms and shared areas; rooms hold tenancies; tenancies hold occupants — so a six-room HMO with three separate tenancies, a shared kitchen and a hallway is the default case the system is designed around, not an edge case it happens to tolerate."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "inventory-checklist-deposit-disputes",
+    "title": "A clearer record at check-in and check-out",
+    "description": "Deposit adjudicators aren't asking whether a landlord's account of a room's condition sounds reasonable — they're asking for evidence of what the room actually looked like when the tenant moved in, compared to what it looked like when they left.",
+    "sections": [
+      {
+        "heading": "Most deposit disputes come down to one question",
+        "paragraphs": [
+          "Deposit adjudicators aren't asking whether a landlord's account of a room's condition sounds reasonable — they're asking for evidence of what the room actually looked like when the tenant moved in, compared to what it looked like when they left. Without that comparison, the dispute usually resolves in the tenant's favour by default, regardless of who's actually right.",
+          "This is the single most common reason landlords lose deposit claims they were, in fact, entitled to make — not because the damage wasn't real, but because there was nothing dated and specific enough to prove the room wasn't already in that state."
+        ]
+      },
+      {
+        "heading": "What a usable check-in report actually contains",
+        "paragraphs": [
+          "A photo taken on a phone, with no date attached and no structure to it, is weak evidence — it proves a photo exists, not when it was taken or what it's meant to show. A usable report breaks a room into sections (walls, flooring, fixtures, each piece of furniture) and records a condition rating, a cleanliness rating, and dated photos for each one.",
+          "The sections matter because they turn “the room was fine” into something checkable: kitchen worktops good, hob has light scratching, extractor fan needs cleaning. Specificity is what makes a report credible months later, to someone who never saw the room."
+        ]
+      },
+      {
+        "heading": "Check-out only works if check-in was done properly",
+        "paragraphs": [
+          "A move-out inspection is only as useful as the move-in inspection it's being compared against. If check-in was rushed, generic, or skipped entirely, check-out has nothing to measure against — and “it was already like that” becomes a claim nobody can verify either way.",
+          "The two inspections need to follow the same structure, section for section, so the comparison is direct rather than two different documents that happen to describe the same room. That's the part that's easy to get wrong when check-in and check-out are treated as separate, unrelated tasks months apart."
+        ]
+      },
+      {
+        "heading": "Photos need a system, not just a folder",
+        "paragraphs": [
+          "A phone's camera roll is not an inventory system — photos get mixed across properties, dates get lost when a phone is replaced, and there's no link between a photo and the specific section of the specific room it belongs to. By the time a dispute happens, often a year or more after check-in, finding the right photo becomes its own project.",
+          "The photo needs to be attached to the report at the point it's taken, timestamped automatically, and tied to the exact section it documents — not filed separately and cross-referenced from memory later."
+        ]
+      },
+      {
+        "heading": "What this actually looks like in Roomly",
+        "paragraphs": [
+          "Room types come with their inventory sections already defined, so a check-in walk-through is filling in a form, not designing one from scratch. Each section carries a condition rating, a cleanliness rating, notes and any number of dated photos, and the checklist exports to a PDF report that stands on its own as evidence.",
+          "Because check-in and check-out use the identical structure against the same tenancy, the comparison isn't something you have to build — it already exists the moment check-out is complete, showing exactly what changed, section by section."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "spreadsheets-vs-property-management-software",
+    "title": "When lettings outgrow a spreadsheet",
+    "description": "A single spreadsheet, carefully maintained, can genuinely handle one property with a handful of rooms — one tab for rent, one for tenants, maybe a folder of photos alongside it.",
+    "sections": [
+      {
+        "heading": "One spreadsheet works fine for one property",
+        "paragraphs": [
+          "A single spreadsheet, carefully maintained, can genuinely handle one property with a handful of rooms — one tab for rent, one for tenants, maybe a folder of photos alongside it. The system is simple enough that its owner can hold the whole thing in their head, and the spreadsheet is really just a memory aid rather than doing any real work.",
+          "The trouble starts at the second property, or the point where someone else needs to look something up without asking. What was a personal notebook now has to function as shared, reliable infrastructure — and spreadsheets were never built for that job."
+        ]
+      },
+      {
+        "heading": "The problem isn't the data, it's the relationships",
+        "paragraphs": [
+          "A spreadsheet stores rows. It doesn't understand that a room belongs to a property, that a tenancy belongs to a room, or that a rent payment belongs to a specific tenancy rather than just a person's name. Every one of those relationships has to be maintained by hand, which means every one of them can silently drift out of sync.",
+          "This shows up as small inconsistencies that compound: a tenant listed as active on one tab and archived on another, a rent figure updated in one place but not the summary sheet that references it, a room marked vacant that actually has someone in it."
+        ]
+      },
+      {
+        "heading": "Nothing enforces anything",
+        "paragraphs": [
+          "A spreadsheet won't stop you entering a move-out date before a move-in date, won't warn you that a document is about to expire, and won't flag that two rooms in the same property somehow have overlapping tenancies. Every one of these mistakes is possible, and none of them announce themselves until something goes wrong downstream.",
+          "This is the actual difference between a spreadsheet and a system built around the data: a system can refuse to let an impossible state exist in the first place, rather than relying on whoever's editing it that day to catch every mistake by eye."
+        ]
+      },
+      {
+        "heading": "Multiple people, one shared source of truth",
+        "paragraphs": [
+          "Once a portfolio involves more than one person — a partner, a contractor, someone helping part-time — a spreadsheet becomes a coordination problem. Who has the latest version? Did this morning's change get seen before someone else edited the same cell? A shared spreadsheet solves the wrong part of this: everyone can see it, but nobody can trust that what they're seeing is current and correct.",
+          "A proper system removes the version question entirely — there's one live record, everyone with access sees the same state at the same time, and changes are attributed rather than anonymous edits in a shared file."
+        ]
+      },
+      {
+        "heading": "Where the line actually is",
+        "paragraphs": [
+          "There's no fixed number of properties where a spreadsheet definitively stops working — it's really about the number of separate things that need to stay correct at once, which grows with rooms rather than buildings. A single six-room HMO can hit that threshold faster than three simple single-let houses.",
+          "The honest signal is whether you've started double-checking the spreadsheet against your own memory rather than trusting it outright. At that point the spreadsheet has stopped being a source of truth and started being one more thing to verify — which defeats the entire point of keeping it."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "rent-tracking-software-for-landlords",
+    "title": "Rent tracking that follows the tenancy",
+    "description": "The simplest way to track rent is a mental note: rent's due on the 1st, or the 15th, or whatever the tenancy says.",
+    "sections": [
+      {
+        "heading": "Due dates that are calculated, not remembered",
+        "paragraphs": [
+          "The simplest way to track rent is a mental note: rent's due on the 1st, or the 15th, or whatever the tenancy says. That works until a tenancy starts mid-month, or the rent frequency isn't monthly, or there's more than a couple of tenancies to keep straight — at which point “remembered” quietly becomes “approximated.”",
+          "A rent schedule generated automatically from the tenancy's actual start date and frequency removes the approximation entirely. The due date isn't someone's best guess applied at the point of collection — it's a fact derived once, correctly, from the agreement itself."
+        ]
+      },
+      {
+        "heading": "Month-end dates are where this usually breaks",
+        "paragraphs": [
+          "A tenant who moves in on the 31st creates a genuine problem for a naive monthly schedule: February doesn't have a 31st. The lazy fix is to let the date silently slide to the 28th and stay there — which means the tenant is billed on the wrong day for the rest of the tenancy, and probably nobody notices until they mention it.",
+          "The correct behaviour is to clamp to the last day of a short month and then return to the actual agreed day once the month allows it — 28th in February, back to the 31st in March. It's a small detail, but it's exactly the kind of small detail that erodes trust when it's wrong."
+        ]
+      },
+      {
+        "heading": "Weekly, fortnightly and four-weekly aren't just monthly with extra steps",
+        "paragraphs": [
+          "A meaningful share of room lettings run on weekly or fortnightly cycles rather than monthly, and four-weekly is its own distinct pattern — not the same as monthly, and easy to get wrong if the underlying system assumes twelve payments a year by default. Four-weekly actually produces thirteen payments annually, which matters for both budgeting and for spotting when a payment's gone missing.",
+          "A rent schedule that only really understands “monthly” forces every other frequency into an awkward workaround, which is usually where the errors creep in — a fortnightly tenant billed on the wrong week, or a four-weekly one quietly drifting against the calendar."
+        ]
+      },
+      {
+        "heading": "Knowing who's behind, and by exactly how much",
+        "paragraphs": [
+          "The useful version of “who owes rent” isn't a feeling — it's a number, per tenancy, with a due date attached, so “behind” means something specific and checkable rather than a vague sense that someone hasn't paid in a while. Real due-date rows make this a fact the system holds, not a running tally someone keeps in their head.",
+          "This also changes how chasing works. A reminder that goes out with the exact amount and the exact number of days late reads as precise and fair, rather than a generic nudge that could apply to anyone."
+        ]
+      },
+      {
+        "heading": "Chasing that doesn't damage the relationship",
+        "paragraphs": [
+          "Timing matters as much as accuracy. A reminder that fires on the due date itself, before the tenant's even had their full day to pay, reads as impatient rather than organised — and a system that treats every tenant as being in arrears the moment the clock strikes midnight tends to create friction that wasn't necessary.",
+          "Roomly's rent alerts deliberately fire the day after the due date, giving the tenant their full day to pay before anyone's contacted — and reminders go out pre-written in the language the tenant actually reads, because a chasing message that isn't understood doesn't chase anything."
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "choosing-property-management-software",
+    "title": "Choosing tools for the way you work",
+    "description": "Before comparing feature lists, it's worth being specific about what's actually going wrong today — is it that rent gets missed, that documents expire without warning, that inventory reports are inconsistent, or simply that too much lives in one person's memory? Different software is built to solve different versions of that problem, and the fit matters more than the size of the feature list..",
+    "sections": [
+      {
+        "heading": "Start with what you're actually trying to solve",
+        "paragraphs": [
+          "Before comparing feature lists, it's worth being specific about what's actually going wrong today — is it that rent gets missed, that documents expire without warning, that inventory reports are inconsistent, or simply that too much lives in one person's memory? Different software is built to solve different versions of that problem, and the fit matters more than the size of the feature list.",
+          "A tool built for agencies managing hundreds of units solves a coordination-at-scale problem. A tool built for a landlord running a handful of rooms solves a different one: making sure the basics — rent, documents, condition — are handled correctly without needing a training manual to operate."
+        ]
+      },
+      {
+        "heading": "Check whether it actually understands rooms",
+        "paragraphs": [
+          "A lot of property software is built around the property as the unit — one listing, one tenancy, one set of documents — because that matches how single-family lets work. It falls apart the moment a property has multiple rooms let separately, because the software has nowhere to put the second tenancy, the second set of documents, or the second inventory report.",
+          "If you're letting by the room — a shared house, an HMO, a building of studios — the room has to be the real unit the software is built around, not an attribute bolted onto a property record. This is usually visible within minutes of trying the software: does adding a second tenant to the same property feel natural, or does it feel like working around a limitation?"
+        ]
+      },
+      {
+        "heading": "Look past the pricing page to what's actually included",
+        "paragraphs": [
+          "It's common for the advertised entry-level price to exclude the features that actually matter for a small operation — document expiry alerts, proper inventory reporting, more than one admin login — pushing them into a higher tier once you look closely. Read the comparison table, not just the headline price, before assuming a plan covers what you need.",
+          "It's also worth checking what happens as you grow: whether moving from one plan to the next means re-entering data, or whether the system scales with you without a migration."
+        ]
+      },
+      {
+        "heading": "Ask what happens to your data if you leave",
+        "paragraphs": [
+          "Any system holding tenant identity documents, rent history and years of inventory reports is holding something you can't easily reconstruct if the relationship ends badly. Before committing, it's worth knowing whether your data can be exported in a usable format, and what the retention and deletion policy actually is — not just for your records, but for your tenants' personal data too.",
+          "This matters legally as well as practically: UK data protection rules require that personal data isn't kept longer than necessary, so software that treats retention as a real, enforced policy — rather than a setting nobody's checked — is doing something that's actually your legal responsibility to get right."
+        ]
+      },
+      {
+        "heading": "Try it against the way you work",
+        "paragraphs": [
+          "A carefully prepared walkthrough will always look clean, because sample data is designed to look clean. The real test is whether the software holds up against your actual situation — a room with an awkward mid-month move-in, a shared kitchen that needs its own inventory record, a tenant who pays four-weekly rather than monthly.",
+          "If a piece of software handles your specific edge cases without you having to work around its assumptions, that's a much stronger signal than any feature list — because those edge cases are where most property software, built for a simpler model, actually breaks."
+        ]
+      }
+    ]
+  }
+]

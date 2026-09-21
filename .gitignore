@@ -53,3 +53,6 @@ supabase/.temp/
 
 # Local security audit output (contains implementation detail, never app data).
 .gstack/
+
+playwright-report/
+test-results/
