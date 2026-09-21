@@ -62,6 +62,48 @@ async function main() {
   if (ownWriteError) throw ownWriteError;
   propertyId = property.id;
 
+  const expectedAreas = { room: 1, studio: 2, flat: 5 } as const;
+  for (const [unitType, expectedAreaCount] of Object.entries(expectedAreas)) {
+    const roomResult = await client
+      .from("rooms")
+      .insert({
+        property_id: propertyId,
+        organization_id: organizationId,
+        name: `Smoke test ${unitType}`,
+        unit_type: unitType,
+        is_common_area: false,
+        is_lettable: true,
+      })
+      .select("id")
+      .single();
+    if (roomResult.error) throw roomResult.error;
+    const roomId = (roomResult.data as { id: string }).id;
+
+    const baselineResult = await client
+      .from("inventory_checklists")
+      .select("id, organization_id")
+      .eq("room_id", roomId)
+      .eq("type", "baseline")
+      .single();
+    if (baselineResult.error) throw baselineResult.error;
+    const baseline = baselineResult.data as {
+      id: string;
+      organization_id: string;
+    };
+    if (baseline.organization_id !== organizationId)
+      throw new Error(`${unitType} baseline crossed the organisation boundary.`);
+
+    const { count: areaCount, error: areaError } = await client
+      .from("checklist_areas")
+      .select("id", { count: "exact", head: true })
+      .eq("checklist_id", baseline.id);
+    if (areaError) throw areaError;
+    if (areaCount !== expectedAreaCount)
+      throw new Error(
+        `${unitType} baseline has ${areaCount ?? 0} areas; expected ${expectedAreaCount}.`,
+      );
+  }
+
   const { error: foreignWriteError } = await client.from("properties").insert({
     organization_id: legacyOrganizationId,
     name: "Must not be written",
