@@ -16,7 +16,8 @@ Canonical source: joshuakhalili/roomly. Original management history and original
 - [x] Preserve resident/onboarding implementation as independent `resident/` application
 - [x] Keep resident identities and schemas separate from staff workspaces
 - [x] Final regression, diff review and release verification
-- [ ] Commit, push and deploy management and website
+- [x] Commit, push and deploy management and website
+- [ ] Merge PR #1 into main — explicit approval requested after automatic review blocked the merge
 
 ## Separate resident production release
 

@@ -35,4 +35,4 @@ Starter, Standard and Portfolio presentation prices remain £29/£79/£149 month
 
 ## Deploy
 
-Deploy to the existing `roomly-site` Vercel project with **Other** as the framework, `npm run build` as build command and `dist` as output directory. For Git-based deployment the project root is `site`; direct CLI deployment runs from this directory. The management app deploys separately from the repository root. No database migration is part of a website deployment.
+Deploy to the existing `roomly-site` Vercel project with **Other** as the framework, `npm run build` as build command and `dist` as output directory. The project is configured with root directory `site` for Git-based deployments. When deploying manually after linking, run from the repository root with the website project ID; do not prepend `site` twice. The management app deploys separately from the repository root. No database migration is part of a website deployment.
