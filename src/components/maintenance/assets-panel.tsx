@@ -103,7 +103,10 @@ function AssetDialog({
                 value={propertyId}
                 onValueChange={setPropertyId}
                 disabled={isPending}
-                options={properties.map((p) => ({ value: p.id, label: p.name }))}
+                options={properties.map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                }))}
               />
             </Field>
             <Field label={t("rooms.one")}>
@@ -235,8 +238,10 @@ export function AssetsPanel({
   const visible = useMemo(() => {
     const list = assets.filter((a) => showDisposed || !a.is_disposed);
     return [...list].sort((a, b) => {
-      const aCovered = a.warranty_expires_on && a.warranty_expires_on >= toISO(today);
-      const bCovered = b.warranty_expires_on && b.warranty_expires_on >= toISO(today);
+      const aCovered =
+        a.warranty_expires_on && a.warranty_expires_on >= toISO(today);
+      const bCovered =
+        b.warranty_expires_on && b.warranty_expires_on >= toISO(today);
       if (aCovered !== bCovered) return aCovered ? -1 : 1;
       return (b.purchased_on ?? "") > (a.purchased_on ?? "") ? 1 : -1;
     });
@@ -251,7 +256,7 @@ export function AssetsPanel({
         <p className="text-sm text-muted-foreground">
           {t("maintenance.assetsHelp")}
         </p>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           {totalSpend > 0 && (
             <span className="text-sm tabular-nums text-muted-foreground">
               {format.number(totalSpend, {
@@ -296,7 +301,9 @@ export function AssetsPanel({
                         <p className="font-medium">{a.name}</p>
                         <p className="truncate text-xs text-muted-foreground">
                           {property?.name}
-                          {room ? ` · ${room.name}` : ` · ${t("maintenance.wholeProperty")}`}
+                          {room
+                            ? ` · ${room.name}`
+                            : ` · ${t("maintenance.wholeProperty")}`}
                         </p>
                       </div>
                       <div className="flex shrink-0">
@@ -312,7 +319,10 @@ export function AssetsPanel({
                           aria-label={t("maintenance.dispose")}
                           onClick={() =>
                             startTransition(async () => {
-                              const r = await disposeAsset(a.id, !a.is_disposed);
+                              const r = await disposeAsset(
+                                a.id,
+                                !a.is_disposed,
+                              );
                               if (!r.ok) {
                                 toast.error(r.error);
                                 return;

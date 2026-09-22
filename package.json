@@ -12,7 +12,8 @@
     "create-trial": "tsx scripts/create-trial-organization.ts",
     "verify-tenancy": "tsx scripts/verify-multi-tenancy.ts",
     "test:database": "tsx --test tests/integration/*.test.ts",
-    "test:site": "playwright test -c playwright.site.config.ts"
+    "test:site": "playwright test -c playwright.site.config.ts",
+    "test:app": "playwright test -c playwright.app.config.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.8.1",

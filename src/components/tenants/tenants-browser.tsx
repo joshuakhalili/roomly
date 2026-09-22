@@ -59,9 +59,9 @@ function TenantCard({ tenant }: { tenant: TenantWithPlace }) {
   return (
     <Link
       href={`/tenants/${tenant.id}`}
-      className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Card interactive className={tenant.is_archived ? "h-full opacity-75" : "h-full"}>
+      <Card interactive className="h-full">
         <CardContent className="flex h-full items-start gap-3 p-5">
           {/* Initials rather than an icon: in a grid of thirty people the
               same generic silhouette thirty times helps nobody find anyone. */}
@@ -263,7 +263,7 @@ export function TenantsBrowser({
               aria-pressed={segment === s.key}
             >
               {s.label}
-              <span className="figure opacity-70">{s.count}</span>
+              <span className="figure">{s.count}</span>
             </Button>
           ))}
         </div>

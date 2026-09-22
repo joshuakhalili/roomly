@@ -4,7 +4,11 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
-import { addArea, deleteArea, completeChecklist } from "@/lib/actions/inventory";
+import {
+  addArea,
+  deleteArea,
+  completeChecklist,
+} from "@/lib/actions/inventory";
 import { AreaSections } from "./area-sections";
 import { RatingBadge } from "./rating-picker";
 import { Button } from "@/components/ui/button";
@@ -31,14 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { JobDialog } from "@/components/maintenance/job-dialog";
-import {
-  Plus,
-  Trash2,
-  ChevronDown,
-  ChevronRight,
-  CircleCheck,
-  Wrench,
-} from "lucide-react";
+import { Plus, Trash2, CircleCheck, Wrench } from "lucide-react";
 import type {
   Contact,
   Property,
@@ -83,6 +80,9 @@ export function ChecklistEditor({
   const [isPending, startTransition] = useTransition();
   const [openArea, setOpenArea] = useState<string | null>(areas[0]?.id ?? null);
   const [addOpen, setAddOpen] = useState(false);
+  const activeAreaId = areas.some((area) => area.id === openArea)
+    ? openArea
+    : areas[0]?.id;
 
   const sectionsByArea = new Map<string, ChecklistSection[]>();
   for (const s of sections) {
@@ -146,8 +146,10 @@ export function ChecklistEditor({
   return (
     <div className="flex flex-col gap-6">
       {/* Report summary */}
-      <section className="flex flex-col gap-3">
-        <h2 className="font-semibold">{t("inventory.summary")}</h2>
+      <details className="border-b pb-4">
+        <summary className="cursor-pointer py-3 font-semibold">
+          {t("inventory.summary")}
+        </summary>
         <Card>
           <CardContent className="overflow-x-auto p-0">
             <Table>
@@ -191,7 +193,7 @@ export function ChecklistEditor({
             </Table>
           </CardContent>
         </Card>
-      </section>
+      </details>
 
       {/* Areas */}
       <section className="flex flex-col gap-3">
@@ -244,50 +246,62 @@ export function ChecklistEditor({
           </Dialog>
         </div>
 
-        {areas.map((area) => {
-          const areaSections = sectionsByArea.get(area.id) ?? [];
-          const isOpen = openArea === area.id;
-          const done = areaSections.filter((s) => s.condition_rating !== null).length;
+        <div className="report-tabs" aria-label={t("workspace.reportAreas")}>
+          {areas.map((area) => (
+            <button
+              key={area.id}
+              type="button"
+              aria-pressed={activeAreaId === area.id}
+              onClick={() => setOpenArea(area.id)}
+            >
+              {area.name}
+            </button>
+          ))}
+        </div>
+        {areas
+          .filter((area) => area.id === activeAreaId)
+          .map((area) => {
+            const areaSections = sectionsByArea.get(area.id) ?? [];
+            const done = areaSections.filter(
+              (s) => s.condition_rating !== null,
+            ).length;
 
-          return (
-            <div key={area.id} className="rounded-lg border">
-              <div className="flex items-center gap-2 p-3">
-                <button
-                  type="button"
-                  onClick={() => setOpenArea(isOpen ? null : area.id)}
-                  className="flex flex-1 items-center gap-2 text-left"
-                  aria-expanded={isOpen}
-                >
-                  {isOpen ? (
-                    <ChevronDown className="size-4 shrink-0" aria-hidden />
-                  ) : (
-                    <ChevronRight className="size-4 shrink-0" aria-hidden />
-                  )}
-                  <span className="font-medium">{area.name}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {done}/{areaSections.length}
-                  </Badge>
-                  {done === areaSections.length && areaSections.length > 0 && (
-                    <CircleCheck
-                      className="size-4 text-success"
-                      aria-hidden
-                    />
-                  )}
-                </button>
+            return (
+              <div key={area.id} className="report-area">
+                <div className="flex items-center gap-2 p-3">
+                  <div className="flex flex-1 items-center gap-2">
+                    <span className="font-medium">{area.name}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {done}/{areaSections.length}
+                    </Badge>
+                    {done === areaSections.length &&
+                      areaSections.length > 0 && (
+                        <CircleCheck
+                          className="size-4 text-success"
+                          aria-hidden
+                        />
+                      )}
+                  </div>
 
-                <ConfirmDelete
-                  title={t("inventory.deleteAreaConfirm")}
-                  description={t("inventory.deleteAreaWarning")}
-                  onConfirm={() => deleteArea(area.id)}
-                  trigger={
-                    <Button variant="ghost" size="sm" aria-label={t("common.delete")}>
-                      <Trash2 className="size-4 text-destructive" aria-hidden />
-                    </Button>
-                  }
-                />
-              </div>
+                  <ConfirmDelete
+                    title={t("inventory.deleteAreaConfirm")}
+                    description={t("inventory.deleteAreaWarning")}
+                    onConfirm={() => deleteArea(area.id)}
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={t("common.delete")}
+                      >
+                        <Trash2
+                          className="size-4 text-destructive"
+                          aria-hidden
+                        />
+                      </Button>
+                    }
+                  />
+                </div>
 
-              {isOpen && (
                 <div className="border-t p-3">
                   <AreaSections
                     areaId={area.id}
@@ -296,10 +310,9 @@ export function ChecklistEditor({
                     readOnly={checklist.status === "completed"}
                   />
                 </div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
       </section>
 
       {/* Defects roll-up */}
@@ -316,7 +329,10 @@ export function ChecklistEditor({
                 const booked =
                   maintenance?.bookedSectionIds.includes(section.id) ?? false;
                 return (
-                  <div key={section.id} className="flex flex-wrap items-start gap-3">
+                  <div
+                    key={section.id}
+                    className="flex flex-wrap items-start gap-3"
+                  >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium">
                         {area.name} · {section.section_name}

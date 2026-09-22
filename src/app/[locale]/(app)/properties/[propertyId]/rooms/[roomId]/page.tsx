@@ -37,17 +37,28 @@ import type {
 
 export default async function RoomPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; propertyId: string; roomId: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { locale, propertyId, roomId } = await params;
+  const query = await searchParams;
+  const view = ["tenancy", "documents", "inventory"].includes(query.view ?? "")
+    ? query.view
+    : "tenancy";
   setRequestLocale(locale);
   const t = await getTranslations();
 
   const supabase = await createClient();
   const [{ data: room }, { data: property }, { data: baseline }] =
     await Promise.all([
-      supabase.from("rooms").select("*").eq("id", roomId).single(),
+      supabase
+        .from("rooms")
+        .select("*")
+        .eq("id", roomId)
+        .eq("property_id", propertyId)
+        .single(),
       supabase.from("properties").select("name").eq("id", propertyId).single(),
       // Created automatically with the room, so it is always there to open.
       supabase
@@ -82,19 +93,24 @@ export default async function RoomPage({
   if (current) {
     const [{ data: o }, { data: d }, { data: p }, { data: c }, requirements] =
       await Promise.all([
-      supabase
-        .from("tenancy_tenants")
-        .select("is_lead_tenant, tenants(*)")
-        .eq("tenancy_id", current.id),
-      supabase.from("documents").select("*").eq("tenancy_id", current.id),
-      supabase.from("rent_payments").select("*").eq("tenancy_id", current.id),
-      supabase.from("inventory_checklists").select("*").eq("tenancy_id", current.id),
-      getDocumentRequirements(supabase),
-    ]);
-    tenants = ((o ?? []) as unknown as {
-      is_lead_tenant: boolean;
-      tenants: TenantOnTenancy | null;
-    }[])
+        supabase
+          .from("tenancy_tenants")
+          .select("is_lead_tenant, tenants(*)")
+          .eq("tenancy_id", current.id),
+        supabase.from("documents").select("*").eq("tenancy_id", current.id),
+        supabase.from("rent_payments").select("*").eq("tenancy_id", current.id),
+        supabase
+          .from("inventory_checklists")
+          .select("*")
+          .eq("tenancy_id", current.id),
+        getDocumentRequirements(supabase),
+      ]);
+    tenants = (
+      (o ?? []) as unknown as {
+        is_lead_tenant: boolean;
+        tenants: TenantOnTenancy | null;
+      }[]
+    )
       .filter((r) => r.tenants)
       .map((r) => ({ ...r.tenants!, is_lead_tenant: r.is_lead_tenant }));
     documents = (d ?? []) as DocumentRecord[];
@@ -125,7 +141,11 @@ export default async function RoomPage({
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-semibold">{r.name}</h1>
               {current && (
-                <Badge variant={current.status === "active" ? "default" : "secondary"}>
+                <Badge
+                  variant={
+                    current.status === "active" ? "default" : "secondary"
+                  }
+                >
                   {current.status === "active"
                     ? t("rooms.occupied")
                     : t("rooms.upcoming")}
@@ -151,7 +171,9 @@ export default async function RoomPage({
             <DeleteRoomButton id={r.id} propertyId={propertyId} />
             {!current && r.is_lettable && (
               <Button asChild size="sm">
-                <Link href={`/properties/${propertyId}/rooms/${roomId}/tenancies/new`}>
+                <Link
+                  href={`/properties/${propertyId}/rooms/${roomId}/tenancies/new`}
+                >
                   <Plus className="size-4" aria-hidden />
                   {t("rooms.addTenancy")}
                 </Link>
@@ -161,8 +183,23 @@ export default async function RoomPage({
         </div>
       </div>
 
+      <nav className="workspace-subnav" aria-label={t("workspace.roomRecord")}>
+        {[
+          ["tenancy", "tenancy.title"],
+          ["documents", "workspace.documents"],
+          ["inventory", "inventory.title"],
+        ].map(([key, label]) => (
+          <Link
+            key={key}
+            href={`/properties/${propertyId}/rooms/${roomId}?view=${key}`}
+            aria-current={view === key ? "page" : undefined}
+          >
+            {t(label)}
+          </Link>
+        ))}
+      </nav>
       {/* The room's own inventory stands apart from any tenancy. */}
-      {baseline && (
+      {view === "inventory" && baseline && (
         <Card>
           <CardContent className="flex flex-wrap items-center gap-3 p-4">
             <ClipboardList
@@ -184,14 +221,18 @@ export default async function RoomPage({
         </Card>
       )}
 
-      {!current ? (
+      {view === "tenancy" && !current ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
             <User className="size-8 text-muted-foreground" aria-hidden />
-            <p className="text-sm text-muted-foreground">{t("rooms.noTenant")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("rooms.noTenant")}
+            </p>
             {r.is_lettable && (
               <Button asChild>
-                <Link href={`/properties/${propertyId}/rooms/${roomId}/tenancies/new`}>
+                <Link
+                  href={`/properties/${propertyId}/rooms/${roomId}/tenancies/new`}
+                >
                   <Plus className="size-4" aria-hidden />
                   {t("rooms.addTenancy")}
                 </Link>
@@ -199,61 +240,71 @@ export default async function RoomPage({
             )}
           </CardContent>
         </Card>
-      ) : (
+      ) : current ? (
         <>
           {/* Everything about the current occupants, in one place. */}
-          <section className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">{t("tenancy.title")}</h2>
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/tenancies/${current.id}`}>{t("common.edit")}</Link>
-              </Button>
-            </div>
+          {view === "tenancy" && (
+            <section className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">{t("tenancy.title")}</h2>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/tenancies/${current.id}`}>
+                    {t("common.edit")}
+                  </Link>
+                </Button>
+              </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {tenants.map((o) => (
-                <Card key={o.id}>
-                  <CardContent className="flex flex-col gap-2 p-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        {o.first_name} {o.surname}
-                      </span>
-                      {o.is_lead_tenant && (
-                        <Badge variant="secondary" className="text-xs">
-                          {t("tenancy.leadTenant")}
-                        </Badge>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {tenants.map((o) => (
+                  <Card key={o.id}>
+                    <CardContent className="flex flex-col gap-2 p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {o.first_name} {o.surname}
+                        </span>
+                        {o.is_lead_tenant && (
+                          <Badge variant="secondary" className="text-xs">
+                            {t("tenancy.leadTenant")}
+                          </Badge>
+                        )}
+                      </div>
+                      {o.email && (
+                        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Mail className="size-3.5 shrink-0" aria-hidden />
+                          <span className="truncate">{o.email}</span>
+                        </p>
                       )}
-                    </div>
-                    {o.email && (
-                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Mail className="size-3.5 shrink-0" aria-hidden />
-                        <span className="truncate">{o.email}</span>
-                      </p>
-                    )}
-                    {o.phone && (
-                      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Phone className="size-3.5 shrink-0" aria-hidden />
-                        {o.phone}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      {o.phone && (
+                        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Phone className="size-3.5 shrink-0" aria-hidden />
+                          {o.phone}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
-            <TenancySummary tenancy={current} payments={payments} />
-          </section>
+              <TenancySummary tenancy={current} payments={payments} />
+            </section>
+          )}
 
-          <DocumentsPanel
-            tenancyId={current.id}
-            tenants={tenants}
-            documents={documents}
-            requiredTypes={requiredTypes}
-          />
+          {view === "documents" && (
+            <DocumentsPanel
+              tenancyId={current.id}
+              tenants={tenants}
+              documents={documents}
+              requiredTypes={requiredTypes}
+            />
+          )}
 
-          <ChecklistLauncher tenancyId={current.id} checklists={checklists} />
+          {view === "inventory" && (
+            <ChecklistLauncher tenancyId={current.id} checklists={checklists} />
+          )}
         </>
-      )}
+      ) : view === "documents" ? (
+        <p className="py-8 text-muted-foreground">{t("rooms.noTenant")}</p>
+      ) : null}
     </div>
   );
 }

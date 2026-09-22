@@ -115,6 +115,7 @@ export function PasswordForm() {
         <Input
           type="password"
           name="password"
+          aria-label={t("settings.newPassword")}
           autoComplete="new-password"
           minLength={8}
           required
@@ -125,6 +126,7 @@ export function PasswordForm() {
         <Input
           type="password"
           name="confirm_password"
+          aria-label={t("settings.confirmPassword")}
           autoComplete="new-password"
           minLength={8}
           required

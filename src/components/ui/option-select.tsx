@@ -44,7 +44,9 @@ export function OptionSelect({
   required,
   id,
   className,
+  "aria-label": ariaLabel,
 }: {
+  "aria-label"?: string;
   name?: string;
   options: SelectOption[];
   defaultValue?: string;
@@ -71,7 +73,11 @@ export function OptionSelect({
       disabled={disabled}
       required={required}
     >
-      <SelectTrigger id={id} className={cn("w-full", className)}>
+      <SelectTrigger
+        aria-label={ariaLabel ?? placeholder ?? selected?.label ?? name}
+        id={id}
+        className={cn("w-full", className)}
+      >
         <SelectValue placeholder={placeholder}>{selected?.label}</SelectValue>
       </SelectTrigger>
       <SelectContent>

@@ -56,7 +56,7 @@ export function MetricCard({
   const body = (
     <Card
       interactive={Boolean(href)}
-      className={cn("relative h-full", href && "group/metric")}
+      className={cn("metric-panel relative h-full", href && "group/metric")}
     >
       {trend && trend.length >= 2 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 opacity-25">
