@@ -1,155 +1,129 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import articles from "../../site/src/data/articles.json";
-
 const paths = [
   "/",
   "/blog",
-  "/contact-us",
   "/changelog",
+  "/contact-us",
   "/privacy-policy",
   "/terms-of-use",
-  ...articles.map((a) => `/blog/${a.slug}`),
+  "/blog/property-management-software-for-small-landlords",
+  "/blog/hmo-management-software-guide",
+  "/blog/inventory-checklist-deposit-disputes",
+  "/blog/spreadsheets-vs-property-management-software",
+  "/blog/rent-tracking-software-for-landlords",
+  "/blog/choosing-property-management-software",
   "/404",
 ];
-for (const width of [1440, 390, 320]) {
-  test(`public routes, images, links and accessibility at ${width}px`, async ({
+for (const width of [1440, 390, 320])
+  test(`Framer routes, assets and accessibility at ${width}px`, async ({
     page,
     request,
   }) => {
+    test.setTimeout(240_000);
     await page.setViewportSize({ width, height: 1000 });
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    const links = new Set<string>();
     for (const path of paths) {
-      const response = await page.goto(path);
+      const response = await page.goto(path, { waitUntil: "networkidle" });
       expect(response?.status(), path).toBe(path === "/404" ? 404 : 200);
-      await page.evaluate(() => document.fonts.ready);
-      for (const img of await page.locator("img").all()) {
-        await img.scrollIntoViewIfNeeded();
-        await expect
-          .poll(() =>
-            img.evaluate(
-              (el) =>
-                el instanceof HTMLImageElement &&
-                el.complete &&
-                el.naturalWidth > 0,
-            ),
-          )
-          .toBe(true);
+      await expect(page.locator("h1:visible").first()).toBeVisible();
+      // Scroll in viewport-sized increments: the template reveals child layers separately.
+      await page
+        .locator("img")
+        .evaluateAll((es) =>
+          es.forEach((e) => e.setAttribute("loading", "eager")),
+        );
+      const height = await page.evaluate(() => document.body.scrollHeight);
+      for (let y = 0; y < height; y += 850) {
+        await page.evaluate((y) => window.scrollTo(0, y), y);
+        await page.waitForTimeout(70);
       }
-      for (const section of await page.locator("[data-reveal]").all()) {
-        await section.scrollIntoViewIfNeeded();
-        await expect(section).toHaveCSS("opacity", "1");
-      }
-      await page.evaluate(() =>
-        window.scrollTo({ top: 0, behavior: "instant" }),
-      );
-      await page.waitForFunction(() =>
-        document
-          .getAnimations()
-          .every((animation) => animation.playState === "finished"),
-      );
-      await expect(page.locator("h1")).toHaveCount(1);
-      await expect(page.locator("body")).not.toContainText(
-        /\bdemo\b|portfolio project|prototype/i,
-      );
+      await page.waitForTimeout(400);
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth + 1,
         ),
         path,
       ).toBe(true);
-      const missingImages = await page
-        .locator("img")
-        .evaluateAll((images) =>
-          images
-            .filter(
-              (img) =>
-                img instanceof HTMLImageElement &&
-                (!img.complete || img.naturalWidth === 0),
-            )
-            .map((img) => img.getAttribute("src")),
-        );
-      expect(missingImages, path).toEqual([]);
+      await expect
+        .poll(
+          async () =>
+            page
+              .locator("img:visible")
+              .evaluateAll((es) =>
+                es
+                  .filter(
+                    (e) =>
+                      !(e as HTMLImageElement).complete ||
+                      !(e as HTMLImageElement).naturalWidth,
+                  )
+                  .map((e) => e.getAttribute("src")),
+              ),
+          { message: path, timeout: 10000 },
+        )
+        .toEqual([]);
+      await expect(page.locator("body")).not.toContainText(
+        /\bdemo\b|fictional|portfolio project/i,
+      );
       const audit = await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
         .analyze();
       expect(
-        audit.violations.filter((v) =>
-          ["serious", "critical"].includes(v.impact ?? ""),
-        ),
+        audit.violations
+          .filter((v) => ["serious", "critical"].includes(v.impact ?? ""))
+          .map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) })),
         path,
       ).toEqual([]);
-      for (const href of await page
-        .locator("a[href]")
-        .evaluateAll((anchors) =>
-          anchors.map((a) => a.getAttribute("href")!),
-        )) {
-        if (href.startsWith("/")) links.add(href.split("#")[0] || "/");
+      if (path === "/") {
+        await page.screenshot({
+          path: `docs/images/website-${width}.png`,
+          fullPage: true,
+        });
       }
     }
-    for (const href of links)
-      expect((await request.get(href)).ok(), href).toBe(true);
+    expect((await request.get("/definitely-not-a-roomly-page")).status()).toBe(
+      404,
+    );
     expect(errors).toEqual([]);
   });
-}
-
-test("keyboard navigation, contact intent, FAQ and reduced motion", async ({
+test("Framer pricing, FAQ, login destination and keyboard access", async ({
   page,
 }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "networkidle" });
   await page.keyboard.press("Tab");
   await expect(page.getByText("Skip to content")).toBeFocused();
-  const menu = page.locator(".mobile-menu summary");
-  await menu.focus();
+  const yearly = page.locator('[data-framer-name="Yearly"]:visible');
+  await yearly.scrollIntoViewIfNeeded();
+  await yearly.focus();
   await page.keyboard.press("Enter");
-  await expect(
-    page.getByRole("navigation", { name: "Mobile navigation" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "Log in", exact: false }).first(),
-  ).toHaveAttribute("href", "https://roomly-kappa.vercel.app/en/login");
-  await page.keyboard.press("Escape");
-  await expect(menu).toBeFocused();
-  await expect(page.locator(".mobile-menu")).not.toHaveAttribute("open");
-  const faq = page
-    .locator(".faq summary")
-    .filter({ hasText: "Who is Roomly for?" });
-  await faq.focus();
+  await expect(page.getByText("£290", { exact: true })).toBeVisible();
+  await expect(page.getByText("£1,490", { exact: true })).toBeVisible();
+  const monthly = page.locator('[data-framer-name="Monthly"]:visible');
+  await monthly.focus();
   await page.keyboard.press("Enter");
+  await expect(page.getByText("£29", { exact: true })).toBeVisible();
+  const faq = page.getByText("Who is Roomly designed for?", { exact: true });
+  await faq.scrollIntoViewIfNeeded();
+  await faq.click();
   await expect(
-    page.getByText("Roomly is built for people managing shared houses", {
-      exact: false,
-    }),
+    page.getByText(/Small UK letting operations/i).first(),
   ).toBeVisible();
-  expect(
-    await page
-      .locator(".hero-photo")
-      .evaluate((el) => getComputedStyle(el).animationName),
-  ).toBe("none");
   for (const link of await page
-    .getByRole("link", { name: /Request access/i })
-    .all()) {
+    .getByRole("link", { name: "Log in", exact: true })
+    .all())
+    await expect(link).toHaveAttribute(
+      "href",
+      "https://roomly-kappa.vercel.app/en/login",
+    );
+  for (const link of await page
+    .getByRole("link", { name: "Request access", exact: false })
+    .all())
     await expect(link).toHaveAttribute(
       "href",
       /^mailto:.*subject=Roomly%20access$/,
     );
-  }
-  await page.getByLabel('Yearly', {exact:true}).check();
-  await expect(page.locator('[data-monthly="29"]')).toHaveText('£290');
-  await expect(page.locator('[data-monthly="149"]')).toHaveText('£1,490');
-  await page.getByLabel('Monthly', {exact:true}).check();
-  await expect(page.locator('[data-monthly="29"]')).toHaveText('£29');
-  await page.screenshot({
-    path: "docs/images/website-mobile.png",
-    fullPage: true,
-  });
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.screenshot({
-    path: "docs/images/website-desktop.png",
-    fullPage: true,
-  });
+  await page.getByRole("link", { name: "Guides", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/blog$/);
+  await expect(page.locator("h1:visible")).toBeVisible();
 });

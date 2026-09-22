@@ -1,0 +1,152 @@
+/* Owned brand layer. Framer layout transforms and entrance animations remain intact. */
+:root {
+  --roomly-plum: #25153e;
+  --roomly-purple: #623bd2;
+  --roomly-lilac: #eae3f6;
+}
+body {
+  background: var(--roomly-lilac) !important;
+}
+[data-framer-name="Main"] > section,
+[data-framer-name="Main"] > [data-framer-name="CTA"],
+footer {
+  background-color: #f7f3ff !important;
+}
+[data-framer-name="Main"] > [data-framer-name="Feature"],
+[data-framer-name="Main"] > [data-framer-name="Testimonials"] {
+  background-color: var(--roomly-lilac) !important;
+}
+section[data-framer-name="Metrics"] {
+  display: none !important;
+}
+[data-framer-name="Hero"] {
+  background: linear-gradient(125deg, #f7f3ff, #e5d6fa) !important;
+}
+.roomly-life {
+  max-width: 1200px;
+  margin: 60px auto 100px;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  align-items: center;
+  gap: 64px;
+  padding: 0 32px;
+  color: var(--roomly-plum);
+  font-family: Inter, Arial, sans-serif;
+}
+.roomly-life img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.25;
+  object-fit: cover;
+  border-radius: 24px;
+}
+.roomly-life p {
+  font-size: 18px;
+  line-height: 1.7;
+  margin: 24px 0;
+}
+.roomly-life .eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--roomly-purple);
+  font-weight: 600;
+}
+.roomly-life h2 {
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+}
+.roomly-life a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  color: var(--roomly-purple);
+  font-size: 15px;
+  font-weight: 600;
+  text-underline-offset: 6px;
+}
+.roomly-skip {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 10000;
+  padding: 14px 20px;
+  background: var(--roomly-plum);
+  color: white;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+}
+.roomly-skip:focus {
+  top: 12px;
+}
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid var(--roomly-purple) !important;
+  outline-offset: 5px;
+}
+@media (max-width: 767px) {
+  .roomly-life {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    margin: 30px auto 60px;
+    padding: 0 24px;
+  }
+  .roomly-life p {
+    font-size: 16px;
+  }
+  .roomly-life img {
+    aspect-ratio: 1.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+/* Override the template's semantic tokens, not its component layout. */
+body {
+  --token-d3c732bc-55cf-476f-8dd2-e130b23f6381: #25153e !important;
+  --token-53318a49-e2d8-4d3b-98d7-8563add13d3d: #40296c !important;
+  --token-4e285814-6c3b-49a4-861b-46ce5df96183: #f7f3ff !important;
+  --token-707b1bcf-de96-405c-87ea-f8efbd38ef4e: #665b78 !important;
+  --token-859367f6-81c0-4dca-a3ce-7db36ce77c37: #eae3f6 !important;
+  --token-152c95b1-f686-49e0-8c34-c977eccef55c: #623bd2 !important;
+  --token-af6767bd-88fe-47d2-894c-f5acd59ba5e0: #eee7f9 !important;
+  --token-973dcb3b-5b85-4019-add4-11363ef3e346: #f7f3ff !important;
+  --token-cc24c50b-985a-485e-8223-2de199972482: #cfb9ee !important;
+  --token-88beb79c-5abe-4133-9bb0-6c5bf5b2413b: #baa3df !important;
+  --token-e89dab9f-10f0-46f4-a23b-1c83a3272f1e: #ded1f3 !important;
+  --token-9faefeac-3aa2-46d9-9e2a-ab15f159e419: #ded1f3 !important;
+  --token-e191f69d-30f9-4401-b3b1-f508ff47a6fd: #623bd2 !important;
+  --token-7d1e68b6-4deb-4f5e-85f7-fd15ffed7a1c: #e5d9fb !important;
+  --token-12cd060c-8e15-4e8f-9b06-31ef7202251c: #d6c4ee !important;
+  --token-345a0de3-ebf8-4881-9176-cd9453e3ee75: #e8dff8 !important;
+  --token-d5d168c9-3ce6-4662-8579-797f485ea94f: #d7cae9 !important;
+}
+
+body {
+  --token-305179ae-2edc-4a73-bbab-78d3d26c27a2: #665b78 !important;
+}
+.roomly-life img {
+  aspect-ratio: 1.5;
+  object-position: 65% center;
+}
+
+.ticker-item svg {
+  visibility: hidden;
+}
+.ticker-item p {
+  font-family: Inter, Arial, sans-serif !important;
+  font-size: 19px !important;
+  font-weight: 500 !important;
+}

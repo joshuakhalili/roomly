@@ -1,0 +1,29 @@
+{
+  "source": "https://pipelinepro.framer.website",
+  "pages": [
+    "/",
+    "/blog",
+    "/changelog",
+    "/privacy-policy",
+    "/terms-of-use",
+    "/contact-us",
+    "/blog/property-management-software-for-small-landlords",
+    "/blog/hmo-management-software-guide",
+    "/blog/inventory-checklist-deposit-disputes",
+    "/blog/spreadsheets-vs-property-management-software",
+    "/blog/rent-tracking-software-for-landlords",
+    "/blog/choosing-property-management-software",
+    "/404"
+  ],
+  "extra_hosts": [],
+  "unmirrored_hosts": [
+    "api.framer.com",
+    "frameruni.link",
+    "phosphoricons.com",
+    "reactjs.org",
+    "www.google.com",
+    "www.instagram.com",
+    "www.youtube.com",
+    "x.com"
+  ]
+}
