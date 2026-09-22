@@ -117,7 +117,7 @@ The current management app does not require an OpenAI key. The resident AI integ
 
 ```mermaid
 flowchart LR
-  Visitor[Website visitor] --> Site[Astro static website]
+  Visitor[Website visitor] --> Site[Framer static website]
   Site -->|Sign in| App[Next.js management application]
   Staff[Organisation member] --> App
   App --> Actions[Validated server actions]
@@ -137,7 +137,8 @@ src/
   i18n/               Routing for en, zh and tr
   messages/           Translated interface copy
 supabase/migrations/  Ordered database history — 26 existing migrations
-site/                 Marketing website, editorial content and image credits
+site/                 Preserved Framer website, brand layer and image credits
+resident/             Independent resident Home and onboarding application
 tests/integration/    Embedded PostgreSQL migration checks
 scripts/              Organisation provisioning and tenancy verification
 docs/                 Architecture, feature ledger and integration progress
@@ -158,32 +159,32 @@ npm --prefix site run build
 npm run test:site
 ```
 
-The baseline at the start of integration passed **41 operational tests**. The new embedded PostgreSQL check applies all **26 historical migrations unchanged** and verifies RLS remains enabled on every public table. These are specific checks, not a claim that every feature or hosted integration has been verified.
+The current release passes **44 operational tests**. The new embedded PostgreSQL check applies all **26 historical migrations unchanged** and verifies RLS remains enabled on every public table. These are specific checks, not a claim that every feature or hosted integration has been verified.
 
-The website passes **4 browser tests**, including all **13 routes at three widths**, keyboard controls and reduced motion, with no serious or critical axe findings.
+The website passes **4 browser tests**, including all **13 routes at three widths**, keyboard pricing controls, FAQ and clean navigation, with no serious or critical axe findings.
 
-The [verification record](docs/VERIFICATION.md) distinguishes local checks from pending browser, hosted Auth/Storage and release checks. CI runs installs, lint, types, tests and builds. Generated reports and environment files stay out of Git.
+Three authenticated browser checks cover the management workspace at desktop and phone widths. The resident module separately passes 119 tests and 13 browser checks. The [verification record](docs/VERIFICATION.md) distinguishes local checks from pending hosted Auth/Storage checks. CI runs installs, lint, types, tests and builds. Generated reports and environment files stay out of Git.
 
 ## Project status & review access
 
 Roomly is a **portfolio project under active development**. Product screenshots use fictional review data; photography is licensed stock imagery, not customer testimony. No accreditation, customer count, uptime guarantee or independent security audit is claimed. Project and demo context is documented here rather than added to product screens.
 
-The existing management application is the canonical foundation. The new manager onboarding and resident Home experience has been developed in a separate local implementation and is **not yet integrated into this branch’s management application**. Its test results must not be presented as evidence for the integrated release.
+The management application is the canonical operational foundation. Its original data model and features remain in place. The website now builds from the original Framer mirror, retaining its responsive layout and animation runtime. The earlier Astro version is archived as a prototype.
 
-The approved integration preserves rent, inventory, expenses, documents, maintenance and every existing operational feature. Its next stages are:
+The independent [`resident/`](resident) application contains the seven-step manager setup, invitation-based resident onboarding, permanent Home, reviewed handbook, cited answers and repair intake. It has a credential-free local adapter. Its identities, schema and production deployment remain separate from staff management; no guest/member chooser is added to the business workspace.
 
-- [x] Preserve upstream history and original checkouts.
-- [x] Add a regression and migration-test foundation.
-- [x] Bring website source, product imagery and documentation into the canonical repository.
-- [ ] Integrate manager onboarding and resident identity with the existing data model.
-- [ ] Add invitation-based resident Home, reviewed content, source-backed answers and repair intake.
-- [ ] Apply the shared UI throughout the existing management routes.
-- [ ] Complete cross-role regression, upgrade rehearsal and hosted-service verification.
-- [ ] Release the integrated app and refreshed website after the release gates pass.
+- [x] Searchable property directory and separate rooms, utilities and documents views.
+- [x] Room tenancy, documents and inventory navigation.
+- [x] Inventory property selector, review filters, area selector and focused item editor.
+- [x] Shared violet palette, desktop workspace and mobile navigation.
+- [x] Framer template preservation, real photography and updated product imagery.
+- [x] Resident/onboarding source preserved in the same repository with matching branding.
+- [ ] Resident public production provisioning and hosted-provider acceptance.
+- [ ] Cross-application resident-to-management data synchronisation, if required later.
 
-For a hosted review account, [request access](mailto:joshuakhalili20@gmail.com?subject=Roomly%20review%20access). Credentials are not published in this repository. To create your own isolated workspace, follow [SETUP.md](SETUP.md). A credential-free adapter for the **integrated** app is still pending; the website and database tests already run independently.
+For a management review account, [request access](mailto:joshuakhalili20@gmail.com?subject=Roomly%20review%20access). Credentials are not published here. For your own staff workspace, follow [SETUP.md](SETUP.md). To explore resident flows without credentials, follow [`resident/README.md`](resident/README.md).
 
-Follow the [full integration plan](docs/ROOMLY_GITHUB_INTEGRATION_PLAN.md) and [live checklist](docs/INTEGRATION_PROGRESS.md) for the remaining work.
+See [application boundaries and deployment requirements](docs/ACCESS_AND_DEPLOYMENT.md), the [verification record](docs/VERIFICATION.md) and the [release checklist](docs/INTEGRATION_PROGRESS.md). Do not run resident migrations against the management database.
 
 ## Contributing
 

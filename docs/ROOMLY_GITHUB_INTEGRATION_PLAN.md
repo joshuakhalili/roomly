@@ -1,3 +1,5 @@
+> **22 September update:** The latest product direction supersedes the earlier shared-database/Astro proposal below. The released website preserves the original Framer runtime. Resident access is a separate application under `resident/`, with a separate schema and production deployment. Follow [ACCESS_AND_DEPLOYMENT.md](ACCESS_AND_DEPLOYMENT.md) and [INTEGRATION_PROGRESS.md](INTEGRATION_PROGRESS.md) for the current implementation. The historical plan is retained for context, not as instructions to migrate the staff database.
+
 # Roomly integration and overhaul plan
 
 Status: approved for execution. The original plan was prepared from repository and live-site inspection. Current execution and verification are tracked in INTEGRATION_PROGRESS.md. September 2026 update: keep portfolio/demo status in README and engineering documentation, not public website or app copy.

@@ -1,3 +1,5 @@
+> Release update, 22 September: all original management routes remain. Property and room views now use focused navigation; inventory has property, area and item selectors. The resident implementation is available independently under `resident/`; it does not grant residents staff access or share the management schema. See [VERIFICATION.md](VERIFICATION.md) for checked screens and remaining provider checks.
+
 # Feature-preservation ledger
 
 Baseline: canonical commit `0e383c9`. All paths below are under `/{locale}` unless they begin `/api`. The new website/documentation work does not remove or replace these routes, actions or database tables. “Source mapped” is not a completed browser test.

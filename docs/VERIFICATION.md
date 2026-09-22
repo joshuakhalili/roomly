@@ -1,34 +1,41 @@
-# Verification record — 22 September 2026
+# Release verification — 22 September 2026
 
-Scope: website refresh, repository documentation and baseline test foundation on `codex/roomly-integration`, based on canonical commit `0e383c9`.
+## Management application
 
-| Check | Result |
-| --- | --- |
-| `npm ci` / dependency installation | Successful; app and website lockfiles committed |
-| `npm run lint` | Passed |
-| `npm run typecheck` | Passed |
-| `npm test` | 41 passed, 0 failed, 10 suites |
-| `npm run test:database` | 1 passed; all 26 historical migrations apply unchanged; every public table retains RLS |
-| `npm run build` | Passed with placeholder Supabase URL/key; no production data accessed |
-| `npm --prefix site run check` | 14 files, 0 errors, 0 warnings, 0 hints |
-| `npm --prefix site run build` | 13 pages generated, plus robots.txt and sitemap.xml |
-| `npm run test:site` | 4 passed: 13 public routes at 1440, 390 and 320px, plus keyboard/FAQ/menu/reduced-motion flow |
-| Website accessibility | No serious or critical axe violations in those 39 route/viewport checks |
-| Website routes and assets | Internal page links resolve; images load; no page exceptions or horizontal overflow in tested widths |
-| Public presentation | Rendered public pages contain no demo/project/prototype labels; contact and login destinations verified |
-| Dependency audit during install | 0 vulnerabilities reported for each installed dependency tree |
+- Lint and TypeScript checks pass.
+- 44 operational tests pass, including three regression cases for inventory partial updates. Editing one rating no longer clears the other rating, notes or maintenance flag.
+- Embedded PostgreSQL smoke test applies all 26 historical migrations unchanged and checks that public tables retain RLS.
+- Production Next.js build passes.
+- Three authenticated, read-only Playwright checks exercise all ten management destinations at 1440, 390 and 320px, search empty states, property tabs and the complete mobile navigation menu. No serious/critical axe findings or horizontal page overflow.
+- Additional browser review covers property rooms/utilities/documents, room inventory and report item navigation at the same widths; English, Chinese and Turkish property/inventory screens in light and dark themes.
+- No live database reset, migration, fixture insertion, email dispatch or scheduled cleanup was performed.
 
-The browser suite covers Chromium. It does not establish full WCAG conformance or Firefox/WebKit behaviour. Checked-in screenshots show fictional review data from the original management app and the refreshed website. The management app's new production build is not a complete authenticated browser regression.
+Run the authenticated suite against an isolated review organisation:
 
-The database harness uses PGlite with Auth and Storage shims. It preserves historical migration SQL and permission revocations; this initial smoke check does not establish hosted Supabase behaviour, a populated upgrade, backup/restore or all cross-role policies.
+```sh
+ROOMLY_REVIEW_AUTH=/absolute/path/to/short-lived-storage-state.json npm run test:app
+```
 
-## Remaining release gates
+`ROOMLY_REVIEW_URL` defaults to localhost:3001. The storage-state file is private and must never be committed. Without it the suite explicitly skips; CI does not pretend to have tested hosted credentials.
 
-- Additive resident/onboarding integration into the existing records and permission model.
-- Full original-feature browser regression, PDFs, feeds, schedules and retention rehearsals.
-- New flow, cross-organisation, cross-room, mixed-role and private storage tests.
-- Credential-free adapter for the integrated application.
-- Hosted Auth/Storage and production-environment verification.
-- Link the website deployment to the canonical repository's `site/` root and release it.
+## Website
 
-No production database migrations or live website deployments were performed during this milestone. Follow `INTEGRATION_PROGRESS.md` for the wider release.
+- Build copies the imported Framer baseline and applies owned editorial/style changes. All transformed runtime JavaScript parses.
+- Four browser tests cover all 13 original routes at 1440, 390 and 320px, image assets, no public demo explanations, actual 404 responses, FAQ, monthly/yearly pricing via keyboard, management login and access-enquiry destinations.
+- No serious/critical axe findings in the route sweep. Original animation/runtime and responsive variants are retained.
+- Screenshots are captured from the fictional management review organisation, not a customer's workspace. Licensed people photography makes no endorsement claim.
+
+## Resident / onboarding module
+
+The code in `resident/` is the independently verified local implementation, with shared palette changes. It is not a new management database migration.
+
+- Lint, TypeScript and production build pass.
+- 119 tests pass; one real OpenAI-provider test is skipped because provider credentials are absent.
+- 13 Playwright tests pass: manager/resident onboarding, Home, guide, cited answers, emergency/refusal behaviour, content publication and permissions, repair intake/timeline, multiple homes, keyboard and responsive layouts.
+- Tests ran against the same source in its original checkout before import. The only import-specific differences are documentation explaining the separate deployment boundary.
+
+## Remaining production checks
+
+Resident Auth/Storage/OpenAI provider verification and its public deployment require its own configured project. There is no cross-application data synchronisation. Management external email and cron jobs retain existing configuration but were not invoked by this presentation release. Automated accessibility results are not a substitute for a human assistive-technology audit.
+
+Deployment URLs and commit identifiers are recorded in `RELEASE.md` after publication.
