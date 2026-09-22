@@ -44,3 +44,24 @@ jobs:
         with:
           name: website-browser-results
           path: test-results/
+
+  resident:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: resident
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+        env:
+          DEMO_MODE: "true"

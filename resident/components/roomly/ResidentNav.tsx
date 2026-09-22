@@ -1,0 +1,1 @@
+export { ResidentNav } from "./primitives";

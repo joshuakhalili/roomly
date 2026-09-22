@@ -1,0 +1,1 @@
+export { RoomlyAssistComposer } from "./ContentEditor";
