@@ -24,7 +24,7 @@ Management deployment `dpl_7XqU5GZcaUJHYzXbNcHh2b51WDni` completed successfully 
 
 The authenticated production smoke check was not performed: automatic approval rejected reading stored review credentials from the original website capture script. Local authenticated checks passed; public production pages and deployment status are checked separately.
 
-The release is pushed to `codex/roomly-integration` in PR #1. Merging into `main` requires explicit approval following an automatic approval rejection.
+The release is pushed to `codex/roomly-integration` in PR #1. The repository owner explicitly approved merging PR #1 into `main` on 22 September 2026.
 
 ## Checks
 
