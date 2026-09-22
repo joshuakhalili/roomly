@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#F6F4EF" />
+  <title>Roomly Welcome Pass - Cambridge</title>
+  <style>
+    :root{--bone:#F6F4EF;--ink:#14120F;--muted:#6D6B68;--line:#D9D7D3;--line2:#A2A09C;--card:#fff;--violet:#4E2BCC;--vsoft:#F0ECFF;--danger:#D01D21;--dsoft:#FFE8E5;--radius:10px;--shadow:0 2px 4px #14120f0c,0 16px 32px #14120f14;--sans:Inter,"Instrument Sans","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;--display:Archivo,"Arial Narrow","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+    *{box-sizing:border-box} html{background:var(--bone)} body{margin:0;background:var(--bone);color:var(--ink);font:15px/1.5 var(--sans)} button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:inherit}
+    .bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--line);background:#f6f4eff5;backdrop-filter:blur(8px)}.logo{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.05em}.door{position:relative;width:22px;height:22px;border-left:4px solid;border-bottom:4px solid}.door:after{content:"";position:absolute;bottom:-4px;left:0;width:17px;height:17px;border:4px solid;border-left:0;border-bottom:0;border-radius:0 100% 0 0}.tabs{display:flex;padding:3px;border:1px solid var(--line);border-radius:8px;background:#fff}.tabs button{border:0;border-radius:5px;padding:6px 9px;color:var(--muted);background:transparent;font-size:12px;font-weight:700}.tabs button.active{background:var(--ink);color:var(--bone)}.screen{display:none}.screen.active{display:block}
+    .pass{max-width:680px;min-height:calc(100vh - 54px);margin:auto}.pass-head{padding:24px 20px 20px;border-bottom:1px solid var(--ink)}.top{display:flex;justify-content:space-between;gap:10px;align-items:center}.kicker{color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}.langs{display:flex;gap:2px}.lang{border:0;border-bottom:2px solid transparent;padding:5px 6px;color:var(--muted);background:none;font-size:12px;font-weight:750}.lang.active{border-color:var(--violet);color:var(--violet)}h1,h2{font-family:var(--display);letter-spacing:-.04em;line-height:1.08}h1{max-width:540px;margin:23px 0 8px;font-size:clamp(32px,8.8vw,52px)}h2{margin:0;font-size:24px}.intro,.note{margin:0;color:var(--muted);font-size:14px;line-height:1.55}.save{display:inline-flex;gap:7px;margin-top:18px;border:0;border-bottom:1px solid var(--ink);padding:0 0 2px;background:none;font-size:13px;font-weight:750}.main{padding:0 20px 44px}.quick{display:grid;grid-template-columns:1fr 1fr;margin:0 -20px;border-top:1px solid var(--line);border-left:1px solid var(--line);background:var(--card)}.quick article{min-height:112px;padding:14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.icon{display:block;height:23px;margin-bottom:7px;color:var(--violet);font-size:18px}.quick small{display:block;color:var(--muted);font-size:11px}.quick strong{display:block;margin-top:2px;font-size:13px;line-height:1.3}.utility{display:inline-block;margin-top:6px;border:0;padding:0;color:var(--violet);background:none;font-size:12px;font-weight:750;text-decoration:underline;text-underline-offset:2px}.section{padding-top:29px}.section+.section{margin-top:29px;border-top:1px solid var(--line)}.section .note{margin-top:7px}.area{margin-top:16px;border-left:3px solid var(--ink);padding:14px;background:#eeece7;font-size:14px;line-height:1.55}.places{margin-top:16px;border-top:1px solid var(--line)}.place{display:flex;min-height:100px;border-bottom:1px solid var(--line)}.place-copy{flex:1;padding:14px 10px 14px 0}.tag{color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.07em;text-transform:uppercase}.place h3{margin:3px 0;font-size:15px;line-height:1.25}.place p{margin:0;color:var(--muted);font-size:13px;line-height:1.42}.map{flex:0 0 74px;display:grid;place-items:center;align-content:center;gap:5px;border-left:1px solid var(--line);color:var(--violet);background:var(--vsoft);font-size:11px;font-weight:800;text-align:center;text-decoration:none}.pin{display:grid;place-items:center;width:21px;height:21px;border:2px solid currentColor;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}.pin:after{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}.support{margin-top:16px;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}.support div{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 14px;border-bottom:1px solid var(--line)}.support div:last-child{border:0}.support small{display:block;color:var(--muted);font-size:11px}.support strong{display:block;margin-top:2px;font-size:14px}.support a{color:var(--violet);font-size:13px;font-weight:800;text-decoration:none}.urgent{margin-top:14px;border-radius:var(--radius);padding:12px 13px;color:#792724;background:var(--dsoft);font-size:13px;line-height:1.45}.faqs{margin-top:15px;border-top:1px solid var(--line)}details{border-bottom:1px solid var(--line)}summary{display:flex;justify-content:space-between;gap:16px;padding:16px 0;cursor:pointer;list-style:none;font-weight:750}summary::-webkit-details-marker{display:none}summary:after{content:"+";color:var(--violet);font-size:21px;font-weight:400}details[open] summary:after{content:"–"}details p{margin:-3px 0 17px;color:var(--muted);font-size:14px;line-height:1.55}.foot{padding-top:28px;color:var(--muted);font-size:12px;text-align:center}
+    .editor{max-width:1220px;margin:auto;padding:22px 16px 48px}.editor-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:18px;padding-bottom:20px;border-bottom:1px solid var(--ink)}.editor-head h1{margin:5px 0 0;font-size:32px}.editor-head p{margin:6px 0 0;color:var(--muted);font-size:14px}.actions{display:flex;gap:8px}.btn{border:1px solid var(--ink);border-radius:7px;padding:10px 13px;color:var(--ink);background:transparent;font-size:13px;font-weight:750}.btn.primary{border-color:var(--violet);color:var(--bone);background:var(--violet)}.btn:hover{box-shadow:0 3px 0 var(--ink);transform:translateY(-1px)}.btn.primary:hover{box-shadow:0 3px 0 #2f1688}.edit-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;padding-top:26px}.editor-intro{padding-bottom:15px}.editor-intro strong{font-size:16px}.editor-intro p{margin:4px 0;color:var(--muted);font-size:13px}.edit-section{border-top:1px solid var(--ink)}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 0}.section-head h2{font-family:var(--sans);font-size:16px;font-weight:750;letter-spacing:0}.section-head p{margin:2px 0 0;color:var(--muted);font-size:12px}.add{border:1px solid var(--line2);border-radius:6px;padding:7px 10px;background:var(--card);font-size:12px;font-weight:750;white-space:nowrap}.form{margin-bottom:16px;border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:var(--card);box-shadow:0 1px 2px #14120f0b}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.04em;text-transform:uppercase}input,textarea,select{width:100%;margin-top:5px;border:1px solid var(--line2);border-radius:6px;padding:9px 10px;color:var(--ink);background:var(--card);outline:0;font-size:14px}textarea{min-height:75px;resize:vertical;line-height:1.45}input:focus,textarea:focus,select:focus{border-color:var(--violet);box-shadow:0 0 0 2px #4e2bcc2e}.row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}.drag{color:var(--line2);font-size:17px;letter-spacing:-2px}.row strong{display:block;font-size:13px}.row small{display:block;margin-top:1px;color:var(--muted);font-size:12px}.tiny{border:0;padding:4px;color:var(--muted);background:none;font-size:12px;text-decoration:underline}.preview{position:sticky;top:74px;align-self:start;border:1px solid var(--line2);padding:10px;background:#edeae3}.preview-label{display:flex;justify-content:space-between;padding:3px 2px 10px;color:var(--muted);font-size:11px;font-weight:750;letter-spacing:.05em;text-transform:uppercase}.phone{overflow:hidden;border:5px solid var(--ink);border-radius:23px;background:var(--bone);box-shadow:var(--shadow)}.phone-top{padding:18px 14px 12px;border-bottom:1px solid var(--ink)}.phone-top small{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.06em}.phone-top strong{display:block;margin-top:5px;font-family:var(--display);font-size:21px;line-height:1;letter-spacing:-.04em}.phone-body{padding:13px 14px 17px}.mini-quick{display:grid;grid-template-columns:1fr 1fr;margin:0 -14px 15px;border:1px solid var(--line);border-left:0}.mini-quick div{padding:9px 10px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:9px}.mini-quick div:nth-child(even){border-right:0}.mini-quick small{display:block;color:var(--muted);font-size:8px}.phone-body h3{margin:0 0 5px;font-size:12px}.phone-body p{margin:0;color:var(--muted);font-size:9px;line-height:1.4}.mini-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:9px}.mini-map{color:var(--violet);font-weight:800}.editor-foot{margin-top:20px;border-top:1px solid var(--ink);padding-top:16px}.editor-foot p{margin:0 0 10px;color:var(--muted);font-size:12px}
+    .backdrop{display:none;position:fixed;z-index:30;inset:0;align-items:end;background:#14120f6b}.backdrop.open{display:flex}.modal{width:100%;max-width:620px;margin:auto;border-radius:14px 14px 0 0;padding:22px 20px 30px;background:var(--card);box-shadow:0 -16px 60px #14120f33;animation:in .2s cubic-bezier(.22,1,.36,1)}@keyframes in{from{transform:translateY(28px)}to{transform:translateY(0)}}.modal-top{display:flex;align-items:start;justify-content:space-between;gap:20px}.modal p{color:var(--muted);font-size:14px}.close{border:0;padding:0;color:var(--muted);background:none;font-size:25px;line-height:1}.message{margin:16px 0;border:1px solid var(--line);border-radius:var(--radius);padding:13px;background:var(--bone);font-size:14px;line-height:1.55;white-space:pre-line}.toast{position:fixed;z-index:40;bottom:20px;left:50%;max-width:calc(100% - 32px);border-radius:7px;padding:10px 14px;transform:translate(-50%,100px);color:var(--bone);background:var(--ink);box-shadow:var(--shadow);transition:transform .2s;font-size:13px;font-weight:700;text-align:center}.toast.show{transform:translate(-50%,0)}
+    @media(max-width:860px){.edit-layout{grid-template-columns:1fr}.preview{display:none}}@media(max-width:480px){.bar{padding:10px 12px}.tabs button{padding:6px 7px}.pass-head{padding:22px 16px 18px}.main{padding:0 16px 36px}.quick{margin:0 -16px}.editor{padding:18px 12px 36px}.editor-head h1{font-size:28px}.actions{width:100%}.actions .btn{flex:1;padding-inline:8px}.grid{grid-template-columns:1fr}}
+  </style>
+  <style>
+    /*
+      Resident pass: Roomly's colour/type system in the Darif guide composition.
+      The product content stays Roomly-specific; the visual hierarchy is the
+      rounded hero → pinned utilities → numbered card blocks pattern.
+    */
+    .pass { max-width:402px; margin:30px auto; overflow:hidden; border-radius:46px; background:var(--bone); box-shadow:0 0 0 11px #0e0d0b, 0 0 0 13px #37342f, 0 40px 90px -30px rgba(20,18,15,.55); }
+    .pass-head { position:relative; min-height:212px; margin:16px 16px 0; border:0; border-radius:26px; padding:16px 18px 18px; overflow:hidden; color:var(--bone); background:var(--violet); box-shadow:var(--shadow); }
+    .pass-head::after { content:""; position:absolute; width:190px; height:190px; right:-82px; bottom:-86px; border:2px solid rgba(246,244,239,.18); border-radius:50% 50% 50% 0; transform:rotate(-45deg); }
+    .pass-head .top, .pass-head h1, .pass-head .intro, .pass-head .save { position:relative; z-index:1; }
+    .pass-head .kicker { color:#d9d7d3; }
+    .pass-head h1 { max-width:300px; margin:44px 0 7px; color:var(--bone); font-size:31px; font-weight:800; }
+    .pass-head .intro { max-width:293px; color:#d9d7d3; font-size:13.5px; }
+    .pass-head .save { margin-top:12px; border-color:#d9d7d3; color:var(--bone); font-size:12px; }
+    .langs { border-radius:999px; padding:2px; background:rgba(246,244,239,.10); }
+    .lang { border:0; border-radius:999px; padding:4px 6px; color:#d9d7d3; font-size:10px; }
+    .lang.active { color:var(--ink); background:var(--bone); }
+    .main { display:flex; flex-direction:column; padding:0 16px 28px; }
+    .quick { position:sticky; top:8px; z-index:6; order:0; margin:-8px 0 0; border:0; border-radius:20px; overflow:hidden; background:var(--card); box-shadow:var(--shadow); }
+    .quick article { min-height:105px; padding:13px 14px; border:0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .quick article:nth-child(2n) { border-right:0; }
+    .quick article:nth-child(n+3) { border-bottom:0; }
+    .quick .icon { height:21px; margin-bottom:5px; font-size:16px; }
+    .quick strong { font-family:var(--display); font-size:15px; font-weight:700; letter-spacing:-.02em; }
+    .quick .utility { font-size:11px; }
+    .section { position:relative; margin-top:26px; padding-top:0; }
+    .section + .section { margin-top:25px; border:0; }
+    .section::before { display:none; }
+    .section > .kicker { display:none; }
+    .section-icon { display:inline-grid; place-items:center; width:28px; height:28px; margin:0 8px 10px 2px; border-radius:9px; color:var(--violet); background:var(--vsoft); vertical-align:middle; }
+    .section-icon svg { width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+    .content-modal .modal { max-width:560px; }
+    .modal-fields { display:grid; gap:12px; margin:17px 0; }
+    .modal-fields .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .modal-actions { display:flex; justify-content:flex-end; gap:8px; }
+    @media (max-width:420px) { .modal-fields .two { grid-template-columns:1fr; } }
+    .section > h2 { display:inline; font-size:20px; vertical-align:middle; }
+    .section .note { margin:7px 3px 12px; font-size:13px; }
+    .section .area { margin:0; border:0; border-radius:26px; padding:17px 18px; background:var(--card); box-shadow:var(--shadow); font-size:14px; }
+    .section .places { margin-top:0; border:0; }
+    .place { position:relative; gap:11px; min-height:100px; margin-bottom:11px; border:0; border-radius:20px; padding:11px; background:var(--card); box-shadow:var(--shadow); }
+    .place::before { display:grid; place-items:center; flex:0 0 66px; width:66px; height:66px; border-radius:15px; color:var(--violet); background:var(--vsoft); font-size:25px; content:"🍕"; }
+    .place:nth-child(2)::before { content:"☕"; }
+    .place:nth-child(3)::before { content:"🛒"; }
+    .place-copy { padding:2px 0; }
+    .place .tag { font-size:9.5px; }
+    .place h3 { font-family:var(--display); font-size:16.5px; letter-spacing:-.025em; }
+    .place p { font-size:12.5px; }
+    .place .map { flex:0 0 50px; height:66px; align-self:center; border:0; border-radius:14px; font-size:10px; }
+    .place .pin { width:18px; height:18px; }
+    .section .urgent { margin-top:0; border-radius:16px; padding:12px 13px; font-size:12.5px; }
+    .section .support { margin-top:11px; border:0; border-radius:26px; box-shadow:var(--shadow); }
+    .support div { padding:14px 15px; }
+    .support strong { font-family:var(--display); font-size:16px; letter-spacing:-.02em; }
+    .section .faqs { margin-top:0; border:0; border-radius:26px; padding:3px 17px; background:var(--card); box-shadow:var(--shadow); }
+    .faqs summary { padding:16px 0; font-size:14px; }
+    .faqs p { font-size:13px; }
+    .main > .section:nth-of-type(1) { order:1; }
+    .main > .section:nth-of-type(2) { order:2; }
+    .main > .section:nth-of-type(3) { order:4; }
+    .main > .section:nth-of-type(4) { order:3; }
+    .main > .foot { order:5; }
+    .foot { padding-top:22px; }
+    @media (min-width:521px) { body { padding-bottom:34px; background:#dedbd5; } }
+    @media (max-width:520px) { .pass { min-height:calc(100vh - 54px); margin:0; border-radius:0; box-shadow:none; } .pass-head { margin-top:0; border-radius:0 0 26px 26px; } }
+  </style>
+  <style>
+    :root { --violet:#5638D8; --violet-deep:#34207F; --lime:#DDF59A; --success:#1F6B45; --success-soft:#E8F4EC; }
+    :focus-visible { outline:3px solid rgba(86,56,216,.32); outline-offset:3px; }
+    button, a, input, textarea, select { -webkit-tap-highlight-color:transparent; }
+    .bar { min-height:58px; padding-inline:22px; }
+    .bar-status { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; }
+    .bar-status::before { width:7px; height:7px; border-radius:50%; background:#58A977; content:""; }
+    .logo { min-width:118px; }
+    .tabs { margin-left:auto; }
+
+    .resident-ai { order:1; margin-top:24px; border:1px solid #ded9f6; border-radius:24px; padding:17px; background:linear-gradient(145deg,#fff 0%,#f6f3ff 100%); box-shadow:0 16px 40px rgba(52,32,127,.10); }
+    .resident-ai-top { display:flex; align-items:flex-start; gap:11px; }
+    .ai-mark { display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; border-radius:11px; color:var(--bone); background:var(--violet); box-shadow:0 8px 18px rgba(86,56,216,.22); }
+    .ai-mark svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+    .resident-ai h2 { margin:0; font-family:var(--sans); font-size:15px; letter-spacing:-.015em; }
+    .resident-ai-copy { margin:2px 0 0; color:var(--muted); font-size:12.5px; }
+    .ask-form { display:flex; gap:7px; margin-top:14px; }
+    .ask-form input { min-height:44px; margin:0; border-color:#c8c0ed; border-radius:12px; background:#fff; }
+    .ask-form button { flex:0 0 44px; border:0; border-radius:12px; color:#fff; background:var(--violet); font-size:18px; font-weight:800; }
+    .ask-suggestions { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+    .ask-suggestions button { border:1px solid #d7d0f3; border-radius:999px; padding:6px 9px; color:var(--violet-deep); background:rgba(255,255,255,.75); font-size:10.5px; font-weight:700; }
+    .ai-answer { display:none; margin-top:13px; border-top:1px solid #ded9f6; padding-top:13px; animation:answer-in .24s cubic-bezier(.22,1,.36,1); }
+    .ai-answer.show { display:block; }
+    .ai-answer strong { display:block; font-family:var(--display); font-size:16px; letter-spacing:-.02em; }
+    .ai-answer p { margin:5px 0 10px; color:#45414D; font-size:13px; line-height:1.55; }
+    .answer-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted); font-size:10.5px; }
+    .source-chip { border-radius:999px; padding:4px 7px; color:var(--success); background:var(--success-soft); font-weight:800; }
+    .answer-human { border:0; padding:0; color:var(--violet); background:none; font-size:11px; font-weight:800; text-decoration:underline; text-underline-offset:2px; }
+    @keyframes answer-in { from { opacity:0; transform:translateY(8px); } }
+
+    .editor { max-width:1280px; }
+    .editor-head { align-items:center; padding:5px 0 22px; }
+    .editor-head-main { display:flex; align-items:flex-start; gap:13px; }
+    .home-avatar { display:grid; place-items:center; width:44px; height:44px; margin-top:4px; border-radius:14px; color:var(--bone); background:var(--ink); font-family:var(--display); font-size:17px; font-weight:800; }
+    .save-state { display:inline-flex; align-items:center; gap:6px; margin-top:8px; color:var(--success); font-size:11px; font-weight:750; }
+    .save-state::before { width:6px; height:6px; border-radius:50%; background:#58A977; content:""; }
+    .btn { min-height:40px; transition:transform .16s ease,box-shadow .16s ease,background .16s ease; }
+    .btn.ghost { border-color:var(--line); background:#fff; }
+
+    .copilot { margin-top:22px; overflow:hidden; border:1px solid #cfc7f4; border-radius:18px; background:#fff; box-shadow:0 18px 55px rgba(38,29,77,.08); }
+    .copilot-head { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:16px 18px; color:var(--bone); background:var(--violet-deep); }
+    .copilot-title { display:flex; align-items:center; gap:11px; }
+    .copilot-title .ai-mark { color:var(--violet-deep); background:var(--lime); box-shadow:none; }
+    .copilot-title h2 { margin:0; font-family:var(--sans); font-size:15px; letter-spacing:0; }
+    .copilot-title p { margin:2px 0 0; color:#d7d0f3; font-size:12px; }
+    .preview-badge { flex:0 0 auto; border:1px solid rgba(255,255,255,.24); border-radius:999px; padding:5px 8px; color:#e9e4ff; font-size:10px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
+    .copilot-body { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr); gap:0; }
+    .copilot-compose { padding:18px; }
+    .copilot-compose label { color:var(--ink); font-size:12px; letter-spacing:0; text-transform:none; }
+    .copilot-compose textarea { min-height:86px; border-color:#c8c0ed; border-radius:11px; background:#fbfaff; }
+    .ai-modes { display:flex; flex-wrap:wrap; gap:7px; margin:11px 0; }
+    .ai-mode { border:1px solid var(--line); border-radius:999px; padding:6px 9px; color:var(--muted); background:#fff; font-size:11px; font-weight:750; }
+    .ai-mode.active { border-color:var(--violet); color:var(--violet); background:var(--vsoft); }
+    .copilot-run { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:10px; }
+    .copilot-run small { max-width:310px; color:var(--muted); font-size:10.5px; line-height:1.45; }
+    .ai-run { border:0; border-radius:10px; padding:10px 14px; color:#fff; background:var(--violet); font-size:12px; font-weight:800; }
+    .ai-run.loading { color:transparent; background:#7563c4; pointer-events:none; }
+    .ai-run.loading::after { position:absolute; color:white; content:"Reading notes…"; transform:translateX(-82px); }
+    .ai-proposals { border-left:1px solid var(--line); padding:16px 18px; background:#faf9f6; }
+    .proposal-head { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:9px; }
+    .proposal-head strong { font-size:13px; }
+    .proposal-count { color:var(--muted); font-size:10.5px; }
+    .proposal { display:grid; grid-template-columns:1fr auto; gap:10px; padding:11px 0; border-top:1px solid var(--line); }
+    .proposal:first-of-type { border-top:0; }
+    .proposal-type { display:block; margin-bottom:2px; color:var(--violet); font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+    .proposal strong { display:block; font-size:12.5px; }
+    .proposal small { display:block; margin-top:2px; color:var(--muted); font-size:10.5px; line-height:1.4; }
+    .proposal button { align-self:center; border:1px solid #c8c0ed; border-radius:8px; padding:6px 8px; color:var(--violet); background:#fff; font-size:10.5px; font-weight:800; }
+    .proposal.applied { opacity:.5; }
+    .proposal.applied button { color:var(--success); border-color:#b8dac6; background:var(--success-soft); }
+
+    .edit-layout { grid-template-columns:minmax(0,1fr) 352px; gap:34px; }
+    .editor-intro { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:0 0 16px; }
+    .readiness-inline { display:flex; align-items:center; gap:9px; }
+    .readiness-bar { width:92px; height:6px; overflow:hidden; border-radius:999px; background:#dfddd8; }
+    .readiness-bar span { display:block; width:80%; height:100%; border-radius:inherit; background:var(--success); transition:width .35s ease; }
+    .readiness-inline small { color:var(--muted); font-size:10.5px; }
+    .edit-section { scroll-margin-top:76px; }
+    .section-head { padding:19px 0 13px; }
+    .section-number { display:inline-block; width:21px; color:var(--muted); font-size:10px; font-weight:800; }
+    .form { border-color:#dfddd9; box-shadow:none; }
+    .row { min-height:54px; }
+    .tiny { min-height:32px; padding:6px; }
+    .preview { top:78px; border:0; border-radius:16px; padding:12px; background:#e8e5de; }
+    .preview-tools { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px; }
+    .preview-tools button { border:1px solid #cbc7bf; border-radius:8px; padding:7px; color:var(--muted); background:#f7f5f0; font-size:10.5px; font-weight:750; }
+    .preview-tools button.active { color:#fff; border-color:var(--ink); background:var(--ink); }
+
+    .backdrop.open { animation:fade-in .16s ease; }
+    @keyframes fade-in { from { opacity:0; } }
+    @media (max-width:860px) {
+      .copilot-body { grid-template-columns:1fr; }
+      .ai-proposals { border-top:1px solid var(--line); border-left:0; }
+      .bar-status { display:none; }
+    }
+    @media (max-width:560px) {
+      .bar { padding-inline:12px; }
+      .logo { min-width:auto; }
+      .logo svg { width:19px; }
+      .resident-ai { margin-top:18px; border-radius:20px; }
+      .editor-head-main { gap:9px; }
+      .home-avatar { width:38px; height:38px; border-radius:12px; }
+      .editor-head h1 { font-size:25px; }
+      .copilot { border-radius:14px; }
+      .copilot-head { align-items:flex-start; padding:14px; }
+      .copilot-title p { max-width:230px; }
+      .copilot-compose,.ai-proposals { padding:14px; }
+      .copilot-run { align-items:flex-end; }
+      .copilot-run small { max-width:180px; }
+      .editor-intro { align-items:flex-start; flex-direction:column; }
+      .ask-suggestions button:nth-child(3) { display:none; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="bar" aria-label="Roomly navigation"><div class="logo"><svg width="22" height="22" viewBox="0 0 32 32" role="img" aria-label="Roomly"><path fill="#14120F" d="M4 5h5v22H4Z"/><path fill="#14120F" d="M9 9a18 18 0 0 1 18 18h-5A13 13 0 0 0 9 14V9Z"/></svg>Roomly</div><span class="bar-status">Cambridge City House is live</span><div class="tabs" role="tablist"><button class="active" role="tab" aria-selected="true" data-view="pass">Resident view</button><button role="tab" aria-selected="false" data-view="editor">Manager workspace</button></div></nav>
+
+  <section id="pass" class="screen active">
+    <div class="pass">
+      <header class="pass-head">
+        <div class="top"><span class="kicker" data-t="passLabel">Roomly Welcome Pass</span><div class="langs"><button class="lang active" data-lang="en">English</button><button class="lang" data-lang="zh">中文</button><button class="lang" data-lang="tr">Türkçe</button></div></div>
+        <h1 data-t="title">Welcome to Room 3, Cambridge City House.</h1><p class="intro" data-t="intro">Your room details, useful local places and help contacts, all in one place.</p>
+        <button class="save" data-open="save"><span>⊞</span><span data-t="save">Save this pass to your phone</span></button>
+      </header>
+      <main class="main">
+        <div class="quick">
+          <article><span class="icon">⌁</span><small data-t="wifi">Wi-Fi</small><strong>Cambridge-House<br>camb-guest-24</strong><button class="utility copy" data-copy="Cambridge-House&#10;camb-guest-24" data-t="copy">Copy</button></article>
+          <article><span class="icon">⌂</span><small data-t="address">Your address</small><strong>24 Mill Road<br>Cambridge CB1</strong><a class="utility" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=24+Mill+Road+Cambridge" data-t="maps">Open Maps</a></article>
+          <article><span class="icon">⌕</span><small data-t="manager">Property manager</small><strong>Elena · Roomly Homes</strong><button class="utility copy" data-copy="Demo manager contact: Elena · Roomly Homes · +44 7700 900 123" data-t="contact">Copy contact</button></article>
+          <article><span class="icon">⌘</span><small data-t="access">Building access</small><strong data-t="accessValue">Shared with you on move-in</strong><button class="utility" data-open="access" data-t="accessHow">How access works</button></article>
+        </div>
+        <div class="resident-ai" aria-labelledby="ask-roomly-title">
+          <div class="resident-ai-top"><span class="ai-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path><circle cx="12" cy="12" r="4"></circle></svg></span><div><h2 id="ask-roomly-title">Ask this home</h2><p class="resident-ai-copy">Answers use information approved by your property manager.</p></div></div>
+          <form class="ask-form" id="ask-form"><label class="sr-only" for="ask-input">Ask a question about this home</label><input id="ask-input" placeholder="Where do the bins go?" autocomplete="off"><button aria-label="Ask Roomly" type="submit">→</button></form>
+          <div class="ask-suggestions" aria-label="Suggested questions"><button type="button" data-question="Where do the bins go?">Where do the bins go?</button><button type="button" data-question="How do I report a repair?">Report a repair</button><button type="button" data-question="Can I have a guest?">Guest rules</button></div>
+          <div class="ai-answer" id="ai-answer" role="status" aria-live="polite"><strong id="answer-title">Bin collection</strong><p id="answer-copy">Your manager has not added the bin location or collection day yet. I won’t guess—ask Elena and Roomly can save the answer for everyone.</p><div class="answer-meta"><span class="source-chip" id="answer-source">No approved source yet</span><button class="answer-human" type="button" id="ask-human">Ask Elena</button></div></div>
+        </div>
+        <section class="section"><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10.5V20h13v-9.5"></path><path d="M9.5 20v-5h5v5"></path></svg></span><h2 data-t="nearTitle">The house</h2><p class="note" data-t="nearIntro">A few useful things to know while you are here.</p><div class="area" data-t="area">Room 3 is on the first floor of Cambridge City House. Mill Road is a short walk from the station and city-centre buses; save the address in your maps app before you need it.</div></section>
+        <section class="section"><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3v8"></path><path d="M5 3v4a3 3 0 0 0 6 0V3"></path><path d="M16 3v18"></path><path d="M16 12h4l-1-9h-3"></path></svg></span><h2 data-t="foodTitle">Eat &amp; drink nearby</h2><p class="note" data-t="foodIntro">A few local favourites to start with.</p>
+          <div class="places">
+            <article class="place"><div class="place-copy"><span class="tag" data-t="p1tag">Manager’s pick · Food</span><h3>Aromi</h3><p data-t="p1">Sicilian café with pizza, pastries and gelato. 1 Bene’t Street.</p></div><a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Aromi+1+Benet+Street+Cambridge"><span class="pin"></span><span data-t="map">Maps</span></a></article>
+            <article class="place"><div class="place-copy"><span class="tag" data-t="p2tag">Area guide · Food & cafés</span><h3 data-t="p2name">Mill Road</h3><p data-t="p2">Independent cafés and food spots. Good for a quick walk and a change of scene.</p></div><a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Mill+Road+Cambridge"><span class="pin"></span><span data-t="map">Maps</span></a></article>
+            <article class="place"><div class="place-copy"><span class="tag" data-t="p3tag">Useful place · Groceries</span><h3 data-t="p3name">Cambridge Market Square</h3><p data-t="p3">Central market area for food stalls and everyday shopping.</p></div><a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Cambridge+Market+Square"><span class="pin"></span><span data-t="map">Maps</span></a></article>
+          </div>
+        </section>
+        <section class="section"><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 3 8 7 10 4-2 7-5.4 7-10V6z"></path><path d="m9 12 2 2 4-4"></path></svg></span><h2 data-t="helpTitle">Safety &amp; support</h2><p class="note" data-t="helpIntro">Use emergency services first if somebody is in immediate danger.</p><div class="urgent" data-t="emergency">Emergency: call 999 or 112 for police, fire or ambulance when there is an immediate danger.</div>
+          <div class="support">
+            <div><span><small data-t="nhs">Urgent health advice</small><strong>NHS 111</strong></span><a target="_blank" rel="noopener" href="https://111.nhs.uk/" data-t="open">Open</a></div>
+            <div><span><small data-t="hospital">Emergency department</small><strong data-t="hospitalValue">Addenbrooke’s Hospital, Hills Road</strong></span><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=Addenbrookes+Hospital+Emergency+Department" data-t="map">Maps</a></div>
+            <div><span><small data-t="police">Non-emergency police</small><strong data-t="policeValue">Call 101</strong></span><a target="_blank" rel="noopener" href="https://www.cambridgeshire.police.uk/" data-t="open">Open</a></div>
+            <div><span><small data-t="house">House problem</small><strong data-t="houseValue">Message your property manager</strong></span><button class="utility copy" data-copy="Demo manager contact: Elena · Roomly Homes · +44 7700 900 123" data-t="copy">Copy</button></div>
+          </div>
+        </section>
+        <section class="section"><span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 9a3.5 3.5 0 1 1 6.1 2.3c-1.1 1-2.6 1.7-2.6 3.7"></path><path d="M12 18h.01"></path><circle cx="12" cy="12" r="9"></circle></svg></span><h2 data-t="faqTitle">FAQs</h2><div class="faqs">
+          <details open><summary data-t="q1">How do I use the Wi-Fi?</summary><p data-t="a1">The network and password are pinned at the top of this pass. Tap Copy, then paste them in your phone’s Wi-Fi settings.</p></details>
+          <details><summary data-t="q2">What do I do if something needs repairing?</summary><p data-t="a2">Send your property manager a message with a photo and a short description. For an immediate danger, use the emergency contacts above first.</p></details>
+          <details><summary data-t="q3">Where does rubbish go?</summary><p data-t="a3">Your manager can add room-specific collection days and bin locations here. This demo keeps it as an editable FAQ.</p></details>
+        </div></section>
+        <p class="foot" data-t="footer">This is a live guide for your room. Your property manager can update it when details change.</p>
+      </main>
+    </div>
+  </section>
+
+  <section id="editor" class="screen">
+    <div class="editor">
+      <header class="editor-head"><div class="editor-head-main"><span class="home-avatar" aria-hidden="true">R3</span><div><span class="kicker">Cambridge City House · Resident experience</span><h1>Room 3 Welcome Pass</h1><p>One trusted place for move-in essentials, support and local knowledge.</p><span class="save-state" id="save-state">All changes saved</span></div></div><div class="actions"><button class="btn ghost" id="copy-link">Copy invite link</button><button class="btn primary" data-open="send">Share pass</button></div></header>
+      <section class="copilot" aria-labelledby="copilot-title">
+        <header class="copilot-head"><div class="copilot-title"><span class="ai-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path><circle cx="12" cy="12" r="4"></circle></svg></span><div><h2 id="copilot-title">Roomly Assist</h2><p>Turn rough notes into reviewable pass updates. Nothing publishes without you.</p></div></div><span class="preview-badge">Concept preview</span></header>
+        <div class="copilot-body"><div class="copilot-compose"><label for="ai-notes">What should Roomly help with?</label><textarea id="ai-notes">Bin day is Thursday. Black bins are through the side gate. Guests are fine until 10pm; overnight guests need manager approval. For repairs, send Elena a photo on WhatsApp.</textarea><div class="ai-modes" role="group" aria-label="Roomly Assist action"><button type="button" class="ai-mode active" data-mode="draft">Create from notes</button><button type="button" class="ai-mode" data-mode="clarity">Improve clarity</button><button type="button" class="ai-mode" data-mode="gaps">Check gaps</button><button type="button" class="ai-mode" data-mode="translate">Draft translations</button></div><div class="copilot-run"><small>Roomly creates structured suggestions with sources. Review each one before it changes the pass.</small><button class="ai-run" type="button" id="ai-run">Review 3 suggestions</button></div></div>
+          <div class="ai-proposals" id="ai-proposals"><div class="proposal-head"><strong>Suggested updates</strong><span class="proposal-count" id="proposal-count">3 ready to review</span></div><div class="proposal"><span><span class="proposal-type">FAQ · from your notes</span><strong>Where do the bins go?</strong><small>Black bins are through the side gate. Collection is Thursday.</small></span><button type="button" data-apply>Apply</button></div><div class="proposal"><span><span class="proposal-type">House rule · from your notes</span><strong>Guests</strong><small>Guests are welcome until 10pm. Ask Elena before arranging an overnight stay.</small></span><button type="button" data-apply>Apply</button></div><div class="proposal"><span><span class="proposal-type">Support · from your notes</span><strong>Report a repair</strong><small>Send Elena a photo and short description on WhatsApp.</small></span><button type="button" data-apply>Apply</button></div></div></div>
+      </section>
+      <div class="edit-layout"><main><div class="editor-intro"><div><strong>Room readiness</strong><p>8 of 10 essentials are verified. Bin access and overnight guest approval need review.</p></div><div class="readiness-inline"><div class="readiness-bar" aria-label="Room readiness 80 percent"><span id="readiness-fill"></span></div><small id="readiness-label">80% ready</small></div></div>
+        <section class="edit-section"><div class="section-head"><div><h2><span class="section-number">01</span>Room essentials</h2><p>Pinned at the top of every pass.</p></div><button class="add" data-add="essential">+ Add item</button></div><div class="form" id="essentials"><div class="grid"><label>Wi-Fi network<input value="Cambridge-House"></label><label>Wi-Fi password<input value="camb-guest-24"></label><label>Address<input value="24 Mill Road, Cambridge CB1"></label><label>Access note<input value="Shared with tenant on move-in"></label></div></div></section>
+        <section class="edit-section"><div class="section-head"><div><h2><span class="section-number">02</span>Safety &amp; support</h2><p>Give tenants clear ways to get help.</p></div><button class="add" data-add="support">+ Add contact</button></div><div class="form" id="supports"><div class="row"><span class="drag">⠿</span><span><strong>Emergency services</strong><small>999 / 112 · Immediate danger</small></span><span><button class="tiny">Edit</button> <button class="tiny remove">Remove</button></span></div><div class="row"><span class="drag">⠿</span><span><strong>Addenbrooke’s Hospital</strong><small>Hills Road · Google Maps link</small></span><span><button class="tiny">Edit</button> <button class="tiny remove">Remove</button></span></div><div class="row"><span class="drag">⠿</span><span><strong>Elena · Property manager</strong><small>WhatsApp / call link</small></span><span><button class="tiny">Edit</button> <button class="tiny remove">Remove</button></span></div></div></section>
+        <section class="edit-section"><div class="section-head"><div><h2><span class="section-number">03</span>Local recommendations</h2><p>Manager-approved places only.</p></div><button class="add" data-add="place">+ Add place</button></div><div class="form" id="places"><div class="row"><span class="drag">⠿</span><span><strong>Aromi</strong><small>Food · Sicilian café with pizza, pastries and gelato</small></span><span><button class="tiny">Edit</button> <button class="tiny remove">Remove</button></span></div><div class="row"><span class="drag">⠿</span><span><strong>Mill Road</strong><small>Food & cafés · Area guide</small></span><span><button class="tiny">Edit</button> <button class="tiny remove">Remove</button></span></div></div></section>
+        <section class="edit-section"><div class="section-head"><div><h2><span class="section-number">04</span>FAQs</h2><p>Answer the questions residents ask repeatedly.</p></div><button class="add" data-add="faq">+ Add FAQ</button></div><div class="form" id="faqs-editor"><div class="grid"><label>Question<input value="How do I use the Wi-Fi?"></label><label>Required languages<select><option>English · 中文 · Türkçe</option></select></label></div><label style="margin-top:12px">Answer<textarea>The network and password are pinned at the top of the pass. Tap Copy, then paste them in your phone’s Wi-Fi settings.</textarea></label></div></section>
+        <div class="editor-foot"><p>Demo pass uses editable Cambridge entries. The manager owns the content; Roomly controls the mobile layout and language structure.</p><button class="btn primary" id="save-changes">Save pass changes</button></div>
+      </main>
+      <aside class="preview"><div class="preview-label"><span>Resident preview</span><span id="preview-permission">After claim</span></div><div class="preview-tools"><button class="active" type="button">After claim</button><button type="button">Invite preview</button></div><div class="phone"><div class="phone-top"><small>Roomly Welcome Pass</small><strong>Room 3,<br>Cambridge</strong></div><div class="phone-body"><div class="mini-quick"><div><small>Wi-Fi</small>Cambridge-House</div><div><small>Address</small>24 Mill Road</div><div><small>Manager</small>Elena</div><div><small>Access</small>Move-in</div></div><h3>Eat &amp; drink nearby</h3><div class="mini-row"><span>Aromi</span><span class="mini-map">Maps ↗</span></div><div class="mini-row"><span>Mill Road</span><span class="mini-map">Maps ↗</span></div><h3 style="margin-top:15px">Safety &amp; support</h3><p>Emergency 999 / 112<br>NHS 111 · Addenbrooke’s</p></div></div></aside>
+      </div>
+    </div>
+  </section>
+
+  <div class="backdrop" id="save-modal"><div class="modal"><div class="modal-top"><div><h2>Keep this guide close</h2><p>This is a web app, so there is nothing to download.</p></div><button class="close" data-close>×</button></div><div class="message">iPhone: tap Share in Safari, then choose “Add to Home Screen”.
+
+Android: open the browser menu, then choose “Install app” or “Add to Home screen”.</div><button class="btn primary" data-close>Got it</button></div></div>
+  <div class="backdrop" id="access-modal"><div class="modal"><div class="modal-top"><div><h2>Building access</h2><p>Private entry details should not sit in a freely shareable guide.</p></div><button class="close" data-close>×</button></div><div class="message">Your property manager sends entry instructions around your move-in time. If you cannot find them, use the manager contact pinned at the top of this pass.</div><button class="btn primary" data-close>Got it</button></div></div>
+  <div class="backdrop" id="send-modal"><div class="modal"><div class="modal-top"><div><h2>Send on WhatsApp</h2><p>Roomly prepares the message. You check it, then make the final send in WhatsApp.</p></div><button class="close" data-close>×</button></div><div class="message">Hi Maya, welcome to Room 3 at Cambridge City House.
+
+Here is your Roomly Welcome Pass with Wi-Fi, house information, useful Cambridge places and help contacts:
+roomly.app/pass/cambridge-room-3-demo</div><button class="btn" id="modal-copy">Copy link</button> <button class="btn primary" id="open-wa">Open WhatsApp</button></div></div>
+  <div class="backdrop content-modal" id="content-modal" role="dialog" aria-modal="true" aria-label="Edit pass content"><div class="modal"><div class="modal-top"><div><h2 id="content-modal-title">Add item</h2><p id="content-modal-help">Add information to the tenant pass.</p></div><button class="close" data-close>×</button></div><div class="modal-fields" id="content-fields"></div><div class="modal-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="save-content">Save to pass</button></div></div></div>
+  <div class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const t={
+      en:{passLabel:'Roomly Welcome Pass',title:'Welcome to Room 3, Cambridge City House.',intro:'Your room details, useful local places and help contacts, all in one place.',save:'Save this pass to your phone',wifi:'Wi-Fi',address:'Your address',manager:'Property manager',access:'Building access',accessValue:'Shared with you on move-in',copy:'Copy',maps:'Open Maps',contact:'Copy contact',accessHow:'How access works',nearKicker:'Cambridge, around you',nearTitle:'Getting your bearings',nearIntro:'Everything here is chosen and kept current by your property manager.',area:'Mill Road is a short walk from Cambridge station and city-centre buses. Use the pins below to open directions in the maps app already on your phone.',foodKicker:'Manager recommendations',foodTitle:'Eat & drink nearby',foodIntro:'A few useful places to start with. Your manager can add or remove these at any time.',p1tag:'Manager’s pick · Food',p1:'Sicilian café with pizza, pastries and gelato. 1 Bene’t Street.',p2tag:'Area guide · Food & cafés',p2name:'Mill Road',p2:'Independent cafés and food spots. Good for a quick walk and a change of scene.',p3tag:'Useful place · Groceries',p3name:'Cambridge Market Square',p3:'Central market area for food stalls and everyday shopping.',map:'Maps',helpKicker:'Help when you need it',helpTitle:'Safety & support',helpIntro:'Use emergency services first if somebody is in immediate danger.',emergency:'Emergency: call 999 or 112 for police, fire or ambulance when there is an immediate danger.',nhs:'Urgent health advice',hospital:'Emergency department',hospitalValue:'Addenbrooke’s Hospital, Hills Road',police:'Non-emergency police',policeValue:'Call 101',house:'House problem',houseValue:'Message your property manager',open:'Open',faqKicker:'Room information',faqTitle:'FAQs',q1:'How do I use the Wi-Fi?',a1:'The network and password are pinned at the top of this pass. Tap Copy, then paste them in your phone’s Wi-Fi settings.',q2:'What do I do if something needs repairing?',a2:'Send your property manager a message with a photo and a short description. For an immediate danger, use the emergency contacts above first.',q3:'Where does rubbish go?',a3:'Your manager can add room-specific collection days and bin locations here. This demo keeps it as an editable FAQ.',footer:'This is a live guide for your room. Your property manager can update it when details change.'},
+      zh:{passLabel:'Roomly 欢迎指南',title:'欢迎来到剑桥城市之家 3 号房。',intro:'房间信息、附近实用地点和求助联系方式，全部在这里。',save:'将本指南保存到手机',wifi:'无线网络',address:'您的地址',manager:'房产经理',access:'楼宇门禁',accessValue:'入住时与您分享',copy:'复制',maps:'打开地图',contact:'复制联系方式',accessHow:'查看门禁说明',nearKicker:'剑桥，就在您身边',nearTitle:'熟悉周边环境',nearIntro:'这里的所有信息均由您的房产经理挑选并保持更新。',area:'Mill Road 距离剑桥火车站和市中心巴士站仅几步之遥。使用下面的定位图标，即可在手机地图应用中打开路线。',foodKicker:'经理推荐',foodTitle:'附近餐饮',foodIntro:'几个实用的起点。您的房产经理可以随时添加或移除这些推荐。',p1tag:'经理推荐 · 餐饮',p1:'西西里咖啡馆，提供披萨、糕点和冰淇淋。Bene’t Street 1 号。',p2tag:'区域指南 · 餐饮与咖啡',p2name:'Mill Road',p2:'独立咖啡馆和美食店。适合散步换个环境。',p3tag:'实用地点 · 日常采购',p3name:'剑桥市场广场',p3:'市中心市场区域，有美食摊位和日常购物选择。',map:'地图',helpKicker:'需要帮助时',helpTitle:'安全与支持',helpIntro:'如果有人面临即时危险，请先联系紧急服务。',emergency:'紧急情况：如遇警察、消防或救护即时紧急情况，请拨打 999 或 112。',nhs:'紧急医疗建议',hospital:'急诊部门',hospitalValue:'Addenbrooke’s 医院，Hills Road',police:'非紧急警务',policeValue:'拨打 101',house:'房屋问题',houseValue:'联系您的房产经理',open:'打开',faqKicker:'房间信息',faqTitle:'常见问题',q1:'如何使用无线网络？',a1:'网络名称和密码固定显示在本指南顶部。点击“复制”，然后粘贴到手机的无线网络设置中。',q2:'如果有东西需要维修怎么办？',a2:'请向房产经理发送照片和简短说明。如遇即时危险，请先使用上方紧急联系方式。',q3:'垃圾应该放在哪里？',a3:'您的经理可在此添加房间专属的收集日期和垃圾桶位置。本演示将其保留为可编辑的常见问题。',footer:'这是您的房间实时指南。信息变更时，房产经理可以随时更新。'},
+      tr:{passLabel:'Roomly Hoş Geldiniz Rehberi',title:'Cambridge City House, Oda 3’e hoş geldiniz.',intro:'Oda bilgileriniz, faydalı yerler ve yardım iletişimleri tek yerde.',save:'Bu rehberi telefonunuza kaydedin',wifi:'Wi-Fi',address:'Adresiniz',manager:'Emlak yöneticisi',access:'Bina erişimi',accessValue:'Taşınma gününde paylaşılır',copy:'Kopyala',maps:'Haritaları aç',contact:'İletişimi kopyala',accessHow:'Erişim nasıl çalışır?',nearKicker:'Çevrenizde Cambridge',nearTitle:'Çevreyi tanıyın',nearIntro:'Buradaki her şey emlak yöneticiniz tarafından seçilir ve güncel tutulur.',area:'Mill Road, Cambridge istasyonuna ve şehir merkezi otobüslerine kısa yürüme mesafesindedir. Telefonunuzdaki harita uygulamasında yol tarifi açmak için aşağıdaki konum işaretlerini kullanın.',foodKicker:'Yönetici önerileri',foodTitle:'Yakında yeme & içme',foodIntro:'Başlamak için birkaç faydalı yer. Yöneticiniz bunları istediği zaman ekleyebilir veya kaldırabilir.',p1tag:'Yönetici önerisi · Yemek',p1:'Pizza, hamur işleri ve gelato sunan Sicilya kafesi. 1 Bene’t Street.',p2tag:'Bölge rehberi · Yemek & kafeler',p2name:'Mill Road',p2:'Bağımsız kafeler ve yemek mekanları. Kısa bir yürüyüş ve ortam değişikliği için iyi.',p3tag:'Faydalı yer · Market',p3name:'Cambridge Market Square',p3:'Yemek tezgâhları ve günlük alışveriş için merkezi pazar alanı.',map:'Haritalar',helpKicker:'İhtiyacınız olduğunda yardım',helpTitle:'Güvenlik & destek',helpIntro:'Birisi acil tehlikedeyse önce acil servisleri arayın.',emergency:'Acil durum: Derhal tehlike varsa polis, itfaiye veya ambulans için 999 ya da 112’yi arayın.',nhs:'Acil sağlık tavsiyesi',hospital:'Acil servis',hospitalValue:'Addenbrooke’s Hastanesi, Hills Road',police:'Acil olmayan polis',policeValue:'101’i arayın',house:'Ev sorunu',houseValue:'Emlak yöneticinize mesaj gönderin',open:'Aç',faqKicker:'Oda bilgileri',faqTitle:'Sık sorulan sorular',q1:'Wi-Fi’ı nasıl kullanırım?',a1:'Ağ ve şifre bu rehberin üstünde sabitlenmiştir. Kopyala’ya dokunun, sonra telefonunuzun Wi-Fi ayarlarına yapıştırın.',q2:'Bir şeyin onarılması gerekirse ne yapmalıyım?',a2:'Emlak yöneticinize fotoğraf ve kısa bir açıklama gönderin. Acil tehlike için önce yukarıdaki acil iletişimleri kullanın.',q3:'Çöpler nereye gider?',a3:'Yöneticiniz buraya odaya özel toplama günleri ve çöp kutusu konumlarını ekleyebilir. Bu demo bunu düzenlenebilir SSS olarak tutar.',footer:'Bu, odanız için canlı bir rehberdir. Bilgiler değiştiğinde emlak yöneticiniz güncelleyebilir.'}
+    };
+    Object.assign(t.en,{nearTitle:'The house',nearIntro:'A few useful things to know while you are here.',area:'Room 3 is on the first floor of Cambridge City House. Mill Road is a short walk from the station and city-centre buses; save the address in your maps app before you need it.',foodIntro:'A few local favourites to start with.'});
+    Object.assign(t.zh,{nearTitle:'房屋信息',nearIntro:'入住期间值得了解的几件实用事项。',area:'3号房位于 Cambridge City House 一楼。Mill Road 距离火车站和市中心巴士站仅几步之遥；请提前在地图应用中保存地址。',foodIntro:'几家值得先去试试的当地好去处。'});
+    Object.assign(t.tr,{nearTitle:'Ev hakkında',nearIntro:'Buradayken bilmeniz gereken birkaç faydalı bilgi.',area:'Oda 3, Cambridge City House’un birinci katındadır. Mill Road istasyona ve şehir merkezi otobüslerine kısa yürüme mesafesindedir; ihtiyacınız olmadan önce adresi harita uygulamanıza kaydedin.',foodIntro:'Başlamak için birkaç yerel favori.'});
+    const toast=document.querySelector('.toast');let timer;const say=x=>{toast.textContent=x;toast.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove('show'),2400)};const copy=async x=>{try{await navigator.clipboard.writeText(x);say('Copied to clipboard')}catch{say('Copy: '+x.replace(/\n/g,' · '))}};
+    document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{const v=b.dataset.view;document.querySelectorAll('[data-view]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-selected',x===b)});document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===v));scrollTo({top:0,behavior:'smooth'})});
+    document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{const l=b.dataset.lang;document.documentElement.lang=l==='zh'?'zh-Hans':l;document.querySelectorAll('[data-t]').forEach(x=>{if(t[l][x.dataset.t])x.textContent=t[l][x.dataset.t]});document.querySelectorAll('[data-lang]').forEach(x=>x.classList.toggle('active',x===b));say(l==='zh'?'已切换为中文':l==='tr'?'Türkçe seçildi':'English selected')});
+    document.querySelectorAll('.copy').forEach(b=>b.onclick=()=>copy(b.dataset.copy));document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>document.querySelector('#'+b.dataset.open+'-modal').classList.add('open'));document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.backdrop').classList.remove('open'));document.querySelectorAll('.backdrop').forEach(x=>x.onclick=e=>{if(e.target===x)x.classList.remove('open')});
+    document.querySelector('#copy-link').onclick=()=>copy('https://roomly.app/pass/cambridge-room-3-demo');document.querySelector('#modal-copy').onclick=()=>copy('https://roomly.app/pass/cambridge-room-3-demo');document.querySelector('#open-wa').onclick=()=>say('Demo: this would open WhatsApp with the pre-filled message.');document.querySelector('#save-changes').onclick=()=>say('Pass changes saved. The resident view updates from these sections.');
+    const contentModal=document.querySelector('#content-modal'),contentTitle=document.querySelector('#content-modal-title'),contentHelp=document.querySelector('#content-modal-help'),contentFields=document.querySelector('#content-fields'),saveContent=document.querySelector('#save-content');
+    const editorTypes={
+      essential:{title:'Add room essential',help:'Add a useful item such as a building note, address, key collection point or helpful link.',fields:[['label','Label','text'],['value','Information','text'],['link','Optional link','url']]},
+      support:{title:'Add support contact',help:'Add the person or service, how to reach them, and when a tenant should use it.',fields:[['label','Contact or service','text'],['value','Phone, address or guidance','text'],['link','Call, WhatsApp or Maps link','url']]},
+      place:{title:'Add local place',help:'Add a place your tenants may find useful. The Maps link opens their preferred maps app.',fields:[['category','Category','select',['Food & drink','Café','Groceries','Transport','Student support','Other']],['label','Place name','text'],['value','Short description','textarea'],['link','Google Maps link','url']]},
+      faq:{title:'Add FAQ',help:'Write the question and the answer tenants will see in the pass. Add translations before publishing.',fields:[['label','Question','text'],['value','Answer','textarea']]}
+    };
+    let activeEdit=null;
+    const fieldControl=(definition,value='')=>{const [key,label,type,options]=definition,wrap=document.createElement('label');wrap.textContent=label;let control;if(type==='textarea'){control=document.createElement('textarea')}else if(type==='select'){control=document.createElement('select');options.forEach(option=>{const item=document.createElement('option');item.value=option;item.textContent=option;control.append(item)})}else{control=document.createElement('input');control.type=type}control.name=key;control.value=value;wrap.append(control);return wrap};
+    const drawFields=(type,data={})=>{contentFields.replaceChildren();const defs=editorTypes[type].fields;for(let i=0;i<defs.length;i+=2){const group=document.createElement('div');group.className=defs[i+1]?'two':'';group.append(fieldControl(defs[i],data[defs[i][0]]||''));if(defs[i+1])group.append(fieldControl(defs[i+1],data[defs[i+1][0]]||''));contentFields.append(group)}};
+    const rowDetail=(type,data)=>type==='place'?data.category+' · '+data.value:type==='faq'?data.value:data.value;
+    const prepareRow=(row,type,data)=>{row.dataset.type=type;row._content=data;row.replaceChildren();const drag=document.createElement('span');drag.className='drag';drag.textContent='⠿';const text=document.createElement('span'),name=document.createElement('strong'),detail=document.createElement('small');name.textContent=data.label;detail.textContent=rowDetail(type,data);text.append(name,detail);const actions=document.createElement('span'),edit=document.createElement('button'),remove=document.createElement('button');edit.className='tiny edit-row';edit.textContent='Edit';remove.className='tiny';remove.textContent='Remove';actions.append(edit,remove);row.append(drag,text,actions);edit.onclick=()=>openEditor(type,row,row._content);remove.onclick=()=>row.remove();};
+    const openEditor=(type,row=null,data={})=>{activeEdit={type,row};contentTitle.textContent=editorTypes[type].title;contentHelp.textContent=editorTypes[type].help;drawFields(type,data);contentModal.classList.add('open');contentFields.querySelector('input, textarea, select')?.focus();};
+    const targetFor={essential:'#essentials',support:'#supports',place:'#places',faq:'#faqs-editor'};
+    document.querySelectorAll('[data-add]').forEach(button=>button.onclick=()=>openEditor(button.dataset.add));
+    document.querySelectorAll('#supports .row').forEach(row=>{const data={label:row.querySelector('strong').textContent,value:row.querySelector('small').textContent,link:''};prepareRow(row,'support',data)});
+    document.querySelectorAll('#places .row').forEach(row=>{const data={label:row.querySelector('strong').textContent,value:row.querySelector('small').textContent.replace(/^[^·]+·\s*/,''),category:row.querySelector('small').textContent.split('·')[0].trim(),link:''};prepareRow(row,'place',data)});
+    saveContent.onclick=()=>{const data=Object.fromEntries(new FormData(contentFields).entries());if(!data.label?.trim()){say('Add a title before saving');return}if(activeEdit.row){prepareRow(activeEdit.row,activeEdit.type,data)}else{const row=document.createElement('div');row.className='row';prepareRow(row,activeEdit.type,data);document.querySelector(targetFor[activeEdit.type]).append(row)}contentModal.classList.remove('open');say(editorTypes[activeEdit.type].title.replace('Add ','')+' saved');};
+  </script>
+</body>
+</html>

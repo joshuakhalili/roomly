@@ -1,5 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { usePathname, Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -14,6 +22,7 @@ import {
   Wrench,
   Receipt,
   Settings,
+  Menu,
 } from "lucide-react";
 
 /**
@@ -46,8 +55,7 @@ const ITEMS = [
  * items is a list you read top to bottom every time; four small groups is one
  * you learn the shape of and then stop reading.
  *
- * The phone's tab bar stays flat — headers cost vertical space a fixed bottom
- * bar does not have, and it already scrolls sideways.
+ * Phones expose four daily destinations and an accessible menu for the full workspace.
  */
 const GROUPS = [
   { labelKey: "groupOverview", hrefs: ["/", "/analytics"] },
@@ -85,6 +93,7 @@ export function SidebarNav() {
               <Link
                 key={href}
                 href={href}
+                aria-current={isActive(href) ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive(href)
@@ -110,33 +119,65 @@ export function SidebarNav() {
 export function BottomNav() {
   const t = useTranslations("nav");
   const isActive = useIsActive();
-
+  const [open, setOpen] = useState(false);
+  const primary = ITEMS.filter((item) =>
+    ["/", "/properties", "/rent", "/inventory"].includes(item.href),
+  );
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background md:hidden"
+      aria-label={t("mobileNavigation")}
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      {/* Scrolls rather than squeezing. Nine items across a 375px phone
-          leaves 41px each, which fits the icons and truncates every label
-          to two characters. Fixed-width items with snap points keep the
-          labels readable and the first five visible without scrolling. */}
-      <ul className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {ITEMS.map(({ href, labelKey, Icon }) => (
-          <li key={href} className="w-[4.5rem] shrink-0 snap-start">
+      <ul className="grid grid-cols-5">
+        {primary.map(({ href, labelKey, Icon }) => (
+          <li key={href}>
             <Link
               href={href}
+              aria-current={isActive(href) ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium transition-colors",
-                isActive(href)
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
+                "flex min-h-16 flex-col items-center justify-center gap-1 px-1 text-[10px] font-medium",
+                isActive(href) ? "text-primary" : "text-muted-foreground",
               )}
             >
-              <Icon className="size-5" aria-hidden />
-              <span className="truncate leading-none">{t(labelKey)}</span>
+              <Icon size={20} aria-hidden />
+              <span className="max-w-full truncate">{t(labelKey)}</span>
             </Link>
           </li>
         ))}
+        <li>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger className="flex min-h-16 w-full flex-col items-center justify-center gap-1 text-[10px] font-medium">
+              <Menu size={20} aria-hidden />
+              {t("more")}
+            </DialogTrigger>
+            <DialogContent className="max-h-[85dvh] overflow-y-auto">
+              <DialogTitle>{t("mobileNavigation")}</DialogTitle>
+              <DialogDescription className="sr-only">
+                {t("allDestinations")}
+              </DialogDescription>
+              <div className="grid grid-cols-2 gap-2">
+                {ITEMS.map(({ href, labelKey, Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    aria-current={isActive(href) ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-14 items-center gap-3 rounded-md p-3 text-sm",
+                      isActive(href)
+                        ? "bg-secondary text-primary"
+                        : "hover:bg-muted",
+                    )}
+                  >
+                    <Icon size={18} aria-hidden />
+                    {t(labelKey)}
+                  </Link>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </li>
       </ul>
     </nav>
   );

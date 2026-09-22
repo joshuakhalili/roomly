@@ -107,9 +107,7 @@ export function ScheduleBoard({
         ? isSameDay(d, selectedDay)
         : d >= startOfMonth(month) && d <= endOfMonth(month);
     });
-    return inMonth.sort((a, b) =>
-      a.scheduled_for < b.scheduled_for ? -1 : 1,
-    );
+    return inMonth.sort((a, b) => (a.scheduled_for < b.scheduled_for ? -1 : 1));
   }, [jobs, month, selectedDay, typeFilter]);
 
   const selected = jobs.find((j) => j.id === selectedId) ?? null;
@@ -161,7 +159,7 @@ export function ScheduleBoard({
             {serviceLabel(t, st)}
           </Button>
         ))}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           <RecurrencesDialog
             recurrences={recurrences}
             properties={properties}
@@ -225,12 +223,10 @@ export function ScheduleBoard({
                   <button
                     key={key}
                     type="button"
-                    onClick={() =>
-                      setSelectedDay(isSelected ? null : day)
-                    }
+                    onClick={() => setSelectedDay(isSelected ? null : day)}
                     className={cn(
                       "flex aspect-square flex-col items-center justify-center gap-1 rounded-md text-sm transition-colors",
-                      outside && "text-muted-foreground/40",
+                      outside && "text-muted-foreground",
                       isToday && "font-semibold text-primary",
                       isSelected
                         ? "bg-primary text-primary-foreground"
@@ -348,11 +344,13 @@ export function ScheduleBoard({
                           {t("maintenance.statusDone")}
                         </Badge>
                       )}
-                      {job.cost && !job.is_paid && job.status !== "cancelled" && (
-                        <Badge variant="destructive" className="text-xs">
-                          {t("maintenance.unpaid")}
-                        </Badge>
-                      )}
+                      {job.cost &&
+                        !job.is_paid &&
+                        job.status !== "cancelled" && (
+                          <Badge variant="destructive" className="text-xs">
+                            {t("maintenance.unpaid")}
+                          </Badge>
+                        )}
                       {job.source === "tenancy_end" && (
                         <Badge variant="outline" className="text-xs">
                           {t("maintenance.turnaround")}
@@ -369,7 +367,8 @@ export function ScheduleBoard({
                       {format.dateTime(parseISO(job.scheduled_for), {
                         dateStyle: "medium",
                       })}
-                      {job.scheduled_time && ` · ${job.scheduled_time.slice(0, 5)}`}
+                      {job.scheduled_time &&
+                        ` · ${job.scheduled_time.slice(0, 5)}`}
                       {" · "}
                       {job.property_name}
                       {job.room_name && ` · ${job.room_name}`}

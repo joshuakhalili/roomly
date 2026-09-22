@@ -1,0 +1,16 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+set search_path=public,extensions;
+select plan(7);
+select is((select count(*)::integer from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity),0,'Every public table has RLS');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000002',true);
+select is((select count(*)::integer from content_blocks),0,'Resident cannot read working drafts');
+select is((select count(*)::integer from resident_content()),16,'Resident sees only published content');
+select is((select count(*)::integer from rooms),1,'Resident sees their room');
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000003',true);
+select is((select count(*)::integer from rooms),0,'Other manager cannot read this organisation');
+select is((select count(*)::integer from maintenance_requests),0,'Other manager cannot read private repairs');
+select throws_ok($$insert into invites(room_id,created_by,token_hash,expires_at) values('30000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000003','denied',now())$$,'42501',null,'Cross-organisation invite write denied');
+select * from finish();
+rollback;

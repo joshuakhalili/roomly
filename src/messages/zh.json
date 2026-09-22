@@ -21,7 +21,10 @@
     "groupRecords": "记录",
     "groupSystem": "系统",
     "maintenance": "维护",
-    "expenses": "支出"
+    "expenses": "支出",
+    "more": "更多",
+    "mobileNavigation": "导航",
+    "allDestinations": "所有工作区页面"
   },
   "auth": {
     "signIn": "登录",
@@ -706,5 +709,27 @@
     "noneMatch": "没有符合筛选条件的记录。",
     "deleteExpense": "删除这笔支出？",
     "deleteWarning": "该支出及其收据将一并删除，且无法撤销。"
+  },
+  "workspace": {
+    "searchProperties": "搜索物业或地址",
+    "searchRooms": "搜索房间",
+    "directory": "物业目录",
+    "openProperty": "打开物业",
+    "roomDetails": "房间与住户",
+    "utilities": "公用事业",
+    "documents": "文件",
+    "allRooms": "所有房间",
+    "needsReview": "待检查",
+    "ready": "已检查",
+    "notStarted": "尚未开始",
+    "review": "检查房间清单",
+    "roomRecord": "房间记录",
+    "chooseProperty": "选择物业",
+    "searchInventory": "搜索此物业的房间",
+    "itemsReviewed": "已评定 {done}/{total} 项状况",
+    "noResults": "没有匹配结果",
+    "reportAreas": "选择要检查的区域",
+    "summary": "报告概览",
+    "workspace": "管理工作区"
   }
 }

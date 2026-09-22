@@ -1,169 +1,78 @@
-# Setting up Roomly
+# Set up Roomly
 
-Follow these in order. Everything here is free — no card required at any step.
+Use Node.js 24 and npm. Work against a fresh development Supabase project, not an existing customer database. The website and automated database tests require no Supabase account.
 
-You'll do this once. It takes about 15 minutes.
+## 1. Install
 
----
+```sh
+npm ci
+cp .env.example .env.local
+```
 
-## What you need first
+Set the project URL, public anon key, server-only service-role key, a random `CRON_SECRET` and `NEXT_PUBLIC_APP_URL=http://localhost:3000`. Keep `.env.local` out of Git. Leave optional email and Turnstile settings blank until you configure those services.
 
-- A **GitHub account** (the code lives here)
-- An **email address** for the Supabase and Vercel accounts
+## 2. Apply the database history
 
----
+Apply every file in `supabase/migrations/` in ascending filename order, from `0001` through `0026`. Later files add required columns, organisation isolation and security fixes. Applying only the first two files is insufficient.
 
-## Step 1 — Create the database (Supabase)
+Use your normal Supabase migration workflow. With the Supabase CLI installed and a linked **development** project, `supabase db push` applies pending migrations; inspect the target and the pending list before confirming. Alternatively, execute each complete SQL file in a fresh project's SQL editor in order and record what was applied. Never rerun an initial migration over a populated schema.
 
-Supabase gives you the database, the file storage, and the login system in one place.
+Embedded verification, without cloud credentials:
 
-1. Go to **[supabase.com](https://supabase.com)** → **Start your project** → sign up.
-2. Click **New project**.
-3. Fill in:
-   - **Name**: `roomly`
-   - **Database Password**: click *Generate a password* and **save it somewhere safe**
-     (a password manager, not a text file on your desktop). You won't need it often,
-     but you cannot recover it later.
-   - **Region**: choose **London (eu-west-2)**.
-     This matters — it keeps tenant data physically in the UK, which is the
-     straightforward position under UK GDPR.
-4. Click **Create new project** and wait ~2 minutes while it sets up.
+```sh
+npm run test:database
+```
 
-### Get your three keys
+This verifies migration SQL against PostgreSQL via PGlite with small Auth/Storage test shims. It does not start the application or validate Supabase's hosted services.
 
-Once the project is ready, go to **Project Settings** (gear icon) → **API keys**.
+## 3. Create an organisation and owner
 
-You need three values:
+An Auth user alone has no staff access. The provisioning script creates an isolated organisation, its defaults, an Auth user and the owner's profile. Choose a new slug and email. The script is not a general-purpose migration or account recovery tool.
 
-| What it's called there | What it looks like | Secret? |
-|---|---|---|
-| **Project URL** | `https://abcdefgh.supabase.co` | No |
-| **anon** / **public** key | long string starting `eyJ...` | No |
-| **service_role** key | long string starting `eyJ...` | **YES — see below** |
+Load `.env.local` and provide `TRIAL_PASSWORD` in the process environment using your secret manager or a hidden shell prompt. Do not put the actual password in a command argument or commit it.
 
-> ### ⚠️ About the `service_role` key
->
-> This key **bypasses every security rule in the database**. Anyone who has it can
-> read and delete all tenant data.
->
-> - It goes **only** into environment variables (Steps 2 and 3 below).
-> - Never paste it into a chat, a screenshot, a support ticket, or the code itself.
-> - Never commit it to GitHub.
->
-> If it ever leaks, go to the same page and click **Reset** on that key immediately.
+```sh
+node --env-file=.env.local --import tsx scripts/create-trial-organization.ts   --name 'Roomly Review'   --slug roomly-review   --email owner@example.test
+```
 
-### Create the database tables
+The password must be at least 12 characters. Use an address you control if you need real email flows. The script confirms the organisation and email without printing the password. Clear `TRIAL_PASSWORD` from your shell when finished.
 
-1. In Supabase, open **SQL Editor** in the left sidebar.
-2. Click **New query**.
-3. Open `supabase/migrations/0001_init.sql` from this repo, copy **all** of it,
-   paste it in, and click **Run**. You should see "Success".
-4. Repeat with `supabase/migrations/0002_seed_templates.sql`.
-   This one fills in the inventory checklist templates (Kitchen, Bedroom, Bathroom,
-   and so on) and the tenant message templates in English and Chinese.
+## 4. Run
 
-### Create your first admin login
+```sh
+npm run dev
+```
 
-1. Go to **Authentication** → **Users** → **Add user** → **Create new user**.
-2. Enter your email and a password. Tick **Auto Confirm User**.
-3. Click **Create user**.
+Open <http://localhost:3000/en/login> and sign in with the owner you created. Add properties and rooms, then tenants and tenancies. Use the app's administrator controls to grant colleagues access with an appropriate role.
 
-That's your login. Once you're in the app, you can add other admins from the
-**Admins** screen — you won't need to come back here for that.
+## 5. Website
 
----
+```sh
+cd site
+npm ci
+npm run dev
+```
 
-## Step 2 — Run it on your own computer
+The static website runs at <http://localhost:4321> without accounts or secrets. See [site/README.md](site/README.md) for assets, content and deployment.
 
-1. Open Terminal and go to the project folder:
-   ```
-   cd ~/Desktop/Github\ Repos/roomly
-   ```
-2. Install the dependencies (one time only):
-   ```
-   npm install
-   ```
-3. Make your local settings file by copying the template:
-   ```
-   cp .env.example .env.local
-   ```
-4. Open `.env.local` and paste in your three Supabase values from Step 1.
-   For `CRON_SECRET`, generate a random string by running:
-   ```
-   openssl rand -base64 32
-   ```
-   `.env.local` is git-ignored, so it never leaves your machine.
-5. Start it:
-   ```
-   npm run dev
-   ```
-6. Open **http://localhost:3000** and sign in with the account you made.
+## 6. Verify and deploy
 
----
+```sh
+npm run lint
+npm run typecheck
+npm test
+npm run test:database
+npm run build
+```
 
-## Step 3 — Put it online (Vercel)
+Deploy the application from the repository root and the website from `site/` as separate Vercel projects. Configure app environment variables in the correct environment, HTTPS app URL, Supabase redirect URLs and private storage policies. Do not copy production cron or email credentials into previews. Review storage limits, backup/restore, retention schedules and the [remaining release gates](docs/INTEGRATION_PROGRESS.md) before storing real tenant data.
 
-1. Go to **[vercel.com](https://vercel.com)** → **Sign up** → **Continue with GitHub**.
-2. Click **Add New… → Project**, find the `roomly` repository, click **Import**.
-3. Before clicking Deploy, expand **Environment Variables** and add the same values
-   from your `.env.local`:
+The hosting provider's current plans and terms determine billing and commercial use. No free-service guarantee is implied by these instructions.
 
-   | Name | Value |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | your Project URL |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your anon key |
-   | `SUPABASE_SERVICE_ROLE_KEY` | your service_role key |
-   | `CRON_SECRET` | the random string you generated |
-   | `NEXT_PUBLIC_APP_URL` | leave blank for now — see step 5 |
+## Troubleshooting
 
-4. Click **Deploy** and wait a couple of minutes.
-5. Copy the URL it gives you (something like `https://roomly-xyz.vercel.app`), then go
-   to **Settings → Environment Variables**, set `NEXT_PUBLIC_APP_URL` to that URL, and
-   redeploy. (This is used to build the calendar subscription links.)
-
-From now on, every time the code is pushed to GitHub's `main` branch, Vercel
-redeploys automatically. There's nothing to run by hand.
-
----
-
-## Step 4 — Add it to your iPhone
-
-1. Open the Vercel URL in **Safari** on your iPhone (it must be Safari — Chrome on
-   iOS can't install web apps).
-2. Tap the **Share** button (the square with the arrow).
-3. Scroll down and tap **Add to Home Screen**.
-
-You'll get a Roomly icon on your home screen that opens without browser bars, like a
-normal app. The app shows a one-time reminder about this, because iOS gives no
-automatic install prompt.
-
----
-
-## Optional — daily email summary
-
-Only needed if you want a daily email listing that day's reminders. The in-app alerts
-and the calendar reminders work without it.
-
-1. Sign up at **[resend.com](https://resend.com)** (free tier: 3,000 emails/month).
-2. Create an API key.
-3. Add `RESEND_API_KEY` and `RESEND_FROM_EMAIL` to Vercel's environment variables.
-
----
-
-## If something goes wrong
-
-**"Invalid API key" when signing in**
-The Supabase keys in `.env.local` (or Vercel) are wrong or have extra spaces. Copy
-them again, carefully.
-
-**The site says the project is paused**
-Free Supabase projects pause after about a week with no activity. Open your Supabase
-dashboard and click **Restore project**. Nothing is lost.
-
-**Changes aren't showing up on the live site**
-Check the **Deployments** tab in Vercel — a build may have failed. The log will say why.
-
-**You need to start the database over**
-Re-running `0001_init.sql` will fail because the tables already exist. To wipe and
-start again, run `drop schema public cascade; create schema public;` in the SQL
-Editor first — this **deletes everything**, so only do it while setting up.
+- **Sign-in succeeds but records are unavailable:** confirm the user has a `profiles` row with the intended organisation and role. Do not bypass RLS.
+- **Missing table, column or function:** verify every migration was applied, in order.
+- **No email digest:** optional Resend configuration and the scheduled job must both be present.
+- **Build succeeds but data cannot load:** a build is not a connectivity or permission test; check the configured project and authenticated account.
+- **Database reset needed:** create a separate clean development project. Do not erase a populated schema to recover from a migration error.

@@ -1,0 +1,23 @@
+---
+import Base from "../../layouts/Base.astro";
+import articles from "../../data/articles.json";
+---
+
+<Base title="Field notes — Roomly">
+  <header class="page-intro">
+    <p class="eyebrow">Field notes</p>
+    <h1>A better way to look after a home.</h1>
+    <p class="lede">
+      Practical thinking on the everyday work of running a property.
+    </p>
+  </header>
+  <section class="article-list section-pad" aria-label="Articles">
+    {articles.map((post, i) => (
+      <a class="article-link" href={`/blog/${post.slug}`}>
+        <span>0{i + 1}</span>
+        <h2>{post.title}</h2>
+        <p>{post.description}</p>
+      </a>
+    ))}
+  </section>
+</Base>

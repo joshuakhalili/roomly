@@ -1,5 +1,6 @@
 "use server";
 
+import { inventoryPatch } from "@/lib/inventory-patch";
 import { revalidatePath } from "next/cache";
 import {
   requireAdmin,
@@ -87,32 +88,12 @@ export async function updateSection(
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
 
-  const validRatings = new Set<ConditionRating>([
-    "excellent",
-    "good",
-    "fair",
-    "poor",
-    "unacceptable",
-  ]);
-  if (
-    (values.condition_rating && !validRatings.has(values.condition_rating)) ||
-    (values.cleanliness_rating && !validRatings.has(values.cleanliness_rating))
-  )
-    return { ok: false, error: "Choose a valid condition rating." };
-
-  // Pick the writable fields explicitly. A Server Action's TypeScript type is
-  // not a runtime boundary, so passing `values` straight through would let a
-  // forged request add fields the UI never offered.
-  const fields = {
-    condition_rating: values.condition_rating ?? null,
-    cleanliness_rating: values.cleanliness_rating ?? null,
-    description: values.description?.trim().slice(0, 5000) || null,
-    flagged_for_maintenance: values.flagged_for_maintenance === true,
-  };
+  const patch = inventoryPatch(values);
+  if (!patch.ok) return patch;
 
   const { error } = await auth.supabase
     .from("checklist_sections")
-    .update(fields)
+    .update(patch.data)
     .eq("id", sectionId);
 
   if (error) return { ok: false, error: friendlyError(error) };
@@ -261,7 +242,8 @@ export async function uploadPhoto(
     .from(PHOTO_BUCKET)
     .upload(path, file, { contentType: inspected.contentType });
 
-  if (uploadError) return { ok: false, error: "The photo could not be uploaded." };
+  if (uploadError)
+    return { ok: false, error: "The photo could not be uploaded." };
 
   const { count } = await auth.supabase
     .from("checklist_photos")
@@ -331,7 +313,10 @@ export async function getPhotoUrls(
         path.length > 600 ||
         path.includes("..") ||
         (!path.startsWith(allowedPrefix) &&
-          !(auth.organizationId === legacyPrefix && path.startsWith(`${PHOTO_BUCKET}/`))),
+          !(
+            auth.organizationId === legacyPrefix &&
+            path.startsWith(`${PHOTO_BUCKET}/`)
+          )),
     )
   )
     return { ok: false, error: "Invalid photo path." };
@@ -517,14 +502,24 @@ export async function recordPdfExport(
 ): Promise<ActionResult<{ path: string }>> {
   const auth = await requireAdmin();
   if (!auth.ok) return auth;
-  if (!Number.isInteger(fileSize) || fileSize <= 0 || fileSize > 100 * 1024 * 1024)
+  if (
+    !Number.isInteger(fileSize) ||
+    fileSize <= 0 ||
+    fileSize > 100 * 1024 * 1024
+  )
     return { ok: false, error: "Invalid report size." };
 
   /* The path comes from the client, so it is checked rather than trusted:
      a report may only ever be filed under the checklist it belongs to. */
-  const expectedPrefix = organizationStoragePath(auth.organizationId, checklistId);
+  const expectedPrefix = organizationStoragePath(
+    auth.organizationId,
+    checklistId,
+  );
   if (!path.startsWith(`${expectedPrefix}/`))
-    return { ok: false, error: "That report does not belong to this checklist." };
+    return {
+      ok: false,
+      error: "That report does not belong to this checklist.",
+    };
 
   const { error } = await auth.supabase.from("checklist_pdf_exports").insert({
     checklist_id: checklistId,

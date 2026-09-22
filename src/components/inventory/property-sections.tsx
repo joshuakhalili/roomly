@@ -1,18 +1,9 @@
 "use client";
-
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Badge } from "@/components/ui/badge";
-import { ProgressMeter } from "@/components/charts/segment-meter";
-import {
-  Collapsible,
-  CollapsibleChevron,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Building2, Camera, ChevronRight, MapPin } from "lucide-react";
-
+import { Search, ArrowUpRight, Building2 } from "lucide-react";
 export interface InventoryRoom {
   id: string;
   name: string;
@@ -31,207 +22,162 @@ export interface InventoryProperty {
   rooms: InventoryRoom[];
 }
 
-const OPEN_KEY = "inventory-open";
-
-const subscribe = () => () => {};
-/** Server render: assume nothing is stored, so the first client paint agrees. */
-const getServerSnapshot = () => "";
-
-function getClientSnapshot() {
-  try {
-    return localStorage.getItem(OPEN_KEY) ?? "";
-  } catch {
-    // Private browsing can throw on access — fall back to the defaults.
-    return "";
-  }
-}
-
-/**
- * Every room's standing inventory, one collapsible section per building.
- *
- * This was a two-column masonry of small cards, one per room, under a plain
- * heading. With more than a couple of buildings that is a wall of near
- * identical boxes in two ragged columns, and no way to tell whose rooms are
- * whose without reading every header. Now each building is a section you can
- * shut, with its photograph and address on the header so it is recognisable
- * before it is read, and the rooms inside are rows in one container rather
- * than twelve separate cards.
- */
 export function PropertySections({
   properties,
 }: {
   properties: InventoryProperty[];
 }) {
   const t = useTranslations();
-  const stored = useSyncExternalStore(
-    subscribe,
-    getClientSnapshot,
-    getServerSnapshot,
+  const params = useSearchParams();
+  const [selected, setSelected] = useState(
+    params.get("property") ?? properties[0]?.id,
   );
-
-  /* Remembered between visits, because which building someone is working
-     through does not change just because they opened a room and came back.
-     Seeded from what was stored, or — first visit — everything open when
-     there are few enough that open is still readable. */
-  const [open, setOpen] = useState<Set<string>>(() => {
-    if (stored) return new Set(stored.split(",").filter(Boolean));
-    return new Set(
-      properties.length <= 2
-        ? properties.map((p) => p.id)
-        : properties.slice(0, 1).map((p) => p.id),
-    );
-  });
-
-  function toggle(id: string, isOpen: boolean) {
-    setOpen((previous) => {
-      const next = new Set(previous);
-      if (isOpen) next.add(id);
-      else next.delete(id);
-      try {
-        localStorage.setItem(OPEN_KEY, [...next].join(","));
-      } catch {
-        // Non-fatal: the sections just forget between visits.
-      }
-      return next;
-    });
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("allRooms");
+  const property = properties.find((p) => p.id === selected) ?? properties[0];
+  if (!property) return <p>{t("properties.noProperties")}</p>;
+  const rooms = property.rooms.filter(
+    (r) =>
+      r.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) &&
+      (filter === "allRooms" ||
+        (filter === "needsReview"
+          ? !r.total || r.done < r.total
+          : r.total > 0 && r.done === r.total)),
+  );
+  function select(id: string) {
+    setSelected(id);
+    setQuery("");
+    setFilter("allRooms");
+    const url = new URL(window.location.href);
+    url.searchParams.set("property", id);
+    window.history.replaceState(null, "", url);
   }
-
   return (
-    <div className="flex flex-col gap-3">
-      {properties.map((property) => {
-        const started = property.rooms.filter((r) => r.total > 0).length;
-        const complete = property.rooms.filter(
-          (r) => r.total > 0 && r.done === r.total,
-        ).length;
-        const notStarted = property.rooms.length - started;
-
-        return (
-          <Collapsible
-            key={property.id}
-            open={open.has(property.id)}
-            onOpenChange={(isOpen) => toggle(property.id, isOpen)}
-            className="rounded-xl border border-border bg-card"
+    <div className="inventory-workspace">
+      <aside
+        className="inventory-index"
+        aria-label={t("workspace.chooseProperty")}
+      >
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {t("workspace.chooseProperty")}
+        </h2>
+        <div className="inventory-index-list">
+          {properties.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => select(p.id)}
+              aria-pressed={property.id === p.id}
+            >
+              <span className="flex items-center gap-2 font-medium text-sm">
+                <Building2 size={16} aria-hidden />
+                {p.name}
+              </span>
+              <small>
+                {p.rooms.length} · {t("rooms.title")}
+              </small>
+            </button>
+          ))}
+        </div>
+      </aside>
+      <section className="min-w-0" aria-label={property.name}>
+        <div className="inventory-summary">
+          <h2>{property.name}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {property.address}
+          </p>
+          <Link
+            className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm text-primary"
+            href={`/properties/${property.id}`}
           >
-            <CollapsibleTrigger className="p-4">
-              {property.bannerUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element -- signed
-                   URLs expire, so the optimiser cannot cache them */
-                <img
-                  src={property.bannerUrl}
-                  alt=""
-                  loading="lazy"
-                  className="h-10 w-16 shrink-0 rounded-md object-cover"
-                />
-              ) : (
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                  <Building2 className="size-5" aria-hidden />
-                </span>
-              )}
-
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-heading font-semibold">
-                  {property.name}
+            {t("workspace.openProperty")}
+            <ArrowUpRight size={16} aria-hidden />
+          </Link>
+        </div>
+        <div className="workspace-toolbar">
+          <label className="workspace-search">
+            <Search size={18} aria-hidden />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label={t("workspace.searchInventory")}
+              placeholder={t("workspace.searchInventory")}
+            />
+          </label>
+          <select
+            className="min-h-11 rounded-md border px-3 text-sm"
+            aria-label={t("workspace.review")}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            {["allRooms", "needsReview", "ready"].map((f) => (
+              <option key={f} value={f}>
+                {t(`workspace.${f}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <ul>
+          {rooms.map((room) => (
+            <li key={room.id} className="inventory-room">
+              <div>
+                <h3 className="font-semibold">{room.name}</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t(
+                    room.unitType === "flat"
+                      ? "rooms.unitFlat"
+                      : room.unitType === "studio"
+                        ? "rooms.unitStudio"
+                        : "rooms.unitRoom",
+                  )}
                 </p>
-                {property.address && (
-                  <p className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                    <MapPin className="size-3 shrink-0" aria-hidden />
-                    {property.address}
-                  </p>
+              </div>
+              <div className="inventory-progress">
+                {room.total > 0 ? (
+                  <>
+                    <progress
+                      aria-label={t("workspace.review")}
+                      value={room.done}
+                      max={room.total}
+                    />
+                    <span>
+                      {t("workspace.itemsReviewed", {
+                        done: room.done,
+                        total: room.total,
+                      })}
+                    </span>
+                  </>
+                ) : (
+                  <span>{t("workspace.notStarted")}</span>
                 )}
               </div>
-
-              <div className="flex shrink-0 items-center gap-2">
-                {/* A room with no inventory at all is the only thing here
-                    worth a colour: without one there is no evidence of
-                    condition to compare against later. */}
-                {notStarted > 0 && (
-                  <Badge variant="warning">
-                    {t("inventory.notStartedCount", { count: notStarted })}
-                  </Badge>
-                )}
-                <span className="figure hidden text-xs text-muted-foreground sm:inline">
-                  {t("inventory.completeOf", {
-                    done: complete,
-                    total: property.rooms.length,
-                  })}
-                </span>
-                <CollapsibleChevron />
+              <div className="inventory-actions">
+                <Link
+                  className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground"
+                  href={
+                    room.checklistId
+                      ? `/inventory/${room.checklistId}`
+                      : `/properties/${property.id}/rooms/${room.id}`
+                  }
+                >
+                  {t("workspace.review")}
+                  <ArrowUpRight size={15} aria-hidden />
+                </Link>
+                <Link
+                  className="inline-flex min-h-11 items-center text-xs text-muted-foreground underline underline-offset-4"
+                  href={`/properties/${property.id}/rooms/${room.id}`}
+                >
+                  {t("workspace.roomRecord")}
+                </Link>
               </div>
-            </CollapsibleTrigger>
-
-            <CollapsibleContent>
-              {property.rooms.length === 0 ? (
-                <p className="px-4 pb-4 text-sm text-muted-foreground">
-                  {t("rooms.noRooms")}
-                </p>
-              ) : (
-                /* Rows in one container, not a stack of cards: twelve cards
-                   in a column is twelve borders competing for the same
-                   attention as the section they sit in. */
-                <ul className="divide-y divide-border border-t border-border">
-                  {property.rooms.map((room) => (
-                    <li key={room.id}>
-                      <Link
-                        href={
-                          room.checklistId
-                            ? `/inventory/${room.checklistId}`
-                            : `/properties/${property.id}/rooms/${room.id}`
-                        }
-                        className="flex items-center gap-3 px-4 py-3 outline-none transition-colors hover:bg-muted/50 focus-visible:bg-muted/50"
-                      >
-                        <Camera
-                          className="size-4 shrink-0 text-muted-foreground"
-                          aria-hidden
-                        />
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="truncate text-sm font-medium">
-                              {room.name}
-                            </span>
-                            <Badge variant="outline">
-                              {t(
-                                room.unitType === "flat"
-                                  ? "rooms.unitFlat"
-                                  : room.unitType === "studio"
-                                    ? "rooms.unitStudio"
-                                    : "rooms.unitRoom",
-                              )}
-                            </Badge>
-                          </div>
-
-                          {room.total > 0 ? (
-                            <div className="mt-1.5 flex items-center gap-2">
-                              <ProgressMeter
-                                value={room.done}
-                                max={room.total}
-                                tone="brand"
-                                className="max-w-40"
-                              />
-                              <span className="figure text-xs text-muted-foreground">
-                                {room.done}/{room.total}
-                              </span>
-                            </div>
-                          ) : (
-                            <p className="text-xs text-muted-foreground">
-                              {t("inventory.notStarted")}
-                            </p>
-                          )}
-                        </div>
-
-                        <ChevronRight
-                          className="size-4 shrink-0 text-muted-foreground"
-                          aria-hidden
-                        />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
-        );
-      })}
+            </li>
+          ))}
+        </ul>
+        {!rooms.length && (
+          <p role="status" className="py-12 text-muted-foreground">
+            {t("workspace.noResults")}
+          </p>
+        )}
+      </section>
     </div>
   );
 }

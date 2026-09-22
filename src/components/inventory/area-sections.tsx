@@ -41,6 +41,9 @@ export function AreaSections({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [tailoring, setTailoring] = useState(false);
+  const [focused, setFocused] = useState(sections[0]?.id);
+  const active =
+    sections.find((section) => section.id === focused) ?? sections[0];
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
   const [chosen, setChosen] = useState<Set<string>>(new Set());
@@ -172,7 +175,12 @@ export function AreaSections({
               aria-label={t("inventory.addSection")}
             />
             <div className="flex gap-2">
-              <Button type="button" size="sm" onClick={onAdd} disabled={isPending}>
+              <Button
+                type="button"
+                size="sm"
+                onClick={onAdd}
+                disabled={isPending}
+              >
                 {t("common.save")}
               </Button>
               <Button
@@ -224,13 +232,43 @@ export function AreaSections({
           })}
         </ul>
       ) : (
-        sections.map((section) => (
-          <SectionEditor
-            key={section.id}
-            section={section}
-            photos={photosBySection.get(section.id) ?? []}
-          />
-        ))
+        <div className="inspection-workspace">
+          <nav
+            className="inspection-index"
+            aria-label={t("inventory.sections")}
+          >
+            {sections.map((section, index) => (
+              <button
+                type="button"
+                key={section.id}
+                aria-pressed={active?.id === section.id}
+                onClick={() => setFocused(section.id)}
+              >
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span>{section.section_name}</span>
+                {section.condition_rating && (
+                  <span
+                    aria-label={t("workspace.ready")}
+                    className="ml-auto text-primary"
+                  >
+                    ✓
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+          <div className="min-w-0">
+            {active && (
+              <SectionEditor
+                key={active.id}
+                section={active}
+                photos={photosBySection.get(active.id) ?? []}
+              />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

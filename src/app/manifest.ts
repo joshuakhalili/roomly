@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Private property management tool",
     start_url: "/en",
     display: "standalone",
-    background_color: "#F6F4EF",
-    theme_color: "#14120F",
+    background_color: "#EAE3F6",
+    theme_color: "#25153E",
     orientation: "portrait",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

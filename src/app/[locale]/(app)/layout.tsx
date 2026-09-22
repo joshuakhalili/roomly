@@ -30,7 +30,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b border-border bg-background">
+      <header className="workspace-header sticky top-0 z-40 border-b">
         <div className="flex h-14 items-center gap-3 px-4">
           <Link
             href="/"
@@ -39,7 +39,10 @@ export default async function AppLayout({
           >
             {/* Wordmark hides on the narrowest screens; the mark alone still
                 identifies the app, which is what it is designed to do. */}
-            <Logo variant="lockup" className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline" />
+            <Logo
+              variant="lockup"
+              className="[&>span:last-child]:hidden sm:[&>span:last-child]:inline"
+            />
           </Link>
           <div className="ml-auto flex items-center gap-1">
             <span className="hidden max-w-[16ch] truncate text-sm text-muted-foreground lg:inline">
@@ -52,14 +55,14 @@ export default async function AppLayout({
       </header>
 
       <div className="flex flex-1">
-        <aside className="hidden w-56 shrink-0 border-r border-border/60 md:block">
+        <aside className="workspace-rail hidden w-56 shrink-0 md:block">
           <div className="sticky top-14">
             <SidebarNav />
           </div>
         </aside>
 
         {/* Bottom padding clears the mobile tab bar. */}
-        <main className="min-w-0 flex-1 p-4 pb-24 md:p-6 md:pb-6">
+        <main className="workspace-main min-w-0 flex-1 p-4 pb-24 md:p-8 md:pb-8">
           {children}
         </main>
       </div>

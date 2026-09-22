@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { RoomDirectory } from "@/components/properties/room-directory";
 import { Button } from "@/components/ui/button";
 import { PropertyDialog } from "@/components/properties/property-dialog";
 import { RoomDialog } from "@/components/rooms/room-dialog";
@@ -11,7 +11,7 @@ import { DeletePropertyButton } from "@/components/properties/delete-property-bu
 import { PropertyDocuments } from "@/components/documents/property-documents";
 import { UtilityBillsPanel } from "@/components/properties/utility-bills-panel";
 import { getSignedUrls } from "@/lib/actions/storage";
-import { ArrowLeft, ChevronRight, DoorOpen, Pencil, User } from "lucide-react";
+import { ArrowLeft, DoorOpen, Pencil } from "lucide-react";
 import type {
   DocumentRecord,
   Property,
@@ -23,12 +23,18 @@ import type {
 
 export default async function PropertyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; propertyId: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { locale, propertyId } = await params;
   setRequestLocale(locale);
   const t = await getTranslations();
+  const query = await searchParams;
+  const view = ["rooms", "utilities", "documents"].includes(query.view ?? "")
+    ? query.view
+    : "rooms";
 
   const supabase = await createClient();
   const { data: property } = await supabase
@@ -47,7 +53,11 @@ export default async function PropertyPage({
     { data: bills },
     { data: billedTenancies },
   ] = await Promise.all([
-    supabase.from("rooms").select("*").eq("property_id", propertyId).order("name"),
+    supabase
+      .from("rooms")
+      .select("*")
+      .eq("property_id", propertyId)
+      .order("name"),
     supabase.from("tenancies").select("*").in("status", ["upcoming", "active"]),
     supabase
       .from("tenancy_tenants")
@@ -65,10 +75,7 @@ export default async function PropertyPage({
     /* Ended lettings too, not just current ones: the comparison looks back a
        year, and a room that was let for eight of those months collected rent
        that has to count against the bills for the same period. */
-    supabase
-      .from("tenancies")
-      .select("*")
-      .in("status", ["active", "ended"]),
+    supabase.from("tenancies").select("*").in("status", ["active", "ended"]),
   ]);
 
   const tenantsByTenancy = new Map<string, TenantOnTenancy[]>();
@@ -154,89 +161,93 @@ export default async function PropertyPage({
         </Card>
       )}
 
-      <PropertyDocuments
-        property={prop}
-        documents={(certificates ?? []) as DocumentRecord[]}
-      />
+      <nav className="workspace-subnav" aria-label={prop.name}>
+        {[
+          ["rooms", "roomDetails"],
+          ["utilities", "utilities"],
+          ["documents", "documents"],
+        ].map(([id, label]) => (
+          <Link
+            key={id}
+            href={`/properties/${prop.id}?view=${id}`}
+            aria-current={view === id ? "page" : undefined}
+          >
+            {t(`workspace.${label}`)}
+          </Link>
+        ))}
+      </nav>
 
-      <UtilityBillsPanel
-        propertyId={prop.id}
-        bills={(bills ?? []) as UtilityBill[]}
-        /* Narrowed to this building's rooms here rather than in the query:
+      {view === "documents" && (
+        <PropertyDocuments
+          property={prop}
+          documents={(certificates ?? []) as DocumentRecord[]}
+        />
+      )}
+
+      {view === "utilities" && (
+        <UtilityBillsPanel
+          propertyId={prop.id}
+          bills={(bills ?? []) as UtilityBill[]}
+          /* Narrowed to this building's rooms here rather than in the query:
            the tenancies table has no property_id, so the join has to happen
            through rooms either way. */
-        tenancies={((billedTenancies ?? []) as Tenancy[]).filter((tn) =>
-          roomList.some((r) => r.id === tn.room_id),
-        )}
-      />
+          tenancies={((billedTenancies ?? []) as Tenancy[]).filter((tn) =>
+            roomList.some((r) => r.id === tn.room_id),
+          )}
+        />
+      )}
 
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">{t("rooms.title")}</h2>
+      {view === "rooms" && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">{t("rooms.title")}</h2>
 
-        {roomList.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
-              <DoorOpen className="size-8 text-muted-foreground" aria-hidden />
-              <p className="text-sm text-muted-foreground">{t("rooms.noRooms")}</p>
-              <RoomDialog propertyId={prop.id} />
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {roomList.map((room) => {
-              const tenancy = tenancyByRoom.get(room.id);
-              const lead = tenancy
-                ? (tenantsByTenancy.get(tenancy.id)?.find((x) => x.is_lead_tenant) ??
-                  tenantsByTenancy.get(tenancy.id)?.[0])
-                : undefined;
-
-              return (
-                <Link
-                  key={room.id}
-                  href={`/properties/${prop.id}/rooms/${room.id}`}
-                >
-                  <Card className="h-full transition-colors hover:bg-accent/40">
-                    <CardContent className="flex items-center gap-3 p-4">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="truncate font-medium">{room.name}</p>
-                          <Badge variant="outline" className="shrink-0 text-xs">
-                            {room.is_common_area
-                              ? t("rooms.isCommonArea")
-                              : t(
-                                  room.unit_type === "flat"
-                                    ? "rooms.unitFlat"
-                                    : room.unit_type === "studio"
-                                      ? "rooms.unitStudio"
-                                      : "rooms.unitRoom",
-                                )}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-                          {lead ? (
-                            <>
-                              <User className="size-3 shrink-0" aria-hidden />
-                              {lead.first_name} {lead.surname}
-                            </>
-                          ) : room.is_common_area ? (
-                            "—"
-                          ) : (
-                            t("rooms.vacant")
-                          )}
-                        </p>
-                      </div>
-                      <ChevronRight
-                        className="size-4 shrink-0 text-muted-foreground"
-                        aria-hidden
-                      />
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </section>
+          {roomList.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+                <DoorOpen
+                  className="size-8 text-muted-foreground"
+                  aria-hidden
+                />
+                <p className="text-sm text-muted-foreground">
+                  {t("rooms.noRooms")}
+                </p>
+                <RoomDialog propertyId={prop.id} />
+              </CardContent>
+            </Card>
+          ) : (
+            <RoomDirectory
+              propertyId={prop.id}
+              rooms={roomList.map((room) => {
+                const tenancy = tenancyByRoom.get(room.id);
+                const people = tenancy
+                  ? (tenantsByTenancy.get(tenancy.id) ?? [])
+                  : [];
+                return {
+                  id: room.id,
+                  name: room.name,
+                  type: t(
+                    room.unit_type === "flat"
+                      ? "rooms.unitFlat"
+                      : room.unit_type === "studio"
+                        ? "rooms.unitStudio"
+                        : "rooms.unitRoom",
+                  ),
+                  occupant: people
+                    .map((p) => `${p.first_name} ${p.surname}`)
+                    .join(", "),
+                  status: room.is_common_area
+                    ? "shared"
+                    : tenancy?.status === "active"
+                      ? "occupied"
+                      : tenancy
+                        ? "upcoming"
+                        : "vacant",
+                };
+              })}
+            />
+          )}
+        </section>
+      )}
     </div>
   );
 }

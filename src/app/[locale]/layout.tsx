@@ -81,7 +81,7 @@ export const viewport: Viewport = {
   // Two values so iOS paints the status bar to match the active theme
   // rather than showing a dark strip above a light page.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F6F4EF" },
+    { media: "(prefers-color-scheme: light)", color: "#EAE3F6" },
     { media: "(prefers-color-scheme: dark)", color: "#0B0A07" },
   ],
   // Let iOS fill the notch area when installed to the home screen.

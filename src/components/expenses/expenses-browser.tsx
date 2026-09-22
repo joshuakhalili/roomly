@@ -18,7 +18,14 @@ import {
 } from "@/components/ui/collapsible";
 import { ExpenseDialog } from "./expense-dialog";
 import { isInTaxYear, taxYear, type TaxYear } from "@/lib/tax-year";
-import { Search, SlidersHorizontal, Wrench, Package, Zap, Receipt } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  Wrench,
+  Package,
+  Zap,
+  Receipt,
+} from "lucide-react";
 import type {
   Expense,
   ExpenseCategory,
@@ -45,7 +52,11 @@ const SOURCE_META: Record<
     labelKey: "expenses.sourceMaintenance",
     href: "/maintenance",
   },
-  asset: { Icon: Package, labelKey: "expenses.sourceAsset", href: "/maintenance" },
+  asset: {
+    Icon: Package,
+    labelKey: "expenses.sourceAsset",
+    href: "/maintenance",
+  },
   utility: { Icon: Zap, labelKey: "expenses.sourceUtility", href: null },
 };
 
@@ -186,7 +197,12 @@ export function ExpensesBrowser({
               options={[
                 { value: ALL, label: t("expenses.allSources") },
                 ...(
-                  ["expense", "maintenance", "asset", "utility"] as ExpenseSource[]
+                  [
+                    "expense",
+                    "maintenance",
+                    "asset",
+                    "utility",
+                  ] as ExpenseSource[]
                 ).map((s) => ({
                   value: s,
                   label: t(SOURCE_META[s].labelKey),
@@ -263,9 +279,9 @@ export function ExpensesBrowser({
               : null;
 
             return (
-              <li key={`${row.source}-${row.id}`}>
+              <li key={`${row.source}-${row.id}`} className="min-w-0">
                 <Card>
-                  <CardContent className="flex items-start gap-3 p-4">
+                  <CardContent className="flex flex-wrap items-start gap-3 p-4">
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                       <meta.Icon className="size-4" aria-hidden />
                     </span>
@@ -295,7 +311,7 @@ export function ExpensesBrowser({
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="ml-auto flex shrink-0 items-center gap-1">
                       <span className="figure font-medium">
                         {money(Number(row.amount))}
                       </span>

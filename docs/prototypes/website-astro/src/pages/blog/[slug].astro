@@ -1,0 +1,33 @@
+---
+import Base from "../../layouts/Base.astro";
+import articles from "../../data/articles.json";
+export function getStaticPaths() {
+  return articles.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+const { post } = Astro.props;
+---
+
+<Base title={`${post.title} — Roomly`} description={post.description}>
+  <header class="page-intro">
+    <a class="eyebrow" href="/blog">
+      ← Field notes
+    </a>
+    <h1>{post.title}</h1>
+  </header>
+  <article class="prose">
+    {post.sections.map((section) => (
+      <section>
+        <h2>{section.heading}</h2>
+        {section.paragraphs.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+      </section>
+    ))}
+    <a class="text-link" href="/blog">
+      Back to field notes <span aria-hidden="true">↗</span>
+    </a>
+  </article>
+</Base>

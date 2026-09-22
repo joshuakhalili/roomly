@@ -21,7 +21,10 @@
     "groupRecords": "Kayıtlar",
     "groupSystem": "Sistem",
     "maintenance": "Bakım",
-    "expenses": "Giderler"
+    "expenses": "Giderler",
+    "more": "Diğer",
+    "mobileNavigation": "Gezinme",
+    "allDestinations": "Tüm çalışma alanı sayfaları"
   },
   "auth": {
     "signIn": "Giriş yap",
@@ -706,5 +709,27 @@
     "noneMatch": "Bu filtrelere uyan bir şey yok.",
     "deleteExpense": "Bu gider silinsin mi?",
     "deleteWarning": "Gider ve ona eklenmiş fiş kaldırılır. Bu işlem geri alınamaz."
+  },
+  "workspace": {
+    "searchProperties": "Mülk veya adres ara",
+    "searchRooms": "Oda ara",
+    "directory": "Mülk dizini",
+    "openProperty": "Mülkü aç",
+    "roomDetails": "Odalar ve sakinler",
+    "utilities": "Faturalar",
+    "documents": "Belgeler",
+    "allRooms": "Tüm odalar",
+    "needsReview": "İnceleme gerekli",
+    "ready": "İncelendi",
+    "notStarted": "Başlanmadı",
+    "review": "Envanteri incele",
+    "roomRecord": "Oda kaydı",
+    "chooseProperty": "Mülk seç",
+    "searchInventory": "Bu mülkte oda ara",
+    "itemsReviewed": "{total} durum değerlendirmesinden {done} tanesi",
+    "noResults": "Eşleşen sonuç yok",
+    "reportAreas": "İncelenecek alanı seçin",
+    "summary": "Rapor özeti",
+    "workspace": "Yönetim alanı"
   }
 }

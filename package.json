@@ -10,7 +10,10 @@
     "test": "tsx --test src/lib/__tests__/*.test.ts",
     "typecheck": "tsc --noEmit",
     "create-trial": "tsx scripts/create-trial-organization.ts",
-    "verify-tenancy": "tsx scripts/verify-multi-tenancy.ts"
+    "verify-tenancy": "tsx scripts/verify-multi-tenancy.ts",
+    "test:database": "tsx --test tests/integration/*.test.ts",
+    "test:site": "playwright test -c playwright.site.config.ts",
+    "test:app": "playwright test -c playwright.app.config.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.8.1",
@@ -36,6 +39,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.1",
+    "@electric-sql/pglite": "0.5.8",
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

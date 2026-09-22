@@ -21,7 +21,10 @@
     "groupRecords": "Records",
     "groupSystem": "System",
     "maintenance": "Maintenance",
-    "expenses": "Expenses"
+    "expenses": "Expenses",
+    "more": "More",
+    "mobileNavigation": "Navigation",
+    "allDestinations": "All workspace destinations"
   },
   "auth": {
     "signIn": "Sign in",
@@ -706,5 +709,27 @@
     "noneMatch": "Nothing matches these filters.",
     "deleteExpense": "Delete this expense?",
     "deleteWarning": "The expense and any receipt filed against it are removed. This cannot be undone."
+  },
+  "workspace": {
+    "searchProperties": "Search properties or address",
+    "searchRooms": "Search rooms",
+    "directory": "Property directory",
+    "openProperty": "Open property",
+    "roomDetails": "Rooms & people",
+    "utilities": "Utilities",
+    "documents": "Documents",
+    "allRooms": "All rooms",
+    "needsReview": "Needs review",
+    "ready": "Reviewed",
+    "notStarted": "Not started",
+    "review": "Review inventory",
+    "roomRecord": "Room record",
+    "chooseProperty": "Choose a property",
+    "searchInventory": "Search rooms in this property",
+    "itemsReviewed": "{done} of {total} condition ratings",
+    "noResults": "No matching results",
+    "reportAreas": "Choose an area to inspect",
+    "summary": "Report summary",
+    "workspace": "Management workspace"
   }
 }

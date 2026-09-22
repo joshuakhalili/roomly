@@ -47,10 +47,14 @@ export function AppSettingsForm({
 
   return (
     <form action={submit} className="flex flex-col gap-4">
-      <Field label={t("settings.moveAlertDays")} hint={t("settings.moveAlertHelp")}>
+      <Field
+        label={t("settings.moveAlertDays")}
+        hint={t("settings.moveAlertHelp")}
+      >
         <Input
           type="number"
           name="move_alert_days"
+          aria-label={t("settings.moveAlertDays")}
           defaultValue={moveAlertDays}
           min={1}
           max={30}
@@ -59,10 +63,14 @@ export function AppSettingsForm({
         />
       </Field>
 
-      <Field label={t("settings.photoPurgeDays")} hint={t("settings.photoPurgeHelp")}>
+      <Field
+        label={t("settings.photoPurgeDays")}
+        hint={t("settings.photoPurgeHelp")}
+      >
         <Input
           type="number"
           name="photo_purge_days"
+          aria-label={t("settings.photoPurgeDays")}
           defaultValue={photoPurgeDays}
           min={1}
           max={3650}
@@ -74,7 +82,11 @@ export function AppSettingsForm({
       {/* An unchecked switch sends nothing at all, so this marks that the
           control was on the form — otherwise "off" and "not submitted" are
           the same thing and the setting could never be turned off. */}
-      <input type="hidden" name="purge_photos_on_tenancy_end_present" value="1" />
+      <input
+        type="hidden"
+        name="purge_photos_on_tenancy_end_present"
+        value="1"
+      />
       <div className="flex items-start gap-3 rounded-md border p-3">
         <Switch
           id="purge_photos_on_tenancy_end"

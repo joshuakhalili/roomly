@@ -1,0 +1,49 @@
+{
+  "name": "roomly",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:types": "sh scripts/generate-db-types.sh",
+    "db:test": "supabase test db"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "latest",
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "@tailwindcss/postcss": "latest",
+    "lucide-react": "latest",
+    "next": "16.3.5",
+    "openai": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "server-only": "latest",
+    "tailwindcss": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "latest",
+    "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "latest",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.3.5",
+    "jsdom": "latest",
+    "prettier": "^3.9.8",
+    "typescript": "^6.0.3",
+    "vitest": "latest"
+  }
+}

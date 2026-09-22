@@ -1,0 +1,3 @@
+insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('maintenance','maintenance',false,5242880,array['image/jpeg','image/png','application/pdf']) on conflict(id) do nothing;
+create policy maintenance_upload on storage.objects for insert to authenticated with check(bucket_id='maintenance' and (storage.foldername(name))[1]=auth.uid()::text and public.repair_owner(((storage.foldername(name))[2])::uuid,true));
+create policy maintenance_download on storage.objects for select to authenticated using(bucket_id='maintenance' and exists(select 1 from public.maintenance_attachments a where a.storage_path=name and public.repair_visible(a.maintenance_request_id)));
