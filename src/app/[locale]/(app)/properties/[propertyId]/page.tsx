@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { byName } from "@/lib/utils";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
@@ -99,7 +100,7 @@ export default async function PropertyPage({
   }
 
   const prop = property as Property;
-  const roomList = (rooms ?? []) as Room[];
+  const roomList = byName(rooms as Room[] | null);
 
   const signed = prop.banner_path
     ? await getSignedUrls([prop.banner_path])

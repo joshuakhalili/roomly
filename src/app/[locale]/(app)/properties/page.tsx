@@ -122,7 +122,7 @@ export default async function PropertiesPage({
             {t("properties.subtitle")}
           </p>
         </div>
-        <PropertyDialog />
+        <PropertyDialog autoOpen />
       </header>
 
       {list.length === 0 ? (

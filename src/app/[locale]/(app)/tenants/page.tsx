@@ -103,7 +103,7 @@ export default async function TenantsPage({
             {t("tenants.subtitle")}
           </p>
         </div>
-        <TenantDialog />
+        <TenantDialog autoOpen />
       </header>
 
       {tenants.length === 0 ? (

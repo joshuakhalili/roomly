@@ -116,7 +116,7 @@ export function ScheduleBoard({
     .filter((j) => j.status !== "cancelled")
     .reduce((sum, j) => sum + Number(j.cost ?? 0), 0);
   const unpaid = visible.filter(
-    (j) => j.status !== "cancelled" && !j.is_paid && j.cost,
+    (j) => j.status === "done" && !j.is_paid && j.cost,
   ).length;
 
   function act(fn: () => Promise<{ ok: boolean; error?: string }>) {
@@ -168,6 +168,7 @@ export function ScheduleBoard({
             contacts={contacts}
           />
           <JobDialog
+            autoOpen
             properties={properties}
             rooms={rooms}
             serviceTypes={serviceTypes}

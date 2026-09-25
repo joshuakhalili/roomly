@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetch-all";
+import { bearerMatches } from "@/lib/security/bearer";
 import { buildRentRows, toDateString, type RentRow } from "@/lib/rent";
 import { generateJobDates } from "@/lib/jobs";
 import { addDays, differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
@@ -45,7 +47,7 @@ export async function GET(request: Request) {
 
   // Vercel Cron sends `Authorization: Bearer <CRON_SECRET>`. Refuse rather
   // than run unprotected if the secret was never configured.
-  if (!secret || auth !== `Bearer ${secret}`) return unauthorised();
+  if (!secret || !bearerMatches(auth, secret)) return unauthorised();
 
   const supabase = createAdminClient();
   const today = startOfDay(new Date());
@@ -65,10 +67,14 @@ export async function GET(request: Request) {
     )?.value ?? fallback;
 
   // ── 1. Extend rent schedules ─────────────────────────────────────────────
-  const { data: tenancies } = await supabase
-    .from("tenancies")
-    .select("*")
-    .in("status", ["upcoming", "active"]);
+  const { data: tenancies } = await fetchAll((from, to) =>
+    supabase
+      .from("tenancies")
+      .select("*")
+      .in("status", ["upcoming", "active"])
+      .order("id")
+      .range(from, to),
+  );
 
   const horizon = new Date(today);
   horizon.setMonth(horizon.getMonth() + RENT_HORIZON_MONTHS);
@@ -179,11 +185,15 @@ export async function GET(request: Request) {
 
   // Rent alerts fire the day AFTER the due date — the tenant has had their
   // whole due day to pay before anyone is prompted to chase.
-  const { data: overdue } = await supabase
-    .from("rent_payments")
-    .select("id, tenancy_id, amount_due, due_date, organization_id")
-    .in("status", ["due", "late"])
-    .lt("due_date", todayStr);
+  const { data: overdue } = await fetchAll((from, to) =>
+    supabase
+      .from("rent_payments")
+      .select("id, tenancy_id, amount_due, due_date, organization_id")
+      .in("status", ["due", "late"])
+      .lt("due_date", todayStr)
+      .order("id")
+      .range(from, to),
+  );
 
   for (const p of overdue ?? []) {
     alerts.push({
@@ -344,8 +354,21 @@ export async function GET(request: Request) {
   // A live query can only ever answer "now". Without this row there is no
   // history to draw a trend from.
   const [{ data: rooms }, { data: activeTenancies }] = await Promise.all([
-    supabase.from("rooms").select("id, is_lettable, is_common_area, organization_id"),
-    supabase.from("tenancies").select("room_id, rent_amount, organization_id").eq("status", "active"),
+    fetchAll((from, to) =>
+      supabase
+        .from("rooms")
+        .select("id, is_lettable, is_common_area, organization_id")
+        .order("id")
+        .range(from, to),
+    ),
+    fetchAll((from, to) =>
+      supabase
+        .from("tenancies")
+        .select("room_id, rent_amount, organization_id")
+        .eq("status", "active")
+        .order("id")
+        .range(from, to),
+    ),
   ]);
 
   for (const organization of organizations ?? []) {

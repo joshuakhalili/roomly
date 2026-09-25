@@ -24,7 +24,8 @@
     "expenses": "支出",
     "more": "更多",
     "mobileNavigation": "导航",
-    "allDestinations": "所有工作区页面"
+    "allDestinations": "所有工作区页面",
+    "compliance": "合规"
   },
   "auth": {
     "signIn": "登录",
@@ -59,7 +60,14 @@
     "vsDaysAgo": "对比 {days} 天前",
     "points": "{points, plural, other {# 个百分点}}",
     "roomsDelta": "{count, plural, other {# 间房}}",
-    "vacantOfTotal": "共 {total} 间可出租"
+    "vacantOfTotal": "共 {total} 间可出租",
+    "greeting": {
+      "morning": "早上好",
+      "afternoon": "下午好",
+      "evening": "晚上好"
+    },
+    "showAll": "显示全部 {count} 条",
+    "showFewer": "收起"
   },
   "alerts": {
     "kindOverdue": "租金逾期",
@@ -730,6 +738,108 @@
     "noResults": "没有匹配结果",
     "reportAreas": "选择要检查的区域",
     "summary": "报告概览",
-    "workspace": "管理工作区"
+    "workspace": "管理工作区",
+    "roomCount": "{count, plural, =0 {暂无房间} other {# 间房}}",
+    "sharedAreas": "公共区域",
+    "lettableUnits": "房间与单元",
+    "sharedArea": "公共区域",
+    "start": "开始清点",
+    "continue": "继续",
+    "open": "打开"
+  },
+  "shell": {
+    "account": "账户",
+    "team": "团队与权限",
+    "theme": "外观",
+    "new": "新建"
+  },
+  "command": {
+    "open": "搜索 Roomly",
+    "placeholder": "搜索租客、房间、房产或页面",
+    "records": "记录",
+    "actions": "新建",
+    "goTo": "前往",
+    "searching": "搜索中…",
+    "empty": "没有匹配结果。试试姓名、房间或街道。",
+    "new": {
+      "property": "新建房产",
+      "tenant": "新建租客",
+      "job": "新建维修任务",
+      "expense": "新建支出"
+    },
+    "short": "搜索"
+  },
+  "nextUp": {
+    "heading": "下一步",
+    "rentTitle": "催收 {amount} 逾期租金",
+    "rentDetail": "{people} 位租客共 {payments} 笔逾期",
+    "rentCta": "打开租金",
+    "complianceTitle": "已错过 {count} 项法定期限",
+    "complianceDetail": "证书已过期或押金未受保护。{dueSoon, plural, =0 {近期无其他到期项。} other {另有 # 份证书即将到期。}}",
+    "complianceCta": "打开合规",
+    "arrivalsTitle": "本周有 {count} 位租客入住",
+    "arrivalsDetail": "交房前请确认房间清点已完成。",
+    "arrivalsCta": "打开物品清点",
+    "documentsTitle": "{count} 个租约缺少文件",
+    "documentsDetail": "租约、租住权或押金文件尚未存档。",
+    "documentsCta": "打开文件",
+    "vacantTitle": "{count} 间房空置",
+    "vacantDetail": "整体入住率为 {rate}%。",
+    "vacantCta": "打开房产",
+    "clearTitle": "目前没有需要处理的事项",
+    "clearDetail": "租金已收齐，文件齐全，所有房间均已出租。"
+  },
+  "compliance": {
+    "title": "合规",
+    "subtitle": "每栋房产的安全证书和押金期限",
+    "allClear": "所有证书均在有效期内，未来 60 天内无需续期。",
+    "tile": {
+      "expired": "已过期",
+      "dueSoon": "即将到期",
+      "missing": "未存档",
+      "deposits": "押金"
+    },
+    "tileHint": {
+      "expired": "已过有效期的证书",
+      "dueSoon": "{days} 天内到期",
+      "missing": "从未上传的证书",
+      "deposits": "需要处理的押金"
+    },
+    "certificates": "房产证书",
+    "openLibrary": "打开文件库",
+    "notOnFile": "未存档",
+    "expiredAgo": "{days, plural, =0 {今天过期} other {已过期 # 天}}",
+    "dueIn": "{days, plural, =0 {今天到期} other {# 天后到期}}",
+    "until": "有效至 {date}",
+    "deposits": "押金保护",
+    "depositsHint": "收到押金后 30 天内必须完成保护并送达规定信息。",
+    "depositsClear": "所持有的 {count} 笔押金均已受保护，规定信息已送达。",
+    "issue": {
+      "unprotected": "无保护证书",
+      "noPrescribedInfo": "未送达规定信息"
+    },
+    "deadlinePassed": "截止日期为 {date}",
+    "deadlineIn": "{days, plural, =0 {今天截止} other {剩余 # 天}}"
+  },
+  "login": {
+    "welcome": "欢迎回来",
+    "headline": "每个房间、每位租客、每个期限。",
+    "lede": "租金、文件和每个房间的状况，集中在一个清晰的地方。",
+    "momentRent": "今天谁欠多少",
+    "momentRentDetail": "逾期租金按优先级排列，一键发送提醒",
+    "momentCompliance": "不错过任何期限",
+    "momentComplianceDetail": "燃气、电气和押金日期自动跟踪",
+    "momentInventory": "交接有据可查",
+    "momentInventoryDetail": "退房时对比带照片的物品清点",
+    "languages": "English · 简体中文 · Türkçe"
+  },
+  "errors": {
+    "title": "此页面未能加载",
+    "detail": "我们这边出了点问题，您的数据是安全的。请重试或返回主页。",
+    "reference": "参考编号 {id}",
+    "retry": "重试",
+    "home": "返回主页",
+    "notFoundTitle": "未找到该内容",
+    "notFoundDetail": "它可能已被归档或删除，或链接已过期。"
   }
 }

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Building2, Search, ArrowUpRight } from "lucide-react";
+import { Search, ArrowUpRight } from "lucide-react";
 export type DirectoryProperty = {
   id: string;
   name: string;
@@ -51,8 +51,13 @@ export function PropertyDirectory({
             {p.image ? (
               <Image unoptimized width={72} height={72} className="directory-photo" src={p.image} alt="" />
             ) : (
-              <span className="directory-photo">
-                <Building2 size={25} aria-hidden />
+              <span className="directory-photo directory-monogram" data-hue={p.name.length % 4} aria-hidden>
+                {p.name
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((w) => w[0])
+                  .join("")
+                  .toUpperCase()}
               </span>
             )}
             <div>

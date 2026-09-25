@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 /**
- * Today's alerts, as a row of cards you scroll sideways.
+ * Today's alerts, most urgent first.
  *
  * The list this replaces had two problems, and only one of them was styling.
  * It was a plain divided list, so an urgent thing and a routine thing looked
@@ -99,84 +99,70 @@ export async function AlertsStrip({ alerts }: { alerts: DashboardAlert[] }) {
     }
   }
 
+  const renderAlert = (a: DashboardAlert, i: number) => {
+    const { Icon, tone } = STYLES[a.kind];
+    return (
+      <li key={`${a.kind}-${a.tenancyId}-${i}`}>
+        <Link
+          href={`/tenancies/${a.tenancyId}`}
+          className="group flex items-center gap-3 rounded-xl px-3 py-3 outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {/* The chip carries the kind of problem; the row stays plain. */}
+          <span
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-lg",
+              TONE_CHIP[tone],
+            )}
+            title={heading(a)}
+          >
+            <Icon className="size-4" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium">
+              {a.kind === "cleaning" ? a.roomName : a.personName}
+              <span className="font-normal text-muted-foreground"> · {heading(a)}</span>
+            </span>
+            <span className="block truncate text-xs text-muted-foreground">
+              {a.kind === "cleaning" ? detail(a) : `${a.roomName} · ${detail(a)}`}
+            </span>
+          </span>
+          {a.kind === "rent_overdue" && (
+            <span className="figure shrink-0 text-sm font-semibold text-destructive">
+              {money(a.amount ?? 0)}
+            </span>
+          )}
+        </Link>
+      </li>
+    );
+  };
+
+  /* A list, not a sideways strip. The strip hid everything past the fourth
+     card behind a scroll nobody noticed; six rows with the rest one click
+     away shows more and hides nothing. */
+  const VISIBLE = 6;
+  const shown = sorted.slice(0, VISIBLE);
+  const more = sorted.slice(VISIBLE);
+
   return (
-    <section className="flex flex-col gap-3">
+    <section className="flex flex-col gap-2">
       <div className="flex items-baseline gap-2">
         <h2 className="font-semibold">{t("dashboard.alerts")}</h2>
         <Badge variant="secondary">{sorted.length}</Badge>
       </div>
-
-      {/* The negative margin lets the strip bleed to the page edge on a phone,
-          so a half-visible card at the right announces there is more without
-          needing a scrollbar to say it. */}
-      <div className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-        <ul className="flex snap-x snap-mandatory gap-3">
-          {sorted.map((a, i) => {
-            const { Icon, tone } = STYLES[a.kind];
-            return (
-              <li
-                key={`${a.kind}-${a.tenancyId}-${i}`}
-                className="w-60 shrink-0 snap-start"
-              >
-                <Link
-                  href={`/tenancies/${a.tenancyId}`}
-                  className="block h-full rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {/* The card is plain; only the little chip is coloured.
-                      The chip is where colour earns its place here — it says
-                      *what kind* of thing this is, which is the one question
-                      you ask when scanning a row of alerts. Washing the whole
-                      card said the same thing eight times louder. */}
-                  <Card interactive size="sm" className="h-full">
-                    <CardContent className="flex h-full flex-col gap-2.5 p-4">
-                      <span
-                        className={cn(
-                          "inline-flex w-fit items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
-                          TONE_CHIP[tone],
-                        )}
-                      >
-                        <Icon className="size-3.5 shrink-0" aria-hidden />
-                        {heading(a)}
-                      </span>
-
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">
-                          {a.kind === "cleaning" ? a.roomName : a.personName}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {a.kind === "cleaning" ? detail(a) : a.roomName}
-                        </p>
-                      </div>
-
-                      {/* The amount and how long it has been running are two
-                          separate facts, and a 240px card cannot hold them on
-                          one line — side by side, the count was being
-                          truncated to "7 payments since Jan 3…". Stacked, both
-                          are readable and the money gets to be a figure. */}
-                      {a.kind !== "cleaning" && (
-                        <div className="mt-auto">
-                          {a.kind === "rent_overdue" ? (
-                            <>
-                              <p className="figure text-xl font-semibold text-destructive">
-                                {money(a.amount ?? 0)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {detail(a)}
-                              </p>
-                            </>
-                          ) : (
-                            <p className="text-sm font-medium">{detail(a)}</p>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      <ul className="grid gap-x-4 rounded-2xl border p-1.5 md:grid-cols-2">
+        {shown.map(renderAlert)}
+      </ul>
+      {more.length > 0 && (
+        <details className="group/more">
+          <summary className="w-fit cursor-pointer list-none rounded-md px-2 py-1 text-sm font-medium text-primary hover:underline">
+            <span className="group-open/more:hidden">{t("dashboard.showAll", { count: sorted.length })}</span>
+            <span className="hidden group-open/more:inline">{t("dashboard.showFewer")}</span>
+          </summary>
+          <ul className="mt-2 grid gap-x-4 rounded-2xl border p-1.5 md:grid-cols-2">
+            {more.map((a, i) => renderAlert(a, i + VISIBLE))}
+          </ul>
+        </details>
+      )}
     </section>
   );
 }

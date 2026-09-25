@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { byName } from "@/lib/utils";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 import {
   getDocumentRequirements,
   requiredTypesFor,
@@ -123,20 +125,42 @@ export async function getDashboardData(): Promise<DashboardData> {
   ] = await Promise.all([
     supabase.from("properties").select("*").order("name"),
     supabase.from("rooms").select("*").order("name"),
-    supabase
-      .from("tenancies")
-      .select("*")
-      .in("status", ["upcoming", "active", "ended"]),
-    supabase
-      .from("tenancy_tenants")
-      .select("tenancy_id, is_lead_tenant, tenants(*)"),
-    supabase.from("rent_payments").select("*").in("status", ["due", "late"]),
-    supabase.from("documents").select("*"),
+    fetchAll((from, to) =>
+      supabase
+        .from("tenancies")
+        .select("*")
+        .in("status", ["upcoming", "active", "ended"])
+        .order("id")
+        .range(from, to),
+    ),
+    fetchAll((from, to) =>
+      supabase
+        .from("tenancy_tenants")
+        .select("tenancy_id, is_lead_tenant, tenants(*)")
+        .order("tenancy_id")
+        .order("tenant_id")
+        .range(from, to),
+    ),
+    fetchAll((from, to) =>
+      supabase
+        .from("rent_payments")
+        .select("*")
+        .in("status", ["due", "late"])
+        .order("id")
+        .range(from, to),
+    ),
+    fetchAll((from, to) =>
+      supabase.from("documents").select("*").order("id").range(from, to),
+    ),
     // Every status, so "collected" and "expected" come from the same rows.
-    supabase
-      .from("rent_payments")
-      .select("status, amount_due, due_date")
-      .gte("due_date", trendStartStr),
+    fetchAll((from, to) =>
+      supabase
+        .from("rent_payments")
+        .select("status, amount_due, due_date")
+        .gte("due_date", trendStartStr)
+        .order("id")
+        .range(from, to),
+    ),
     supabase
       .from("metrics_snapshots")
       .select("snapshot_date, occupied_rooms, vacant_rooms, overdue_rent_total")
@@ -177,7 +201,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     }
   }
 
-  const dashboardRooms: DashboardRoom[] = ((rooms ?? []) as Room[]).map((r) => {
+  const dashboardRooms: DashboardRoom[] = byName(rooms as Room[] | null).map((r) => {
     const tenancy = activeByRoom.get(r.id) ?? upcomingByRoom.get(r.id) ?? null;
     const lastEnded = endedByRoom.get(r.id);
 

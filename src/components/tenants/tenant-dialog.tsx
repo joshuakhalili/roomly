@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useAutoOpen } from "@/components/ui/use-auto-open";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { createTenant, updateTenant } from "@/lib/actions/tenants";
@@ -26,14 +27,17 @@ export function TenantDialog({
   tenant,
   trigger,
   onCreated,
+  autoOpen,
 }: {
   tenant?: Tenant;
   trigger?: React.ReactNode;
   onCreated?: (id: string) => void;
+  /** Opens on arrival when the URL carries ?new=1 (from the New menu). */
+  autoOpen?: boolean;
 }) {
   const t = useTranslations();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useAutoOpen(autoOpen);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 

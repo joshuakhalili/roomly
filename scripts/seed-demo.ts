@@ -381,6 +381,9 @@ async function main() {
      compliance screen that always reads zero proves nothing about whether it
      works. */
   const activeTenancies = tenancies.filter((t) => t.status === "active");
+  const leadTenant = new Map(
+    linkPlan.map((l) => [tenancies[l.roomIndex].id as string, tenants[l.tenantIdx].id as string]),
+  );
   const docRows: Row[] = [];
   activeTenancies.forEach((t, i) => {
     const missing = i < 2 ? 2 : 0;
@@ -389,6 +392,8 @@ async function main() {
       .forEach((docType) => {
         docRows.push({
           tenancy_id: t.id,
+          // Identity paperwork follows the person, so it is filed to them too.
+          tenant_id: docType === "right_to_rent" ? (leadTenant.get(t.id as string) ?? null) : null,
           doc_type: docType,
           file_name: `${docType}.pdf`,
           storage_path: paths[docType],
@@ -399,6 +404,45 @@ async function main() {
   });
   await insert("documents", docRows);
   console.log(`  ${docRows.length} documents (2 tenancies left incomplete)`);
+
+  /* Building certificates, staggered so the compliance screen has one of
+     everything to show: current, due soon, lapsed and missing. Expiry is
+     issue date plus the statutory life of each certificate. */
+  const CERT_LIFE: Record<string, number> = { gas_safety: 12, eicr: 60, epc: 120, fire_safety: 12 };
+  const certPath = `${ORGANIZATION_ID}/demo/certificate.pdf`;
+  {
+    const { error } = await db.storage
+      .from("handbooks")
+      .upload(certPath, PLACEHOLDER, { contentType: "application/pdf", upsert: true });
+    if (error) throw new Error(`storage handbooks: ${error.message}`);
+  }
+  // Months since issue, per property and certificate; null means not on file.
+  const CERT_AGE: (Record<string, number | null>)[] = [
+    { gas_safety: 3, eicr: 20, epc: 40, fire_safety: 5 },
+    { gas_safety: 11, eicr: 58, epc: 30, fire_safety: 2 },
+    { gas_safety: 13, eicr: 12, epc: 70, fire_safety: 9 },
+    { gas_safety: 6, eicr: null, epc: 15, fire_safety: 4 },
+    { gas_safety: 1, eicr: 34, epc: 118, fire_safety: 13 },
+    { gas_safety: 8, eicr: 7, epc: 55, fire_safety: 1 },
+  ];
+  const certRows: Row[] = [];
+  properties.forEach((p, i) => {
+    for (const [docType, age] of Object.entries(CERT_AGE[i % CERT_AGE.length])) {
+      if (age === null) continue;
+      const issued = addMonths(TODAY, -age);
+      certRows.push({
+        property_id: p.id,
+        doc_type: docType,
+        file_name: `${docType}.pdf`,
+        storage_path: `handbooks/${certPath}`,
+        file_size: PLACEHOLDER.byteLength,
+        issued_at: iso(issued),
+        expires_at: iso(addDays(addMonths(issued, CERT_LIFE[docType]), 12)),
+      });
+    }
+  });
+  await insert("documents", certRows);
+  console.log(`  ${certRows.length} building certificates`);
 
   // ── Maintenance ────────────────────────────────────────────────────────
   const { data: serviceTypes } = await db.from("service_types").select("id, slug");

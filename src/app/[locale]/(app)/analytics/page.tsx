@@ -207,6 +207,8 @@ export default async function AnalyticsPage({
   const money = (n: number) =>
     format.number(n, { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
+  const MIN_TREND_DAYS = 14;
+
   // Back into chronological order for drawing, after fetching newest-first.
   const points = [...(snapshots ?? [])].reverse().map((s) => ({
     date: s.snapshot_date as string,
@@ -235,8 +237,11 @@ export default async function AnalyticsPage({
           browser has just scrolled into view. */}
       <section id="occupancy" className="scroll-mt-24">
         {/* Trends need history, and history only starts accumulating once the
-            daily job has run a few times. Say so rather than draw a flat line. */}
-        {points.length < 2 ? (
+            daily job has run a few times. Say so rather than draw a flat line.
+            Two weeks, not two points: with a handful of days the chart drew
+            a flat block and a cliff at the end, and the headline change read
+            as a collapse in occupancy that never happened. */}
+        {points.length < MIN_TREND_DAYS ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
               <ChartLine className="size-8 text-muted-foreground" aria-hidden />

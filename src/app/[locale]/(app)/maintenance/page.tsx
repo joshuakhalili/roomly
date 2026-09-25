@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { byName } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScheduleBoard } from "@/components/maintenance/schedule-board";
@@ -137,7 +138,7 @@ export default async function MaintenancePage({
           <ScheduleBoard
             jobs={jobs}
             properties={(properties ?? []) as Property[]}
-            rooms={(rooms ?? []) as Room[]}
+            rooms={byName(rooms as Room[] | null)}
             serviceTypes={(serviceTypes ?? []) as ServiceType[]}
             contacts={(contacts ?? []) as Contact[]}
             recurrences={(recurrences ?? []) as JobRecurrence[]}
@@ -158,7 +159,7 @@ export default async function MaintenancePage({
           <AssetsPanel
             assets={(assets ?? []) as Asset[]}
             properties={(properties ?? []) as Property[]}
-            rooms={(rooms ?? []) as Room[]}
+            rooms={byName(rooms as Room[] | null)}
             documents={(attachments ?? []) as DocumentRecord[]}
           />
         </TabsContent>

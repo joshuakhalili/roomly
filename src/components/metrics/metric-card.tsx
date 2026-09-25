@@ -58,12 +58,6 @@ export function MetricCard({
       interactive={Boolean(href)}
       className={cn("metric-panel relative h-full", href && "group/metric")}
     >
-      {trend && trend.length >= 2 && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 opacity-25">
-          <SparkArea values={trend} tone={active} />
-        </div>
-      )}
-
       <CardContent
         className={cn(
           "relative flex h-full flex-col gap-3",
@@ -109,7 +103,16 @@ export function MetricCard({
 
         {delta}
 
-        {footer && <div className="mt-auto pt-2">{footer}</div>}
+        {/* The trend sits in its own band between the figure and the
+            footer. It used to be an absolute layer along the card's bottom
+            edge, which drew straight through the progress meter above it. */}
+        {trend && trend.length >= 2 && (
+          <div className="pointer-events-none mt-auto h-24 opacity-60" aria-hidden>
+            <SparkArea values={trend} tone={active} />
+          </div>
+        )}
+
+        {footer && <div className={cn(trend && trend.length >= 2 ? "pt-1" : "mt-auto pt-2")}>{footer}</div>}
       </CardContent>
     </Card>
   );

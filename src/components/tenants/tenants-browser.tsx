@@ -136,22 +136,41 @@ function TenantCard({ tenant }: { tenant: TenantWithPlace }) {
 function Group({
   title,
   tenants,
+  collapsed = false,
 }: {
   title: string;
   tenants: TenantWithPlace[];
+  /** Past tenants are kept, not worked with: folded away until asked for. */
+  collapsed?: boolean;
 }) {
   if (tenants.length === 0) return null;
+  const grid = (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {tenants.map((tenant) => (
+        <TenantCard key={tenant.id} tenant={tenant} />
+      ))}
+    </div>
+  );
+  const heading = (
+    <span className="flex items-baseline gap-2">
+      <h2 className="font-semibold">{title}</h2>
+      <Badge variant="secondary">{tenants.length}</Badge>
+    </span>
+  );
+  if (collapsed)
+    return (
+      <details className="group/archived flex flex-col gap-3">
+        <summary className="flex w-fit cursor-pointer list-none items-center gap-2">
+          <ChevronRight className="size-4 text-muted-foreground transition-transform group-open/archived:rotate-90" aria-hidden />
+          {heading}
+        </summary>
+        <div className="mt-3">{grid}</div>
+      </details>
+    );
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex items-baseline gap-2">
-        <h2 className="font-semibold">{title}</h2>
-        <Badge variant="secondary">{tenants.length}</Badge>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {tenants.map((tenant) => (
-          <TenantCard key={tenant.id} tenant={tenant} />
-        ))}
-      </div>
+      {heading}
+      {grid}
     </section>
   );
 }
@@ -382,6 +401,7 @@ export function TenantsBrowser({
           <Group
             title={t("tenants.archived")}
             tenants={filtered.filter((x) => x.is_archived)}
+            collapsed
           />
         </div>
       ) : (

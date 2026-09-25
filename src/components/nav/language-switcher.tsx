@@ -52,7 +52,7 @@ export function LanguageSwitcher() {
           aria-label={t("language")}
         >
           <Languages className="size-4" aria-hidden />
-          <span className="hidden sm:inline">
+          <span className="hidden xl:inline">
             {LOCALES.find((l) => l.code === locale)?.label}
           </span>
         </Button>
