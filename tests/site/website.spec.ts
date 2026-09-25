@@ -16,7 +16,7 @@ const paths = [
   "/404",
 ];
 for (const width of [1440, 390, 320])
-  test(`Framer routes, assets and accessibility at ${width}px`, async ({
+  test(`Website routes, assets and accessibility at ${width}px`, async ({
     page,
     request,
   }) => {
@@ -87,19 +87,20 @@ for (const width of [1440, 390, 320])
     );
     expect(errors).toEqual([]);
   });
-test("Framer pricing, FAQ, login destination and keyboard access", async ({
+test("Homepage pricing, FAQ, login destination and keyboard access", async ({
   page,
 }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.keyboard.press("Tab");
   await expect(page.getByText("Skip to content")).toBeFocused();
-  const yearly = page.locator('[data-framer-name="Yearly"]:visible');
+  const yearly = page.getByRole("button", { name: "Yearly", exact: true });
   await yearly.scrollIntoViewIfNeeded();
   await yearly.focus();
   await page.keyboard.press("Enter");
+  await expect(yearly).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("£290", { exact: true })).toBeVisible();
   await expect(page.getByText("£1,490", { exact: true })).toBeVisible();
-  const monthly = page.locator('[data-framer-name="Monthly"]:visible');
+  const monthly = page.getByRole("button", { name: "Monthly", exact: true });
   await monthly.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("£29", { exact: true })).toBeVisible();

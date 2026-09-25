@@ -23,7 +23,8 @@ const db = createClient(
   { auth: { persistSession: false } },
 );
 
-const CHECKLIST = "83fb26c3-a512-4d84-a552-0e43e74aeafd"; // Marlow House, Room 1
+const CHECKLIST =
+  process.env.CHECKLIST_ID ?? "83fb26c3-a512-4d84-a552-0e43e74aeafd"; // Marlow House, Room 1
 
 // Keyed by "Area · Section", using the real template names. Keying on the
 // section name alone put the same window note into three different rooms,
