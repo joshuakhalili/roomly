@@ -24,7 +24,8 @@
     "expenses": "Expenses",
     "more": "More",
     "mobileNavigation": "Navigation",
-    "allDestinations": "All workspace destinations"
+    "allDestinations": "All workspace destinations",
+    "compliance": "Compliance"
   },
   "auth": {
     "signIn": "Sign in",
@@ -39,7 +40,7 @@
     "title": "Dashboard",
     "subtitle": "What needs your attention today",
     "occupancyRate": "Occupancy rate",
-    "occupiedRooms": "{occupied} of {total} rooms occupied",
+    "occupiedRooms": "{occupied} of {total, plural, one {# room} other {# rooms}} occupied",
     "vacantRooms": "Vacant rooms",
     "vacantDays": "{days, plural, =0 {Vacant today} one {Vacant # day} other {Vacant # days}}",
     "overdueRent": "Overdue rent",
@@ -59,7 +60,14 @@
     "vsDaysAgo": "vs {days} days ago",
     "points": "{points, plural, one {# point} other {# points}}",
     "roomsDelta": "{count, plural, one {# room} other {# rooms}}",
-    "vacantOfTotal": "of {total} lettable"
+    "vacantOfTotal": "of {total} lettable",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "showAll": "Show all {count}",
+    "showFewer": "Show fewer"
   },
   "alerts": {
     "kindOverdue": "Rent overdue",
@@ -730,6 +738,108 @@
     "noResults": "No matching results",
     "reportAreas": "Choose an area to inspect",
     "summary": "Report summary",
-    "workspace": "Management workspace"
+    "workspace": "Management workspace",
+    "roomCount": "{count, plural, =0 {No rooms} one {# room} other {# rooms}}",
+    "sharedAreas": "Shared areas",
+    "lettableUnits": "Rooms and units",
+    "sharedArea": "Shared area",
+    "start": "Start inventory",
+    "continue": "Continue",
+    "open": "Open"
+  },
+  "shell": {
+    "account": "Account",
+    "team": "Team and roles",
+    "theme": "Appearance",
+    "new": "New"
+  },
+  "command": {
+    "open": "Search Roomly",
+    "placeholder": "Search tenants, rooms, properties or screens",
+    "records": "Records",
+    "actions": "Create",
+    "goTo": "Go to",
+    "searching": "Searching…",
+    "empty": "Nothing matches that. Try a name, room or street.",
+    "new": {
+      "property": "New property",
+      "tenant": "New tenant",
+      "job": "New maintenance job",
+      "expense": "New expense"
+    },
+    "short": "Search"
+  },
+  "nextUp": {
+    "heading": "Next up",
+    "rentTitle": "Chase {amount} of overdue rent",
+    "rentDetail": "{payments, plural, one {# payment} other {# payments}} late across {people, plural, one {# tenant} other {# tenants}}",
+    "rentCta": "Open rent",
+    "complianceTitle": "{count, plural, one {# legal deadline} other {# legal deadlines}} missed",
+    "complianceDetail": "Expired certificates or unprotected deposits. {dueSoon, plural, =0 {Nothing else due soon.} one {# more certificate due soon.} other {# more certificates due soon.}}",
+    "complianceCta": "Open compliance",
+    "arrivalsTitle": "{count, plural, one {# tenant arriving} other {# tenants arriving}} this week",
+    "arrivalsDetail": "Check the room inventory is ready before handover.",
+    "arrivalsCta": "Open inventory",
+    "documentsTitle": "{count, plural, one {# tenancy is} other {# tenancies are}} missing paperwork",
+    "documentsDetail": "Agreements, right to rent or deposit papers not on file.",
+    "documentsCta": "Open documents",
+    "vacantTitle": "{count, plural, one {# room is} other {# rooms are}} empty",
+    "vacantDetail": "Occupancy is {rate}% across the portfolio.",
+    "vacantCta": "Open properties",
+    "clearTitle": "Nothing needs you right now",
+    "clearDetail": "Rent is in, paperwork is on file and every room is let."
+  },
+  "compliance": {
+    "title": "Compliance",
+    "subtitle": "Safety certificates and deposit deadlines for every building",
+    "allClear": "Everything is in date. Nothing needs renewing in the next 60 days.",
+    "tile": {
+      "expired": "Expired",
+      "dueSoon": "Due soon",
+      "missing": "Not on file",
+      "deposits": "Deposits"
+    },
+    "tileHint": {
+      "expired": "Certificates past their date",
+      "dueSoon": "Expiring within {days} days",
+      "missing": "Certificates never uploaded",
+      "deposits": "Deposits needing action"
+    },
+    "certificates": "Building certificates",
+    "openLibrary": "Open document library",
+    "notOnFile": "Not on file",
+    "expiredAgo": "Expired {days, plural, =0 {today} one {# day ago} other {# days ago}}",
+    "dueIn": "Due in {days, plural, =0 {today} one {# day} other {# days}}",
+    "until": "Valid to {date}",
+    "deposits": "Deposit protection",
+    "depositsHint": "Deposits must be protected, and the prescribed information served, within 30 days of receipt.",
+    "depositsClear": "{count, plural, one {The # deposit held is} other {All # deposits held are}} protected, with prescribed information served.",
+    "issue": {
+      "unprotected": "No protection certificate",
+      "noPrescribedInfo": "Prescribed information not served"
+    },
+    "deadlinePassed": "Deadline was {date}",
+    "deadlineIn": "{days, plural, =0 {Due today} one {# day left} other {# days left}}"
+  },
+  "login": {
+    "welcome": "Welcome back",
+    "headline": "Every room, every tenant, every deadline.",
+    "lede": "The rent, the paperwork and the condition of every room in one calm place.",
+    "momentRent": "Who owes what, today",
+    "momentRentDetail": "Overdue rent ranked and one tap from a reminder",
+    "momentCompliance": "Nothing slips past a deadline",
+    "momentComplianceDetail": "Gas, electrical and deposit dates tracked for you",
+    "momentInventory": "Handovers on record",
+    "momentInventoryDetail": "Photo inventories compared at check-out",
+    "languages": "English · 简体中文 · Türkçe"
+  },
+  "errors": {
+    "title": "This screen didn't load",
+    "detail": "Something went wrong on our side. Your data is safe. Try again, or head back to the dashboard.",
+    "reference": "Reference {id}",
+    "retry": "Try again",
+    "home": "Back to dashboard",
+    "notFoundTitle": "We couldn't find that",
+    "notFoundDetail": "It may have been archived or deleted, or the link is out of date."
   }
 }

@@ -14,6 +14,8 @@ Node.js 24. No cloud credentials or runtime packages are required for the build.
 
 ## Editing safely
 
+- `home/`: the homepage, hand-built (HTML, CSS and a small script) and copied over the Framer homepage at build time. Product images in `home/img/` are captured from the management app against the local review organisation. Every other route is still the preserved Framer page.
+
 - `source/`: immutable imported mirror of `roomly-site` at `02a409f`; includes the original Framer runtime and its routing/range-loader hardening. Do not edit generated files here.
 - `content.json`: exact editorial replacements applied to HTML, JavaScript and JSON in one longest-first pass.
 - `public/roomly.css`: shared violet brand tokens and responsive editorial additions. Do not neutralise Framer layout transforms.

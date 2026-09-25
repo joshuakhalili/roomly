@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { byName } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExpensesBrowser } from "@/components/expenses/expenses-browser";
@@ -52,7 +53,7 @@ export default async function ExpensesPage({
   const rows = (ledger ?? []) as ExpenseLedgerRow[];
   const categoryList = (categories ?? []) as ExpenseCategory[];
   const propertyList = (properties ?? []) as Property[];
-  const roomList = (rooms ?? []) as Room[];
+  const roomList = byName(rooms as Room[] | null);
 
   /* Offer only years there is anything to look at, plus the current one — a
      dropdown of empty years is a list of dead ends. */
@@ -75,6 +76,7 @@ export default async function ExpensesPage({
           </p>
         </div>
         <ExpenseDialog
+          autoOpen
           categories={categoryList}
           properties={propertyList}
           rooms={roomList}

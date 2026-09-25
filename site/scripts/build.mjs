@@ -41,4 +41,12 @@ async function walk(dir) {
   }
 }
 await walk(output);
-console.log(`Built ${count} text assets from the preserved Framer mirror.`);
+
+/* The homepage is hand-built (home/) rather than taken from the Framer
+   mirror. It is copied in after the editorial pass so none of the Framer
+   replacements or injected scripts touch it; every other route stays the
+   preserved Framer page. */
+await cp(path.join(root, "home"), path.join(output, "home"), { recursive: true });
+await rm(path.join(output, "home", "index.html"));
+await cp(path.join(root, "home", "index.html"), path.join(output, "index.html"));
+console.log(`Built ${count} text assets from the preserved Framer mirror, plus the homepage.`);

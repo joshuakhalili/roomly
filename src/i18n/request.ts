@@ -10,6 +10,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
+    // Every date in the app is a UK date. Pinning the zone keeps the server
+    // (UTC on Vercel) and the browser from disagreeing across midnight.
+    timeZone: "Europe/London",
     messages: (await import(`../messages/${locale}.json`)).default,
   };
 });

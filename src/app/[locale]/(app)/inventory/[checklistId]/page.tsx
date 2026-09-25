@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { byName } from "@/lib/utils";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
@@ -247,7 +248,7 @@ export default async function ChecklistPage({
                 propertyId: room.property_id,
                 roomId: room.id,
                 properties: (mProperties ?? []) as Property[],
-                rooms: (mRooms ?? []) as Room[],
+                rooms: byName(mRooms as Room[] | null),
                 serviceTypes: (mServiceTypes ?? []) as ServiceType[],
                 contacts: (mContacts ?? []) as Contact[],
                 bookedSectionIds: [...sectionIdsForJobs],

@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { byName } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -74,7 +75,7 @@ export default async function InventoryPage({
   }
 
   const propertyList = (properties ?? []) as Property[];
-  const roomList = (rooms ?? []) as Room[];
+  const roomList = byName(rooms as Room[] | null);
 
   // Signed on the server so a section header paints with its photograph
   // rather than assembling after a round trip.
@@ -100,6 +101,7 @@ export default async function InventoryPage({
           id: room.id,
           name: room.name,
           unitType: room.unit_type,
+          isShared: room.is_common_area,
           checklistId: baseline?.id ?? null,
           done: p?.done ?? 0,
           total: p?.total ?? 0,

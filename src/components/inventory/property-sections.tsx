@@ -8,6 +8,8 @@ export interface InventoryRoom {
   id: string;
   name: string;
   unitType: "room" | "studio" | "flat";
+  /** Kitchens, bathrooms and hallways: inspected, never let on their own. */
+  isShared: boolean;
   /** Where the room's own inventory lives, once it exists. */
   checklistId: string | null;
   done: number;
@@ -73,7 +75,9 @@ export function PropertySections({
                 {p.name}
               </span>
               <small>
-                {p.rooms.length} · {t("rooms.title")}
+                {t("workspace.roomCount", {
+                  count: p.rooms.filter((r) => !r.isShared).length,
+                })}
               </small>
             </button>
           ))}
@@ -116,62 +120,92 @@ export function PropertySections({
             ))}
           </select>
         </div>
-        <ul>
-          {rooms.map((room) => (
-            <li key={room.id} className="inventory-room">
-              <div>
-                <h3 className="font-semibold">{room.name}</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {t(
-                    room.unitType === "flat"
-                      ? "rooms.unitFlat"
-                      : room.unitType === "studio"
-                        ? "rooms.unitStudio"
-                        : "rooms.unitRoom",
-                  )}
-                </p>
-              </div>
-              <div className="inventory-progress">
-                {room.total > 0 ? (
-                  <>
-                    <progress
-                      aria-label={t("workspace.review")}
-                      value={room.done}
-                      max={room.total}
-                    />
-                    <span>
-                      {t("workspace.itemsReviewed", {
-                        done: room.done,
-                        total: room.total,
-                      })}
-                    </span>
-                  </>
-                ) : (
-                  <span>{t("workspace.notStarted")}</span>
-                )}
-              </div>
-              <div className="inventory-actions">
-                <Link
-                  className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground"
-                  href={
-                    room.checklistId
-                      ? `/inventory/${room.checklistId}`
-                      : `/properties/${property.id}/rooms/${room.id}`
-                  }
-                >
-                  {t("workspace.review")}
-                  <ArrowUpRight size={15} aria-hidden />
-                </Link>
-                <Link
-                  className="inline-flex min-h-11 items-center text-xs text-muted-foreground underline underline-offset-4"
-                  href={`/properties/${property.id}/rooms/${room.id}`}
-                >
-                  {t("workspace.roomRecord")}
-                </Link>
-              </div>
-            </li>
+        {[
+          { key: "lettableUnits", list: rooms.filter((r) => !r.isShared) },
+          { key: "sharedAreas", list: rooms.filter((r) => r.isShared) },
+        ]
+          .filter((g) => g.list.length > 0)
+          .map((group) => (
+            <div key={group.key} className="mt-6 first:mt-2">
+              <h3 className="mb-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                {t(`workspace.${group.key}`)}
+              </h3>
+              <ul>
+                {group.list.map((room) => {
+                  const complete = room.total > 0 && room.done === room.total;
+                  const started = room.total > 0;
+                  return (
+                    <li key={room.id} className="inventory-room">
+                      <div>
+                        <h4 className="font-semibold">{room.name}</h4>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {room.isShared
+                            ? t("workspace.sharedArea")
+                            : t(
+                                room.unitType === "flat"
+                                  ? "rooms.unitFlat"
+                                  : room.unitType === "studio"
+                                    ? "rooms.unitStudio"
+                                    : "rooms.unitRoom",
+                              )}
+                        </p>
+                      </div>
+                      <div className="inventory-progress">
+                        {started ? (
+                          <>
+                            <progress
+                              aria-label={t("workspace.review")}
+                              value={room.done}
+                              max={room.total}
+                              data-complete={complete || undefined}
+                            />
+                            <span>
+                              {t("workspace.itemsReviewed", {
+                                done: room.done,
+                                total: room.total,
+                              })}
+                            </span>
+                          </>
+                        ) : (
+                          <span>{t("workspace.notStarted")}</span>
+                        )}
+                      </div>
+                      <div className="inventory-actions">
+                        {/* One filled button per screen would be ideal; one per
+                            row at least means the filled ones are the rooms
+                            still waiting, and finished rooms step back. */}
+                        <Link
+                          className={
+                            complete
+                              ? "inline-flex min-h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium hover:bg-muted"
+                              : "inline-flex min-h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:brightness-110"
+                          }
+                          href={
+                            room.checklistId
+                              ? `/inventory/${room.checklistId}`
+                              : `/properties/${property.id}/rooms/${room.id}`
+                          }
+                        >
+                          {complete
+                            ? t("workspace.open")
+                            : started
+                              ? t("workspace.continue")
+                              : t("workspace.start")}
+                          <ArrowUpRight size={15} aria-hidden />
+                        </Link>
+                        <Link
+                          className="inline-flex min-h-10 items-center text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                          href={`/properties/${property.id}/rooms/${room.id}`}
+                        >
+                          {t("workspace.roomRecord")}
+                        </Link>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           ))}
-        </ul>
         {!rooms.length && (
           <p role="status" className="py-12 text-muted-foreground">
             {t("workspace.noResults")}

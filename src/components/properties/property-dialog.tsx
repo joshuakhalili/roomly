@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useAutoOpen } from "@/components/ui/use-auto-open";
 import imageCompression from "browser-image-compression";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
@@ -40,13 +41,16 @@ const COMPRESSION_OPTIONS = {
 export function PropertyDialog({
   property,
   trigger,
+  autoOpen,
 }: {
   property?: Property;
   trigger?: React.ReactNode;
+  /** Opens on arrival when the URL carries ?new=1 (from the New menu). */
+  autoOpen?: boolean;
 }) {
   const t = useTranslations();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useAutoOpen(autoOpen);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [preview, setPreview] = useState<string | null>(null);

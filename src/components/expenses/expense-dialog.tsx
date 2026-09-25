@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useAutoOpen } from "@/components/ui/use-auto-open";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { saveExpense } from "@/lib/actions/expenses";
@@ -39,16 +40,19 @@ export function ExpenseDialog({
   properties,
   rooms,
   trigger,
+  autoOpen,
 }: {
   expense?: Expense;
   categories: ExpenseCategory[];
   properties: Property[];
   rooms: Room[];
   trigger?: React.ReactNode;
+  /** Opens on arrival when the URL carries ?new=1 (from the New menu). */
+  autoOpen?: boolean;
 }) {
   const t = useTranslations();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useAutoOpen(autoOpen);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   /* Controlled so the room list can follow it. Picking a room in a building

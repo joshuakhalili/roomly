@@ -116,7 +116,7 @@ export function ScheduleBoard({
     .filter((j) => j.status !== "cancelled")
     .reduce((sum, j) => sum + Number(j.cost ?? 0), 0);
   const unpaid = visible.filter(
-    (j) => j.status !== "cancelled" && !j.is_paid && j.cost,
+    (j) => j.status === "done" && !j.is_paid && j.cost,
   ).length;
 
   function act(fn: () => Promise<{ ok: boolean; error?: string }>) {
@@ -168,6 +168,7 @@ export function ScheduleBoard({
             contacts={contacts}
           />
           <JobDialog
+            autoOpen
             properties={properties}
             rooms={rooms}
             serviceTypes={serviceTypes}
@@ -241,12 +242,19 @@ export function ScheduleBoard({
                     {dayJobs.length > 0 && (
                       <span
                         className={cn(
-                          "flex h-1.5 items-center gap-0.5",
+                          "flex h-3.5 items-center gap-0.5",
                           isSelected ? "opacity-90" : "",
                         )}
                       >
                         {dayJobs.length > 2 ? (
-                          <span className="text-[9px] leading-none tabular-nums">
+                          <span
+                            className={cn(
+                              "rounded-full px-1.5 py-px text-[10px] font-semibold leading-none tabular-nums",
+                              isSelected
+                                ? "bg-primary-foreground/20"
+                                : "bg-accent text-accent-foreground",
+                            )}
+                          >
                             {dayJobs.length}
                           </span>
                         ) : (

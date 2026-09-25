@@ -37,11 +37,13 @@ Roomly keeps those connections explicit. Properties contain rooms; tenancies con
 | **People & tenancies**   | Separate tenant records and shared occupancies; upcoming, active, ended and archived tenancies; long lets and short stays. |
 | **Rent**                 | Weekly, fortnightly, four-weekly, monthly and total-price schedules, recorded payments and overdue balances.               |
 | **Inventory**            | Structured condition and cleanliness ratings, notes and dated photos; check-in/check-out comparison and PDF exports.       |
+| **Compliance**           | Gas safety, EICR, EPC and fire records per building with expiry countdowns; 30-day deposit protection and prescribed-information deadlines. |
 | **Documents**            | Private tenancy and property records, document types, expiry dates, missing-document checks and a document library.        |
 | **Maintenance**          | Scheduled and recurring jobs, contractor contacts, assets, warranties, invoices and completion costs.                      |
 | **Expenses**             | Manual expenses, maintenance, assets and utility costs in one ledger; UK tax-year totals and bills-included comparisons.   |
 | **Overview & analytics** | Occupancy, rent and cost summaries, room availability, move dates and alerts.                                              |
 | **Communication**        | Private calendar subscriptions, optional email digests, WhatsApp deep links and copyable WeChat messages.                  |
+| **Workspace**            | Search anything with ⌘K, a New menu for common records, ranked next actions on the dashboard, loading and error states on every screen. |
 | **Team & preferences**   | Owner, admin, staff and viewer roles; English, Simplified Chinese and Turkish; light, dark and system themes.              |
 | **Record lifecycle**     | Retention settings, previews, legal holds and scheduled cleanup, including export-before-photo-purge controls.             |
 
@@ -159,7 +161,7 @@ npm --prefix site run build
 npm run test:site
 ```
 
-The current release passes **44 operational tests**. The new embedded PostgreSQL check applies all **26 historical migrations unchanged** and verifies RLS remains enabled on every public table. These are specific checks, not a claim that every feature or hosted integration has been verified.
+The current release passes **51 operational tests**. The new embedded PostgreSQL check applies all **26 historical migrations unchanged** and verifies RLS remains enabled on every public table. These are specific checks, not a claim that every feature or hosted integration has been verified.
 
 The website passes **4 browser tests**, including all **13 routes at three widths**, keyboard pricing controls, FAQ and clean navigation, with no serious or critical axe findings.
 

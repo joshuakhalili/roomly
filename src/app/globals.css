@@ -175,6 +175,18 @@
      brief's "not modern but simplistic" reference (Wise / Ragged Edge) sits
      closer to this than to the previous radius. */
   --radius: 0.625rem;
+
+  /* ── Shell ────────────────────────────────────────────────────────────
+     The plum frame around every screen: header and sidebar. */
+  --shell: #25153e;
+  --shell-raised: #321f4f;
+  --shell-hover: #45305d;
+  --shell-active: #7546db;
+  --shell-border: #48305e;
+  --shell-foreground: #f5eeff;
+  --shell-muted: #d8c9eb;
+  --shell-label: #bda6d5;
+  --shell-rail-text: #e0d2ee;
 }
 
 .dark {
@@ -240,6 +252,12 @@
   --shadow-lg: 0 4px 8px oklch(0 0 0 / 0.4), 0 16px 40px oklch(0 0 0 / 0.5);
   --shadow-lift:
     0 8px 16px oklch(0 0 0 / 0.45), 0 24px 56px oklch(0 0 0 / 0.55);
+
+  --shell: #0f0a1a;
+  --shell-raised: #1c1330;
+  --shell-hover: #2a1d42;
+  --shell-active: #6a44cf;
+  --shell-border: #2d2042;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -436,33 +454,78 @@
 
 /* Shared workspace hierarchy. Functional panels retain their controls; decoration recedes. */
 .workspace-header {
-  background: #25153e;
-  color: #f5eeff;
-  border-color: #48305e;
+  background: var(--shell);
+  color: var(--shell-foreground);
+  border-color: var(--shell-border);
 }
 .workspace-header .text-muted-foreground {
-  color: #d8c9eb;
+  color: var(--shell-muted);
+}
+.workspace-header [data-slot="button"]:hover {
+  background: var(--shell-hover);
+  color: var(--shell-foreground);
 }
 .workspace-rail {
-  background: #25153e;
+  background: var(--shell);
   border: 0;
-  color: #e9ddfa;
+  color: var(--shell-rail-text);
 }
 .workspace-rail h2 {
-  color: #bda6d5;
+  color: var(--shell-label);
   letter-spacing: 0.13em;
 }
 .workspace-rail a {
-  min-height: 44px;
-  color: #e0d2ee;
+  min-height: 40px;
+  color: var(--shell-rail-text);
+  transition:
+    background var(--duration-fast) var(--ease-out-token),
+    color var(--duration-fast) var(--ease-out-token);
 }
 .workspace-rail a[aria-current="page"] {
-  background: #7546db;
-  color: #fff;
+  background: var(--shell-active);
+  color: var(--shell-foreground);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.14);
 }
 .workspace-rail a:hover {
-  background: #45305d;
-  color: #fff;
+  background: var(--shell-hover);
+  color: var(--shell-foreground);
+}
+.shell-search {
+  background: var(--shell-raised);
+  color: var(--shell-muted);
+  border: 1px solid var(--shell-border);
+}
+.shell-search:hover {
+  background: var(--shell-hover);
+  color: var(--shell-foreground);
+}
+.shell-search kbd {
+  border-color: var(--shell-border);
+  color: var(--shell-label);
+}
+.shell-new {
+  background: var(--shell-active);
+  color: var(--shell-foreground);
+  transition: filter var(--duration-fast) var(--ease-out-token);
+}
+.shell-new:hover {
+  filter: brightness(1.12);
+}
+.shell-avatar {
+  background: var(--shell-raised);
+  color: var(--shell-foreground);
+  border: 1px solid var(--shell-border);
+}
+.shell-org {
+  background: var(--shell-raised);
+  color: var(--shell-foreground);
+}
+.shell-org > span:first-child {
+  background: var(--shell-active);
+}
+/* Each screen settles in rather than snapping. Once, on arrival only. */
+.workspace-main > * {
+  animation: rise-in var(--duration-slow) var(--ease-out-token) both;
 }
 .workspace-main {
   background: var(--card);
@@ -860,4 +923,77 @@
 .directory-row p,
 .room-row strong {
   overflow-wrap: anywhere;
+}
+
+/* The dashboard's lead action. The one place the shell colour steps into the
+   page, because it is the one thing on it that is asking to be done. */
+.next-up-lead {
+  color: var(--shell-foreground);
+  background:
+    radial-gradient(120% 140% at 100% 0%, oklch(from var(--shell-active) l c h / 0.55), transparent 55%),
+    var(--shell);
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--duration) var(--ease-out-token), transform var(--duration) var(--ease-out-token);
+}
+.next-up-lead:hover {
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-1px);
+}
+.next-up-chip {
+  background: oklch(from var(--shell-foreground) l c h / 0.12);
+}
+.next-up-cta {
+  background: var(--shell-foreground);
+  color: var(--shell);
+}
+.inventory-progress progress[data-complete] {
+  accent-color: var(--success);
+}
+
+/* ── Sign in ─────────────────────────────────────────────────────────── */
+.login-brand {
+  color: var(--shell-foreground);
+  background:
+    radial-gradient(80% 60% at 90% 10%, oklch(from var(--shell-active) l c h / 0.55), transparent 60%),
+    radial-gradient(60% 50% at 0% 100%, oklch(from var(--brand) l c h / 0.35), transparent 60%),
+    var(--shell);
+}
+.login-headline {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.25rem, 1.4rem + 2.2vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+.login-moment {
+  background: oklch(from var(--shell-foreground) l c h / 0.07);
+  border: 1px solid oklch(from var(--shell-foreground) l c h / 0.1);
+  backdrop-filter: blur(6px);
+  animation: rise-in 420ms var(--ease-out-token) both;
+}
+.login-moment-icon {
+  background: var(--shell-active);
+}
+.login-card {
+  box-shadow: var(--shadow-md);
+}
+
+/* A building without a photo still gets a face: its initials on a tile in
+   one of four brand tints, so a list of six reads as six places. */
+.directory-monogram {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--shell-foreground);
+  background: linear-gradient(135deg, var(--shell-active), var(--shell));
+}
+.directory-monogram[data-hue="1"] {
+  background: linear-gradient(135deg, oklch(0.62 0.16 300), var(--shell));
+}
+.directory-monogram[data-hue="2"] {
+  background: linear-gradient(135deg, oklch(0.6 0.14 255), var(--shell));
+}
+.directory-monogram[data-hue="3"] {
+  background: linear-gradient(135deg, oklch(0.64 0.15 340), var(--shell));
 }

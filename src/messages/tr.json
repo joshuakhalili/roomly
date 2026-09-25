@@ -24,7 +24,8 @@
     "expenses": "Giderler",
     "more": "Diğer",
     "mobileNavigation": "Gezinme",
-    "allDestinations": "Tüm çalışma alanı sayfaları"
+    "allDestinations": "Tüm çalışma alanı sayfaları",
+    "compliance": "Uyumluluk"
   },
   "auth": {
     "signIn": "Giriş yap",
@@ -59,7 +60,14 @@
     "vsDaysAgo": "{days} gün öncesine göre",
     "points": "{points, plural, other {# puan}}",
     "roomsDelta": "{count, plural, other {# oda}}",
-    "vacantOfTotal": "kiralanabilir {total} oda içinden"
+    "vacantOfTotal": "kiralanabilir {total} oda içinden",
+    "greeting": {
+      "morning": "Günaydın",
+      "afternoon": "İyi günler",
+      "evening": "İyi akşamlar"
+    },
+    "showAll": "Tümünü göster ({count})",
+    "showFewer": "Daha az göster"
   },
   "alerts": {
     "kindOverdue": "Kira gecikti",
@@ -730,6 +738,108 @@
     "noResults": "Eşleşen sonuç yok",
     "reportAreas": "İncelenecek alanı seçin",
     "summary": "Rapor özeti",
-    "workspace": "Yönetim alanı"
+    "workspace": "Yönetim alanı",
+    "roomCount": "{count, plural, =0 {Oda yok} other {# oda}}",
+    "sharedAreas": "Ortak alanlar",
+    "lettableUnits": "Odalar ve birimler",
+    "sharedArea": "Ortak alan",
+    "start": "Envantere başla",
+    "continue": "Devam et",
+    "open": "Aç"
+  },
+  "shell": {
+    "account": "Hesap",
+    "team": "Ekip ve roller",
+    "theme": "Görünüm",
+    "new": "Yeni"
+  },
+  "command": {
+    "open": "Roomly'de ara",
+    "placeholder": "Kiracı, oda, mülk veya ekran ara",
+    "records": "Kayıtlar",
+    "actions": "Oluştur",
+    "goTo": "Git",
+    "searching": "Aranıyor…",
+    "empty": "Eşleşen sonuç yok. Bir isim, oda veya sokak deneyin.",
+    "new": {
+      "property": "Yeni mülk",
+      "tenant": "Yeni kiracı",
+      "job": "Yeni bakım işi",
+      "expense": "Yeni gider"
+    },
+    "short": "Ara"
+  },
+  "nextUp": {
+    "heading": "Sıradaki",
+    "rentTitle": "{amount} gecikmiş kirayı takip edin",
+    "rentDetail": "{people} kiracıda {payments} gecikmiş ödeme",
+    "rentCta": "Kirayı aç",
+    "complianceTitle": "{count} yasal süre kaçırıldı",
+    "complianceDetail": "Süresi dolmuş sertifikalar veya korunmayan depozitolar. {dueSoon, plural, =0 {Yakında dolacak başka bir şey yok.} other {# sertifika daha yakında doluyor.}}",
+    "complianceCta": "Uyumluluğu aç",
+    "arrivalsTitle": "Bu hafta {count} kiracı geliyor",
+    "arrivalsDetail": "Teslimden önce oda envanterinin hazır olduğunu kontrol edin.",
+    "arrivalsCta": "Envanteri aç",
+    "documentsTitle": "{count} kiralamada eksik belge var",
+    "documentsDetail": "Sözleşme, kiralama hakkı veya depozito belgeleri dosyada yok.",
+    "documentsCta": "Belgeleri aç",
+    "vacantTitle": "{count} oda boş",
+    "vacantDetail": "Portföy genelinde doluluk %{rate}.",
+    "vacantCta": "Mülkleri aç",
+    "clearTitle": "Şu an sizi bekleyen bir şey yok",
+    "clearDetail": "Kiralar tahsil edildi, belgeler tam ve tüm odalar kirada."
+  },
+  "compliance": {
+    "title": "Uyumluluk",
+    "subtitle": "Her bina için güvenlik sertifikaları ve depozito süreleri",
+    "allClear": "Her şey geçerli. Önümüzdeki 60 günde yenilenecek bir şey yok.",
+    "tile": {
+      "expired": "Süresi doldu",
+      "dueSoon": "Yakında",
+      "missing": "Dosyada yok",
+      "deposits": "Depozitolar"
+    },
+    "tileHint": {
+      "expired": "Süresi geçmiş sertifikalar",
+      "dueSoon": "{days} gün içinde doluyor",
+      "missing": "Hiç yüklenmemiş sertifikalar",
+      "deposits": "İşlem gereken depozitolar"
+    },
+    "certificates": "Bina sertifikaları",
+    "openLibrary": "Belge kütüphanesini aç",
+    "notOnFile": "Dosyada yok",
+    "expiredAgo": "{days, plural, =0 {Bugün doldu} other {# gün önce doldu}}",
+    "dueIn": "{days, plural, =0 {Bugün doluyor} other {# gün kaldı}}",
+    "until": "{date} tarihine kadar geçerli",
+    "deposits": "Depozito koruması",
+    "depositsHint": "Depozitolar, alındıktan sonraki 30 gün içinde korunmalı ve zorunlu bilgiler verilmelidir.",
+    "depositsClear": "Tutulan {count} depozitonun tamamı korunuyor ve zorunlu bilgiler verildi.",
+    "issue": {
+      "unprotected": "Koruma sertifikası yok",
+      "noPrescribedInfo": "Zorunlu bilgiler verilmedi"
+    },
+    "deadlinePassed": "Son tarih {date} idi",
+    "deadlineIn": "{days, plural, =0 {Bugün son gün} other {# gün kaldı}}"
+  },
+  "login": {
+    "welcome": "Tekrar hoş geldiniz",
+    "headline": "Her oda, her kiracı, her son tarih.",
+    "lede": "Kira, belgeler ve her odanın durumu tek ve sakin bir yerde.",
+    "momentRent": "Bugün kim ne borçlu",
+    "momentRentDetail": "Gecikmiş kiralar sıralı, hatırlatma tek dokunuşta",
+    "momentCompliance": "Hiçbir süre kaçmaz",
+    "momentComplianceDetail": "Gaz, elektrik ve depozito tarihleri sizin için izlenir",
+    "momentInventory": "Teslimler kayıt altında",
+    "momentInventoryDetail": "Çıkışta fotoğraflı envanter karşılaştırması",
+    "languages": "English · 简体中文 · Türkçe"
+  },
+  "errors": {
+    "title": "Bu ekran yüklenemedi",
+    "detail": "Bizim tarafımızda bir sorun oluştu. Verileriniz güvende. Tekrar deneyin veya panele dönün.",
+    "reference": "Referans {id}",
+    "retry": "Tekrar dene",
+    "home": "Panele dön",
+    "notFoundTitle": "Bunu bulamadık",
+    "notFoundDetail": "Arşivlenmiş veya silinmiş olabilir ya da bağlantı güncel değil."
   }
 }

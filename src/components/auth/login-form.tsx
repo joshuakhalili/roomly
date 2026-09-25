@@ -57,7 +57,7 @@ export function LoginForm({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
   }
 
   return (
-    <Card>
+    <Card className="login-card">
       <CardContent className="pt-6">
         {turnstileSiteKey && (
           <Script
@@ -93,6 +93,7 @@ export function LoginForm({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
               required
               autoFocus
               disabled={isPending}
+              className="h-11"
             />
           </div>
 
@@ -115,6 +116,7 @@ export function LoginForm({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
               autoComplete="current-password"
               required
               disabled={isPending}
+              className="h-11"
             />
           </div>
 
@@ -128,7 +130,7 @@ export function LoginForm({ turnstileSiteKey }: { turnstileSiteKey?: string }) {
             </p>
           )}
 
-          <Button type="submit" disabled={isPending} className="w-full">
+          <Button type="submit" disabled={isPending} className="h-11 w-full text-base">
             {isPending ? t("auth.signingIn") : t("auth.signIn")}
           </Button>
         </form>

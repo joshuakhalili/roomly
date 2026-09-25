@@ -4,6 +4,8 @@ import { MetricCard } from "@/components/metrics/metric-card";
 import { DeltaBadge } from "@/components/metrics/delta-badge";
 import { AlertsStrip } from "@/components/dashboard/alerts-strip";
 import { RoomGrid } from "@/components/dashboard/room-grid";
+import { NextUp } from "@/components/dashboard/next-up";
+import { getComplianceData } from "@/lib/queries/compliance";
 import { SegmentMeter, ProgressMeter } from "@/components/charts/segment-meter";
 import {
   Building2,
@@ -24,8 +26,18 @@ export default async function DashboardPage({
 
   const t = await getTranslations();
   const format = await getFormatter();
-  const { rooms, properties, alerts, metrics, comparison, collectionTrend } =
-    await getDashboardData();
+  const [
+    { rooms, properties, alerts, metrics, comparison, collectionTrend },
+    compliance,
+  ] = await Promise.all([getDashboardData(), getComplianceData()]);
+
+  /* The greeting and the date are London's, not the server's: a Vercel
+     function runs in UTC, which is an hour out for half the year. */
+  const now = new Date();
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: "Europe/London" }).format(now),
+  );
+  const partOfDay = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
 
   const money = (n: number) =>
     format.number(n, {
@@ -56,12 +68,15 @@ export default async function DashboardPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-semibold">{t("dashboard.title")}</h1>
+      <header className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">
-          {t("dashboard.subtitle")}
+          {format.dateTime(now, { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/London" })}
         </p>
+        <h1 className="text-2xl font-semibold">{t(`dashboard.greeting.${partOfDay}`)}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
       </header>
+
+      <NextUp metrics={metrics} alerts={alerts} certificateIssues={compliance.counts} />
 
       {/* The bento.
 
