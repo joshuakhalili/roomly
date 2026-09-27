@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { byName } from "@/lib/utils";
+import { fetchAll } from "@/lib/supabase/fetch-all";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -40,33 +41,33 @@ export default async function InventoryPage({
   }
 
   // How much of each baseline is filled in, so an unfinished room is obvious.
-  const baselineIds = [...baselineByRoom.values()].map((c) => c.id);
-  const { data: areas } = baselineIds.length
-    ? await supabase
-        .from("checklist_areas")
-        .select("id, checklist_id")
-        .in("checklist_id", baselineIds)
-    : { data: [] as { id: string; checklist_id: string }[] };
+  /* One joined, paged query. This used to fetch every area id and pass them
+     all back in an `in (...)` filter: with a few dozen inspected rooms the
+     URL outgrew the gateway limit and the sections past the 1,000 row cap
+     were dropped, so every room read "Not started". */
+  const { data: sectionRows } = baselineByRoom.size
+    ? await fetchAll((from, to) =>
+        supabase
+          .from("checklist_sections")
+          .select(
+            "id, condition_rating, checklist_areas!inner(checklist_id, inventory_checklists!inner(type))",
+          )
+          .eq("checklist_areas.inventory_checklists.type", "baseline")
+          .order("id")
+          .range(from, to),
+      )
+    : { data: [] };
+  const sections = (sectionRows as unknown as {
+    condition_rating: string | null;
+    checklist_areas: { checklist_id: string } | null;
+  }[]).map((s) => ({
+    condition_rating: s.condition_rating,
+    checklist_id: s.checklist_areas?.checklist_id,
+  }));
 
-  const areaIds = (areas ?? []).map((a) => a.id);
-  const { data: sections } = areaIds.length
-    ? await supabase
-        .from("checklist_sections")
-        .select("checklist_area_id, condition_rating")
-        .in("checklist_area_id", areaIds)
-    : {
-        data: [] as {
-          checklist_area_id: string;
-          condition_rating: string | null;
-        }[],
-      };
-
-  const checklistByArea = new Map(
-    (areas ?? []).map((a) => [a.id, a.checklist_id]),
-  );
   const progress = new Map<string, { done: number; total: number }>();
-  for (const s of sections ?? []) {
-    const checklistId = checklistByArea.get(s.checklist_area_id);
+  for (const s of sections) {
+    const checklistId = s.checklist_id;
     if (!checklistId) continue;
     const p = progress.get(checklistId) ?? { done: 0, total: 0 };
     p.total += 1;
