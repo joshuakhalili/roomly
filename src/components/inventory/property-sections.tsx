@@ -188,7 +188,7 @@ export function PropertySections({
                         >
                           {complete
                             ? t("workspace.open")
-                            : started
+                            : room.done > 0
                               ? t("workspace.continue")
                               : t("workspace.start")}
                           <ArrowUpRight size={15} aria-hidden />
